@@ -18,13 +18,28 @@
 #ifdef HAVE_LIBRETRO
 #include "audio_core/libretro_input.h"
 #endif
+#ifdef HAVE_OHOS_INPUT
+#include "ohos_mic_input.h"
+#endif
 #include "common/logging/log.h"
 #include "core/core.h"
 
 namespace AudioCore {
 namespace {
-// input_details is ordered in terms of desirability, with the best choice at the top.
+// sink_details is ordered in terms of desirability, with the best choice at the top.
 constexpr std::array input_details = {
+#ifdef HAVE_OHOS_INPUT
+    InputDetails{InputType::OhosRealMic, "Real Device (OHAudio)", true,
+                 [](Core::System& system, std::string_view device_id) -> std::unique_ptr<Input> {
+                     if (!system.HasMicPermission()) {
+                         LOG_WARNING(Audio,
+                                     "Microphone permission denied, falling back to null input.");
+                         return std::make_unique<NullInput>();
+                     }
+                     return std::make_unique<OhosMicInput>(std::string(device_id));
+                 },
+                 &ListOhosMicInputDevices},
+#endif
 #ifdef HAVE_LIBRETRO
     InputDetails{InputType::LibRetro, "Real Device (LibRetro)", true,
                  [](Core::System& system, std::string_view device_id) -> std::unique_ptr<Input> {
