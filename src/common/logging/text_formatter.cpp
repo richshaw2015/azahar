@@ -9,6 +9,8 @@
 #include <windows.h>
 #elif defined(ANDROID)
 #include <android/log.h>
+#elif defined(OHOS_PLATFORM)
+#include <hilog/log.h>
 #endif
 
 #include "common/assert.h"
@@ -138,6 +140,33 @@ void PrintMessageToLogcat([[maybe_unused]] const Entry& entry) {
         UNREACHABLE();
     }
     __android_log_print(android_log_priority, "CitraNative", "%s", str.c_str());
+#elif defined(OHOS_PLATFORM)
+    const auto str = FormatLogMessage(entry);
+
+    LogLevel ohos_log_level;
+    switch (entry.log_level) {
+    case Level::Trace:
+        ohos_log_level = LOG_DEBUG;
+        break;
+    case Level::Debug:
+        ohos_log_level = LOG_DEBUG;
+        break;
+    case Level::Info:
+        ohos_log_level = LOG_INFO;
+        break;
+    case Level::Warning:
+        ohos_log_level = LOG_WARN;
+        break;
+    case Level::Error:
+        ohos_log_level = LOG_ERROR;
+        break;
+    case Level::Critical:
+        ohos_log_level = LOG_FATAL;
+        break;
+    case Level::Count:
+        UNREACHABLE();
+    }
+    OH_LOG_Print(LOG_APP, ohos_log_level, 0xFF00, "CitraNative", "%{public}s", str.c_str());
 #endif
 }
 } // namespace Common::Log

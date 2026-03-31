@@ -338,7 +338,7 @@ void PresentWindow::PresentThread(std::stop_token token) {
 }
 
 void PresentWindow::NotifySurfaceChanged() {
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
     std::scoped_lock lock{recreate_surface_mutex};
     next_surface = CreateSurface(instance.GetInstance(), emu_window);
     recreate_surface_cv.notify_one();
@@ -347,7 +347,7 @@ void PresentWindow::NotifySurfaceChanged() {
 
 void PresentWindow::CopyToSwapchain(Frame* frame) {
     const auto recreate_swapchain = [&] {
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
         {
             std::unique_lock lock{recreate_surface_mutex};
             recreate_surface_cv.wait(lock, [this]() { return surface != next_surface; });
@@ -359,7 +359,7 @@ void PresentWindow::CopyToSwapchain(Frame* frame) {
         swapchain.Create(frame->width, frame->height, surface, low_refresh_rate);
     };
 
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(OHOS_PLATFORM)
     const bool use_vsync = Settings::values.use_vsync.GetValue();
     const bool size_changed =
         swapchain.GetWidth() != frame->width || swapchain.GetHeight() != frame->height;

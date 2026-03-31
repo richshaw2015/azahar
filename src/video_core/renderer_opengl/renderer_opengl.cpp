@@ -105,8 +105,8 @@ void RendererOpenGL::SwapBuffers() {
     const auto& main_layout = render_window.GetFramebufferLayout();
     RenderToMailbox(main_layout, render_window.mailbox, false);
 
-#ifdef ANDROID
-    // On Android, if secondary_window is defined at all,
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
+    // On Android/OHOS, if secondary_window is defined at all,
     // it means we have a second display
     if (secondary_window) {
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();

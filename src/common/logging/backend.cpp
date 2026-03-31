@@ -229,9 +229,11 @@ public:
     void EnableForStacktrace() override {}
 };
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
 /**
- * Backend that writes to the Android logcat
+ * Backend that writes to the platform log system
+ * Android: logcat via __android_log_print
+ * OHOS: HiLog via OH_LOG_Print
  */
 class LogcatBackend : public Backend {
 public:
@@ -490,9 +492,9 @@ private:
         lambda(static_cast<Backend&>(debugger_backend));
         lambda(static_cast<Backend&>(color_console_backend));
         lambda(static_cast<Backend&>(file_backend));
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
         lambda(static_cast<Backend&>(lc_backend));
-#endif // ANDROID
+#endif // ANDROID || OHOS_PLATFORM
 #endif // HAVE_LIBRETRO
     }
 
@@ -537,7 +539,7 @@ private:
     DebuggerBackend debugger_backend{};
     ColorConsoleBackend color_console_backend{};
     FileBackend file_backend;
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
     LogcatBackend lc_backend{};
 #endif
 #ifdef HAVE_LIBRETRO

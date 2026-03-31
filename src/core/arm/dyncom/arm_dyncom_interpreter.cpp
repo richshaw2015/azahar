@@ -948,7 +948,7 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
 #define INC_PC(l) ptr += sizeof(arm_inst) + l
 #define INC_PC_STUB ptr += sizeof(arm_inst)
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
 #define GDB_BP_CHECK
 #else
 #define GDB_BP_CHECK                                                                               \

@@ -3,7 +3,14 @@
 // Refer to the license.txt file included.
 
 // Include the vulkan platform specific header
-#if defined(ANDROID)
+#if defined(OHOS_PLATFORM)
+// HarmonyOS: use VK_OHOS_surface (vulkan_ohos.h)
+// Surface creation is handled externally by EmuWindow_OHOS_Vulkan via vkCreateSurfaceOHOS
+// or passed through the Android-compatible path using OHNativeWindow.
+// We define VK_USE_PLATFORM_ANDROID_KHR because HarmonyOS Vulkan loader exposes
+// vkCreateAndroidSurfaceKHR with OHNativeWindow* (binary compatible with ANativeWindow*).
+#define VK_USE_PLATFORM_ANDROID_KHR
+#elif defined(ANDROID)
 #define VK_USE_PLATFORM_ANDROID_KHR
 #elif defined(WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -98,8 +105,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(vk::DebugReportFlagsEX
 
 std::shared_ptr<Common::DynamicLibrary> OpenLibrary(
     [[maybe_unused]] Frontend::GraphicsContext* context) {
-#ifdef ANDROID
-    // Android may override the Vulkan driver from the frontend.
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
+    // Android/OHOS may override the Vulkan driver from the frontend.
     if (auto library = context->GetDriverLibrary(); library) {
         return library;
     }

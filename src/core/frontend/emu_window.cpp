@@ -289,7 +289,7 @@ void EmuWindow::UpdateCurrentFramebufferLayout(u32 width, u32 height, bool is_po
             break;
         }
     }
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
     if (is_secondary) {
         layout = Layout::AndroidSecondaryLayout(width, height);
     }

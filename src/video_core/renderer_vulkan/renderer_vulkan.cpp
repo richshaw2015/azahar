@@ -1115,7 +1115,7 @@ void RendererVulkan::SwapBuffers() {
     PrepareRendertarget();
     RenderScreenshot();
     RenderToWindow(main_present_window, layout, false);
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(OHOS_PLATFORM)
     if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::SeparateWindows) {
         ASSERT(secondary_window);
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();
@@ -1128,7 +1128,7 @@ void RendererVulkan::SwapBuffers() {
     }
 #endif
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
     if (secondary_window) {
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();
         if (!secondary_present_window_ptr) {

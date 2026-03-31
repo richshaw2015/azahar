@@ -107,7 +107,7 @@ add_library(citra_common STATIC
 
 target_include_directories(citra_common PUBLIC ${CMAKE_BINARY_DIR}/src)
 
-if (UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE AND NOT OHOS_PLATFORM)
   target_sources(citra_common PRIVATE
     linux/gamemode.cpp
     linux/gamemode.h

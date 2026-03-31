@@ -1043,7 +1043,7 @@ void SOC_U::SockAtMark(Kernel::HLERequestContext& ctx) {
     func_res = ::ioctlsocket(holder.socket_fd, SIOCATMARK, &atMark);
     is_at_mark = atMark != 0;
 #else
-#ifdef ANDROID
+#if defined(ANDROID) || defined(OHOS_PLATFORM)
     func_res = 0;
     LOG_WARNING(Service_SOC, "(STUBBED) called");
 #else
