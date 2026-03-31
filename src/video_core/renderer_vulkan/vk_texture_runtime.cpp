@@ -497,8 +497,8 @@ bool TextureRuntime::CopyTextures(Surface& source, Surface& dest,
     };
 
     boost::container::small_vector<vk::ImageCopy, 2> vk_copies;
-    std::ranges::transform(copies, std::back_inserter(vk_copies), [&](const auto& copy) {
-        return vk::ImageCopy{
+    for (const auto& copy : copies) {
+        vk_copies.push_back(vk::ImageCopy{
             .srcSubresource{
                 .aspectMask = params.aspect,
                 .mipLevel = copy.src_level,
@@ -516,8 +516,8 @@ bool TextureRuntime::CopyTextures(Surface& source, Surface& dest,
             .dstOffset = {static_cast<s32>(copy.dst_offset.x), static_cast<s32>(copy.dst_offset.y),
                           0},
             .extent = {copy.extent.width, copy.extent.height, 1},
-        };
-    });
+        });
+    }
 
     scheduler.Record([params, copies = std::move(vk_copies)](vk::CommandBuffer cmdbuf) {
         const bool self_copy = params.src_image == params.dst_image;

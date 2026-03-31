@@ -885,7 +885,10 @@ void RasterizerVulkan::SyncAndUploadLUTs() {
     }
 
     std::size_t bytes_used = 0;
-    auto [buffer, offset, invalidate] = texture_buffer.Map(max_size, sizeof(Common::Vec4f));
+    auto map_result = texture_buffer.Map(max_size, sizeof(Common::Vec4f));
+    auto buffer = std::get<0>(map_result);
+    auto offset = std::get<1>(map_result);
+    auto invalidate = std::get<2>(map_result);
 
     if (invalidate) {
         pica.proctex.table_dirty = pica.proctex.TableAllDirty;

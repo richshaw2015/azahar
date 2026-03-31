@@ -113,8 +113,9 @@ MasterSemaphoreFence::MasterSemaphoreFence(const Instance& instance_) : instance
 }
 
 MasterSemaphoreFence::~MasterSemaphoreFence() {
-    std::ranges::for_each(free_queue,
-                          [this](auto fence) { instance.GetDevice().destroyFence(fence); });
+    for (auto fence : free_queue) {
+        instance.GetDevice().destroyFence(fence);
+    }
 }
 
 void MasterSemaphoreFence::Refresh() {}

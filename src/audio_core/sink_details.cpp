@@ -21,7 +21,7 @@
 #include "audio_core/openal_sink.h"
 #endif
 #ifdef HAVE_OHOS_AUDIO
-#include "ohos_audio_sink.h"
+#include "citra_ohos_audio_sink.h"
 #endif
 #include "common/logging/log.h"
 
