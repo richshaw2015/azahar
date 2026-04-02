@@ -4,12 +4,12 @@
 
 // Include the vulkan platform specific header
 #if defined(OHOS_PLATFORM)
-// HarmonyOS: use VK_OHOS_surface (vulkan_ohos.h)
-// Surface creation is handled externally by EmuWindow_OHOS_Vulkan via vkCreateSurfaceOHOS
-// or passed through the Android-compatible path using OHNativeWindow.
-// We define VK_USE_PLATFORM_ANDROID_KHR because HarmonyOS Vulkan loader exposes
-// vkCreateAndroidSurfaceKHR with OHNativeWindow* (binary compatible with ANativeWindow*).
-#define VK_USE_PLATFORM_ANDROID_KHR
+// HarmonyOS: use VK_OHOS_surface with vkCreateSurfaceOHOS
+// We do NOT include vulkan_ohos.h because Citra uses its own vulkan-headers
+// which don't include OHOS types. Instead we define the needed types inline
+// and load vkCreateSurfaceOHOS via vkGetInstanceProcAddr at runtime.
+#include <native_window/external_window.h>
+#define VK_OHOS_SURFACE_EXTENSION_NAME "VK_OHOS_surface"
 #elif defined(ANDROID)
 #define VK_USE_PLATFORM_ANDROID_KHR
 #elif defined(WIN32)
@@ -202,6 +202,47 @@ vk::SurfaceKHR CreateSurface(vk::Instance instance, const Frontend::EmuWindow& e
             UNREACHABLE();
         }
     }
+#elif defined(OHOS_PLATFORM)
+    if (window_info.type == Frontend::WindowSystemType::Android) {
+        // HarmonyOS: use vkCreateSurfaceOHOS loaded dynamically via vkGetInstanceProcAddr
+        // VkSurfaceCreateInfoOHOS layout (from vulkan_ohos.h):
+        //   VkStructureType sType;  // VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS = 1000685000
+        //   const void* pNext;
+        //   VkFlags flags;
+        //   OHNativeWindow* window;
+        struct VkSurfaceCreateInfoOHOS {
+            VkStructureType sType;
+            const void* pNext;
+            VkFlags flags;
+            OHNativeWindow* window;
+        };
+        using PFN_vkCreateSurfaceOHOS = VkResult(VKAPI_PTR*)(
+            VkInstance, const VkSurfaceCreateInfoOHOS*, const VkAllocationCallbacks*, VkSurfaceKHR*);
+
+        auto vkCreateSurfaceOHOS = reinterpret_cast<PFN_vkCreateSurfaceOHOS>(
+            VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr(
+                static_cast<VkInstance>(instance), "vkCreateSurfaceOHOS"));
+        if (!vkCreateSurfaceOHOS) {
+            LOG_CRITICAL(Render_Vulkan, "Failed to load vkCreateSurfaceOHOS");
+            UNREACHABLE();
+        }
+
+        VkSurfaceCreateInfoOHOS ohos_ci = {
+            .sType = static_cast<VkStructureType>(1000685000), // VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS
+            .pNext = nullptr,
+            .flags = 0,
+            .window = reinterpret_cast<OHNativeWindow*>(window_info.render_surface),
+        };
+
+        VkSurfaceKHR raw_surface = VK_NULL_HANDLE;
+        VkResult vk_res = vkCreateSurfaceOHOS(
+            static_cast<VkInstance>(instance), &ohos_ci, nullptr, &raw_surface);
+        if (vk_res != VK_SUCCESS) {
+            LOG_CRITICAL(Render_Vulkan, "Failed to initialize OHOS surface: {}", static_cast<int>(vk_res));
+            UNREACHABLE();
+        }
+        surface = vk::SurfaceKHR(raw_surface);
+    }
 #endif
 
     if (!surface) {
@@ -251,6 +292,11 @@ std::vector<const char*> GetInstanceExtensions(Frontend::WindowSystemType window
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
     case Frontend::WindowSystemType::Android:
         extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+        break;
+#elif defined(OHOS_PLATFORM)
+    case Frontend::WindowSystemType::Android:
+        // HarmonyOS uses VK_OHOS_surface instead of VK_KHR_android_surface
+        extensions.push_back(VK_OHOS_SURFACE_EXTENSION_NAME);
         break;
 #endif
     default:

@@ -33,6 +33,10 @@ void ARM_DynCom::Step() {
 
 void ARM_DynCom::ClearInstructionCache() {
     state->instruction_cache.clear();
+    // [OHOS 性能优化] 同步清空直接映射缓存
+    for (auto& entry : state->ic_direct) {
+        entry.pc = 0xFFFFFFFF;
+    }
     trans_cache_buf_top = 0;
 }
 

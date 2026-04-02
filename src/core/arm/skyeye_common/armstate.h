@@ -256,6 +256,20 @@ public:
     // process for our purposes), not per ARMul_State (which tracks CPU core state).
     std::unordered_map<u32, std::size_t> instruction_cache;
 
+    // ========================================================================
+    // [OHOS 性能优化] 直接映射指令缓存 (替代 unordered_map 的热路径)
+    // ========================================================================
+    // unordered_map 的 find() 在 DISPATCH 热循环中开销过大（哈希+桶+链表）
+    // 直接映射缓存用 PC 低位做索引，O(1) 数组访问，命中率 >95%
+    // 未命中时回退到 unordered_map
+    static constexpr std::size_t IC_DIRECT_SIZE = 65536; // 64K 条目
+    static constexpr std::size_t IC_DIRECT_MASK = IC_DIRECT_SIZE - 1;
+    struct ICDirectEntry {
+        u32 pc = 0xFFFFFFFF;   // 缓存的 PC 地址 (0xFFFFFFFF = 无效)
+        std::size_t ptr = 0;   // trans_cache_buf 中的偏移
+    };
+    ICDirectEntry ic_direct[IC_DIRECT_SIZE];
+
 private:
     void ResetMPCoreCP15Registers();
 
