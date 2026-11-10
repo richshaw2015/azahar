@@ -1,6 +1,6 @@
-// Copyright 2023 Citra Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/scope_exit.h"
 #include "common/settings.h"
@@ -92,20 +92,27 @@ static constexpr std::array<FormatTuple, 8> CUSTOM_TUPLES = {{
     return 0;
 }
 
-[[nodiscard]] OGLTexture MakeHandle(GLenum target, u32 width, u32 height, u32 levels,
+[[nodiscard]] OGLTexture MakeHandle(GLenum target, u32 width, u32 height, u32 levels, u32 samples,
                                     const FormatTuple& tuple, std::string_view debug_name = "") {
     OGLTexture texture{};
     texture.Create();
 
-    glBindTexture(target, texture.handle);
-    glTexStorage2D(target, levels, tuple.internal_format, width, height);
+    if (samples > 1) {
+        ASSERT(target == GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture.handle);
+        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, tuple.internal_format, width,
+                                  height, true);
+    } else {
+        glBindTexture(target, texture.handle);
+        glTexStorage2D(target, levels, tuple.internal_format, width, height);
+    }
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     if (!debug_name.empty()) {
-        glObjectLabel(GL_TEXTURE, texture.handle, -1, debug_name.data());
+        glObjectLabel(GL_TEXTURE, texture.handle, debug_name.size(), debug_name.data());
     }
 
     return texture;
@@ -113,8 +120,8 @@ static constexpr std::array<FormatTuple, 8> CUSTOM_TUPLES = {{
 
 } // Anonymous namespace
 
-TextureRuntime::TextureRuntime(const Driver& driver_, VideoCore::RendererBase& renderer)
-    : driver{driver_}, blit_helper{driver} {
+TextureRuntime::TextureRuntime(const Driver& driver_, VideoCore::RendererBase& renderer_)
+    : driver{driver_}, renderer{renderer_}, blit_helper{driver} {
     for (std::size_t i = 0; i < draw_fbos.size(); ++i) {
         draw_fbos[i].Create();
         read_fbos[i].Create();
@@ -123,11 +130,14 @@ TextureRuntime::TextureRuntime(const Driver& driver_, VideoCore::RendererBase& r
 
 TextureRuntime::~TextureRuntime() = default;
 
-u32 TextureRuntime::RemoveThreshold() {
-    return SWAP_CHAIN_SIZE;
+u64 TextureRuntime::GetResourceTick() {
+    return renderer.GetCurrentFrame();
 }
 
-bool TextureRuntime::NeedsConversion(VideoCore::PixelFormat pixel_format) const {
+void TextureRuntime::Finish() {}
+
+bool TextureRuntime::NeedsConversion(const Surface& surface) const {
+    const auto& pixel_format = surface.pixel_format;
     const bool should_convert = pixel_format == PixelFormat::RGBA8 || // Needs byteswap
                                 pixel_format == PixelFormat::RGB8;    // Is converted to RGBA8
     return driver.IsOpenGLES() && should_convert;
@@ -169,26 +179,38 @@ const FormatTuple& TextureRuntime::GetFormatTuple(VideoCore::CustomPixelFormat p
     return CUSTOM_TUPLES[format_index];
 }
 
+bool TextureRuntime::SupportsCustomFormat(VideoCore::CustomPixelFormat pixel_format) const {
+    return driver.IsCustomFormatSupported(pixel_format);
+}
+
 bool TextureRuntime::Reinterpret(Surface& source, Surface& dest,
                                  const VideoCore::TextureCopy& copy) {
     const PixelFormat src_format = source.pixel_format;
     const PixelFormat dst_format = dest.pixel_format;
+
+    const DebugScope scope(*this, Common::Vec4f{}, "TextureRuntime::Reinterpret ({} -> {})",
+                           VideoCore::PixelFormatAsString(src_format),
+                           VideoCore::PixelFormatAsString(dst_format));
+
     ASSERT_MSG(src_format != dst_format, "Reinterpretation with the same format is invalid");
     if (src_format == PixelFormat::D24S8 && dst_format == PixelFormat::RGBA8) {
-        blit_helper.ConvertDS24S8ToRGBA8(source, dest, copy);
+        return blit_helper.ConvertDS24S8ToRGBA8(source, dest, copy);
     } else if (src_format == PixelFormat::RGBA4 && dst_format == PixelFormat::RGB5A1) {
-        blit_helper.ConvertRGBA4ToRGB5A1(source, dest, copy);
-    } else {
-        LOG_WARNING(Render_OpenGL, "Unimplemented reinterpretation {} -> {}",
-                    VideoCore::PixelFormatAsString(src_format),
-                    VideoCore::PixelFormatAsString(dst_format));
-        return false;
+        return blit_helper.ConvertRGBA4ToRGB5A1(source, dest, copy);
     }
-    return true;
+
+    LOG_WARNING(Render_OpenGL, "Unimplemented reinterpretation {}({:#x}) -> {}({:#x})",
+                VideoCore::PixelFormatAsString(src_format), source.Tuple().internal_format,
+                VideoCore::PixelFormatAsString(dst_format), dest.Tuple().internal_format);
+    return false;
 }
 
 bool TextureRuntime::ClearTextureWithoutFbo(Surface& surface,
                                             const VideoCore::TextureClear& clear) {
+    const DebugScope scope(
+        *this, Common::Vec4f{}, "TextureRuntime::ClearTextureWithoutFbo ({}, {}, {}, {})",
+        clear.value.color.r(), clear.value.color.g(), clear.value.color.b(), clear.value.color.a());
+
     if (!driver.HasArbClearTexture() || driver.HasBug(DriverBug::BrokenClearTexture)) {
         return false;
     }
@@ -212,12 +234,25 @@ bool TextureRuntime::ClearTextureWithoutFbo(Surface& surface,
         UNREACHABLE_MSG("Unknown surface type {}", surface.type);
     }
     glClearTexSubImage(surface.Handle(), clear.texture_level, clear.texture_rect.left,
-                       clear.texture_rect.bottom, 0, clear.texture_rect.GetWidth(),
-                       clear.texture_rect.GetHeight(), 1, format, type, &clear.value);
+                       clear.texture_rect.bottom, clear.texture_layer,
+                       clear.texture_rect.GetWidth(), clear.texture_rect.GetHeight(), 1, format,
+                       type, &clear.value);
+
+    if (surface.sample_count > 1) {
+        // Clear MSAA too
+        glClearTexSubImage(surface.Handle(3), clear.texture_level, clear.texture_rect.left,
+                           clear.texture_rect.bottom, clear.texture_layer,
+                           clear.texture_rect.GetWidth(), clear.texture_rect.GetHeight(), 1, format,
+                           type, &clear.value);
+    }
     return true;
 }
 
 void TextureRuntime::ClearTexture(Surface& surface, const VideoCore::TextureClear& clear) {
+    const DebugScope scope(*this, Common::Vec4f{}, "TextureRuntime::ClearTexture ({}, {}, {}, {})",
+                           clear.value.color.r(), clear.value.color.g(), clear.value.color.b(),
+                           clear.value.color.a());
+
     if (ClearTextureWithoutFbo(surface, clear)) {
         return;
     }
@@ -231,36 +266,48 @@ void TextureRuntime::ClearTexture(Surface& surface, const VideoCore::TextureClea
     state.draw.draw_framebuffer = draw_fbos[FboIndex(surface.type)].handle;
     state.Apply();
 
-    surface.Attach(GL_DRAW_FRAMEBUFFER, clear.texture_level, 0);
+    const auto ClearBuffer = [&surface, &state, &clear]() {
+        switch (surface.type) {
+        case SurfaceType::Color:
+        case SurfaceType::Texture:
+            state.color_mask.red_enabled = true;
+            state.color_mask.green_enabled = true;
+            state.color_mask.blue_enabled = true;
+            state.color_mask.alpha_enabled = true;
+            state.Apply();
+            glClearBufferfv(GL_COLOR, 0, clear.value.color.AsArray());
+            break;
+        case SurfaceType::Depth:
+            state.depth.write_mask = GL_TRUE;
+            state.Apply();
+            glClearBufferfv(GL_DEPTH, 0, &clear.value.depth);
+            break;
+        case SurfaceType::DepthStencil:
+            state.depth.write_mask = GL_TRUE;
+            state.stencil.write_mask = -1;
+            state.Apply();
+            glClearBufferfi(GL_DEPTH_STENCIL, 0, clear.value.depth, clear.value.stencil);
+            break;
+        default:
+            UNREACHABLE_MSG("Unknown surface type {}", surface.type);
+        }
+    };
 
-    switch (surface.type) {
-    case SurfaceType::Color:
-    case SurfaceType::Texture:
-        state.color_mask.red_enabled = true;
-        state.color_mask.green_enabled = true;
-        state.color_mask.blue_enabled = true;
-        state.color_mask.alpha_enabled = true;
-        state.Apply();
-        glClearBufferfv(GL_COLOR, 0, clear.value.color.AsArray());
-        break;
-    case SurfaceType::Depth:
-        state.depth.write_mask = GL_TRUE;
-        state.Apply();
-        glClearBufferfv(GL_DEPTH, 0, &clear.value.depth);
-        break;
-    case SurfaceType::DepthStencil:
-        state.depth.write_mask = GL_TRUE;
-        state.stencil.write_mask = -1;
-        state.Apply();
-        glClearBufferfi(GL_DEPTH_STENCIL, 0, clear.value.depth, clear.value.stencil);
-        break;
-    default:
-        UNREACHABLE_MSG("Unknown surface type {}", surface.type);
+    surface.Attach(GL_DRAW_FRAMEBUFFER, clear.texture_level, clear.texture_layer);
+    ClearBuffer();
+
+    if (surface.GetSampleCount() > 1) {
+        // Clear MSAA too
+        surface.Attach(GL_DRAW_FRAMEBUFFER, clear.texture_level, clear.texture_layer, 3);
+        ClearBuffer();
     }
 }
 
 bool TextureRuntime::CopyTextures(Surface& source, Surface& dest,
                                   std::span<const VideoCore::TextureCopy> copies) {
+    const DebugScope scope(*this, Common::Vec4f{}, "TextureRuntime::CopyTexture ({} copies)",
+                           copies.size());
+
     const GLenum src_textarget = source.texture_type == VideoCore::TextureType::CubeMap
                                      ? GL_TEXTURE_CUBE_MAP
                                      : GL_TEXTURE_2D;
@@ -278,6 +325,17 @@ bool TextureRuntime::CopyTextures(Surface& source, Surface& dest,
 
 bool TextureRuntime::BlitTextures(Surface& source, Surface& dest,
                                   const VideoCore::TextureBlit& blit) {
+    const DebugScope scope(*this, Common::Vec4f{}, "TextureRuntime::BlitTextures");
+
+    // Must resolve images first
+    // Todo(wunk): Add a "dirty" flag for msaa resolves to avoid redundant image resolves
+    if (source.sample_count > 1) {
+        blit_helper.ResolveTexture(source, blit.src_level, blit.src_layer);
+    }
+    if (dest.sample_count > 1) {
+        blit_helper.ResolveTexture(dest, blit.dst_level, blit.dst_layer);
+    }
+
     OpenGLState state = OpenGLState::GetCurState();
     state.scissor.enabled = false;
     state.draw.read_framebuffer = read_fbos[FboIndex(source.type)].handle;
@@ -290,9 +348,7 @@ bool TextureRuntime::BlitTextures(Surface& source, Surface& dest,
     // Note: shadow map is treated as RGBA8 format in PICA, as well as in the rasterizer cache, but
     // doing linear intepolation componentwise would cause incorrect value.
     const GLbitfield buffer_mask = MakeBufferMask(source.type);
-    const bool is_shadow_map = True(source.flags & SurfaceFlagBits::ShadowMap);
-    const GLenum filter =
-        buffer_mask == GL_COLOR_BUFFER_BIT && !is_shadow_map ? GL_LINEAR : GL_NEAREST;
+    constexpr GLenum filter = GL_NEAREST;
     glBlitFramebuffer(blit.src_rect.left, blit.src_rect.bottom, blit.src_rect.right,
                       blit.src_rect.top, blit.dst_rect.left, blit.dst_rect.bottom,
                       blit.dst_rect.right, blit.dst_rect.top, buffer_mask, filter);
@@ -301,10 +357,13 @@ bool TextureRuntime::BlitTextures(Surface& source, Surface& dest,
 }
 
 void TextureRuntime::GenerateMipmaps(Surface& surface) {
+    const DebugScope scope(*this, Common::Vec4f{}, "TextureRuntime::GenerateMipmaps");
+
     OpenGLState state = OpenGLState::GetCurState();
 
     const auto generate = [&](u32 index) {
         state.texture_units[0].texture_2d = surface.Handle(index);
+        state.texture_units[0].target = GL_TEXTURE_2D;
         state.Apply();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, surface.levels - 1);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -316,8 +375,9 @@ void TextureRuntime::GenerateMipmaps(Surface& surface) {
     }
 }
 
-Surface::Surface(TextureRuntime& runtime_, const VideoCore::SurfaceParams& params)
-    : SurfaceBase{params}, driver{&runtime_.GetDriver()}, runtime{&runtime_},
+Surface::Surface(TextureRuntime& runtime_, const VideoCore::SurfaceParams& params,
+                 const VideoCore::SurfaceFlagBits& initial_flag_bits)
+    : SurfaceBase{params, initial_flag_bits}, driver{&runtime_.GetDriver()}, runtime{&runtime_},
       tuple{runtime->GetFormatTuple(pixel_format)} {
     if (pixel_format == PixelFormat::Invalid) {
         return;
@@ -327,16 +387,22 @@ Surface::Surface(TextureRuntime& runtime_, const VideoCore::SurfaceParams& param
     const GLenum target =
         texture_type == VideoCore::TextureType::CubeMap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-    textures[0] = MakeHandle(target, width, height, levels, tuple, DebugName(false));
+    textures[0] = MakeHandle(target, width, height, levels, 1, tuple, DebugName(false));
     if (res_scale != 1) {
-        textures[1] = MakeHandle(target, GetScaledWidth(), GetScaledHeight(), levels, tuple,
+        textures[1] = MakeHandle(target, GetScaledWidth(), GetScaledHeight(), levels, 1, tuple,
                                  DebugName(true, false));
+    }
+
+    if (sample_count > 1) {
+        textures[3] = MakeHandle(target, GetScaledWidth(), GetScaledHeight(), levels, sample_count,
+                                 tuple, DebugName(true, false, sample_count));
     }
 }
 
-Surface::Surface(TextureRuntime& runtime, const VideoCore::SurfaceBase& surface,
+Surface::Surface(TextureRuntime& runtime_, const VideoCore::SurfaceBase& surface,
                  const VideoCore::Material* mat)
-    : SurfaceBase{surface}, tuple{runtime.GetFormatTuple(mat->format)} {
+    : SurfaceBase{surface}, driver{&runtime_.GetDriver()}, runtime{&runtime_},
+      tuple{runtime_.GetFormatTuple(mat->format)} {
     if (mat && !driver->IsCustomFormatSupported(mat->format)) {
         return;
     }
@@ -348,15 +414,19 @@ Surface::Surface(TextureRuntime& runtime, const VideoCore::SurfaceBase& surface,
     custom_format = mat->format;
     material = mat;
 
-    textures[0] = MakeHandle(target, mat->width, mat->height, levels, tuple, DebugName(false));
+    textures[0] = MakeHandle(target, mat->width, mat->height, levels, 1, tuple, DebugName(false));
     if (res_scale != 1) {
-        textures[1] = MakeHandle(target, mat->width, mat->height, levels, DEFAULT_TUPLE,
+        textures[1] = MakeHandle(target, mat->width, mat->height, levels, 1, DEFAULT_TUPLE,
                                  DebugName(true, true));
     }
     const bool has_normal = mat->Map(MapType::Normal);
     if (has_normal) {
         textures[2] =
-            MakeHandle(target, mat->width, mat->height, levels, tuple, DebugName(true, true));
+            MakeHandle(target, mat->width, mat->height, levels, 1, tuple, DebugName(true, true));
+    }
+    if (sample_count > 1) {
+        textures[3] = MakeHandle(target, mat->width, mat->height, sample_count, levels,
+                                 DEFAULT_TUPLE, DebugName(true, true, sample_count));
     }
 }
 
@@ -370,9 +440,11 @@ GLuint Surface::Handle(u32 index) const noexcept {
 }
 
 GLuint Surface::CopyHandle() noexcept {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::CopyHandle");
+
     if (!copy_texture.handle) {
-        copy_texture = MakeHandle(GL_TEXTURE_2D, GetScaledWidth(), GetScaledHeight(), levels, tuple,
-                                  DebugName(true));
+        copy_texture = MakeHandle(GL_TEXTURE_2D, GetScaledWidth(), GetScaledHeight(), levels, 1,
+                                  tuple, DebugName(true));
     }
 
     for (u32 level = 0; level < levels; level++) {
@@ -387,6 +459,8 @@ GLuint Surface::CopyHandle() noexcept {
 
 void Surface::Upload(const VideoCore::BufferTextureCopy& upload,
                      const VideoCore::StagingData& staging) {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::Upload");
+
     ASSERT(stride * GetFormatBytesPerPixel(pixel_format) % 4 == 0);
 
     const u32 unscaled_width = upload.texture_rect.GetWidth();
@@ -414,6 +488,8 @@ void Surface::Upload(const VideoCore::BufferTextureCopy& upload,
 }
 
 void Surface::UploadCustom(const VideoCore::Material* material, u32 level) {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::UploadCustom");
+
     const u32 width = material->width;
     const u32 height = material->height;
     const auto color = material->textures[0];
@@ -456,6 +532,8 @@ void Surface::UploadCustom(const VideoCore::Material* material, u32 level) {
 
 void Surface::Download(const VideoCore::BufferTextureCopy& download,
                        const VideoCore::StagingData& staging) {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::Download");
+
     ASSERT(stride * GetFormatBytesPerPixel(pixel_format) % 4 == 0);
 
     const u32 unscaled_width = download.texture_rect.GetWidth();
@@ -495,6 +573,8 @@ void Surface::Download(const VideoCore::BufferTextureCopy& download,
 
 bool Surface::DownloadWithoutFbo(const VideoCore::BufferTextureCopy& download,
                                  const VideoCore::StagingData& staging) {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::DownloadWithoutFbo");
+
     if (driver->IsOpenGLES()) {
         return false;
     }
@@ -521,6 +601,7 @@ bool Surface::DownloadWithoutFbo(const VideoCore::BufferTextureCopy& download,
         // that only support up to 4.3
         OpenGLState state = OpenGLState::GetCurState();
         state.texture_units[0].texture_2d = Handle(0);
+        state.texture_units[0].target = GL_TEXTURE_2D;
         state.Apply();
 
         glGetTexImage(GL_TEXTURE_2D, download.texture_level, tuple.format, tuple.type,
@@ -531,45 +612,57 @@ bool Surface::DownloadWithoutFbo(const VideoCore::BufferTextureCopy& download,
     return false;
 }
 
-void Surface::Attach(GLenum target, u32 level, u32 layer, bool scaled) {
-    const GLuint handle = Handle(static_cast<u32>(scaled));
-    const GLenum textarget = texture_type == TextureType::CubeMap
-                                 ? GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer
-                                 : GL_TEXTURE_2D;
+void Surface::Attach(GLenum target, u32 level, u32 layer, u32 handle) {
+    const GLuint gl_handle = Handle(handle);
+    GLenum textarget = texture_type == TextureType::CubeMap ? GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer
+                                                            : GL_TEXTURE_2D;
+
+    if (handle == 3 && sample_count > 1) {
+        ASSERT(texture_type == TextureType::Texture2D);
+        textarget = GL_TEXTURE_2D_MULTISAMPLE;
+    }
 
     switch (type) {
     case SurfaceType::Color:
     case SurfaceType::Texture:
-        glFramebufferTexture2D(target, GL_COLOR_ATTACHMENT0, textarget, handle, level);
+        glFramebufferTexture2D(target, GL_COLOR_ATTACHMENT0, textarget, gl_handle, level);
         break;
     case SurfaceType::Depth:
-        glFramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget, handle, level);
+        glFramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget, gl_handle, level);
         break;
     case SurfaceType::DepthStencil:
-        glFramebufferTexture2D(target, GL_DEPTH_STENCIL_ATTACHMENT, textarget, handle, level);
+        glFramebufferTexture2D(target, GL_DEPTH_STENCIL_ATTACHMENT, textarget, gl_handle, level);
         break;
     default:
         UNREACHABLE_MSG("Invalid surface type!");
     }
 }
 
-void Surface::ScaleUp(u32 new_scale) {
-    if (res_scale == new_scale || new_scale == 1) {
-        return;
+void Surface::ScaleUp(u32 new_scale, u8 new_sample_count) {
+    const DebugScope scope(*runtime, Common::Vec4f{},
+                           "Surface::ScaleUp (NewScale:{} NewSamples:{})", new_scale,
+                           new_sample_count);
+
+    const bool res_scale_modified = res_scale != new_scale;
+    if (res_scale_modified && new_scale > 1) {
+        res_scale = new_scale;
+        textures[1] = MakeHandle(GL_TEXTURE_2D, GetScaledWidth(), GetScaledHeight(), levels, 1,
+                                 tuple, DebugName(true));
+        for (u32 level = 0; level < levels; level++) {
+            const VideoCore::TextureBlit blit = {
+                .src_level = level,
+                .dst_level = level,
+                .src_rect = GetRect(level),
+                .dst_rect = GetScaledRect(level),
+            };
+            BlitScale(blit, true);
+        }
     }
 
-    res_scale = new_scale;
-    textures[1] = MakeHandle(GL_TEXTURE_2D, GetScaledWidth(), GetScaledHeight(), levels, tuple,
-                             DebugName(true));
-
-    for (u32 level = 0; level < levels; level++) {
-        const VideoCore::TextureBlit blit = {
-            .src_level = level,
-            .dst_level = level,
-            .src_rect = GetRect(level),
-            .dst_rect = GetScaledRect(level),
-        };
-        BlitScale(blit, true);
+    if ((res_scale_modified || sample_count != new_sample_count) && new_sample_count > 1) {
+        sample_count = new_sample_count;
+        textures[3] = MakeHandle(GL_TEXTURE_2D, GetScaledWidth(), GetScaledHeight(), levels,
+                                 sample_count, tuple, DebugName(true));
     }
 }
 
@@ -582,6 +675,8 @@ u32 Surface::GetInternalBytesPerPixel() const {
 }
 
 void Surface::BlitScale(const VideoCore::TextureBlit& blit, bool up_scale) {
+    const DebugScope scope(*runtime, Common::Vec4f{}, "Surface::BlitScale (UpScale:{})", up_scale);
+
     const u32 fbo_index = FboIndex(type);
 
     OpenGLState state = OpenGLState::GetCurState();
@@ -594,7 +689,7 @@ void Surface::BlitScale(const VideoCore::TextureBlit& blit, bool up_scale) {
     Attach(GL_DRAW_FRAMEBUFFER, blit.dst_level, blit.dst_layer, up_scale);
 
     const GLenum buffer_mask = MakeBufferMask(type);
-    const GLenum filter = buffer_mask == GL_COLOR_BUFFER_BIT ? GL_LINEAR : GL_NEAREST;
+    constexpr GLenum filter = GL_NEAREST;
     glBlitFramebuffer(blit.src_rect.left, blit.src_rect.bottom, blit.src_rect.right,
                       blit.src_rect.top, blit.dst_rect.left, blit.dst_rect.bottom,
                       blit.dst_rect.right, blit.dst_rect.top, buffer_mask, filter);
@@ -603,7 +698,8 @@ void Surface::BlitScale(const VideoCore::TextureBlit& blit, bool up_scale) {
 Framebuffer::Framebuffer(TextureRuntime& runtime, const VideoCore::FramebufferParams& params,
                          const Surface* color, const Surface* depth)
     : VideoCore::FramebufferParams{params},
-      res_scale{color ? color->res_scale : (depth ? depth->res_scale : 1u)} {
+      res_scale{color ? color->res_scale : (depth ? depth->res_scale : 1u)},
+      sample_count{color ? color->sample_count : (depth ? depth->sample_count : 1u)} {
 
     if (shadow_rendering && !color) {
         return;
@@ -614,6 +710,15 @@ Framebuffer::Framebuffer(TextureRuntime& runtime, const VideoCore::FramebufferPa
     }
     if (depth) {
         attachments[1] = depth->Handle();
+    }
+
+    if (sample_count > 1) {
+        if (color) {
+            attachments[2] = color->Handle(3);
+        }
+        if (depth) {
+            attachments[3] = depth->Handle(3);
+        }
     }
 
     framebuffer.Create();
@@ -647,6 +752,27 @@ Framebuffer::Framebuffer(TextureRuntime& runtime, const VideoCore::FramebufferPa
             glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
                                    0, 0);
         }
+
+        if (sample_count > 1) {
+            if (color) {
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                       GL_TEXTURE_2D_MULTISAMPLE, color ? color->Handle(3) : 0,
+                                       color_level);
+            }
+            if (depth) {
+                if (depth->pixel_format == PixelFormat::D24S8) {
+                    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                           GL_TEXTURE_2D_MULTISAMPLE, depth->Handle(3),
+                                           depth_level);
+                } else {
+                    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                           GL_TEXTURE_2D_MULTISAMPLE, depth->Handle(3),
+                                           depth_level);
+                    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                           GL_TEXTURE_2D_MULTISAMPLE, 0, 0);
+                }
+            }
+        }
     }
 }
 
@@ -679,7 +805,7 @@ Sampler::Sampler(TextureRuntime&, VideoCore::SamplerParams params) {
 Sampler::~Sampler() = default;
 
 DebugScope::DebugScope(TextureRuntime& runtime, Common::Vec4f, std::string_view label)
-    : local_scope_depth{global_scope_depth++} {
+    : local_scope_depth{Settings::values.renderer_debug ? global_scope_depth++ : 0} {
     if (!Settings::values.renderer_debug) {
         return;
     }

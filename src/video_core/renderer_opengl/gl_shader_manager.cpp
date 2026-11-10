@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2022-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <mutex>
@@ -140,8 +140,9 @@ private:
 class TrivialVertexShader {
 public:
     explicit TrivialVertexShader(const Driver& driver, bool separable) : program(separable) {
-        const auto code =
-            GLSL::GenerateTrivialVertexShader(driver.HasClipCullDistance(), separable);
+        // Citra-MMJ compat (DISABLE_CLIP_PLANES): compile shaders without clip distances.
+        const auto code = GLSL::GenerateTrivialVertexShader(
+            driver.HasClipCullDistance() && !Settings::values.disable_clip_coef, separable);
         program.Create(code.c_str(), GL_VERTEX_SHADER);
     }
     GLuint Get() const {
@@ -270,7 +271,9 @@ public:
         }
         profile = Pica::Shader::Profile{
             .has_separable_shaders = separable,
-            .has_clip_planes = driver.HasClipCullDistance(),
+            // Citra-MMJ compat (DISABLE_CLIP_PLANES)
+            .has_clip_planes = driver.HasClipCullDistance() &&
+                              !Settings::values.disable_clip_coef,
             .has_geometry_shader = true,
             .has_custom_border_color = true,
             .has_fragment_shader_interlock = driver.HasArbFragmentShaderInterlock(),
@@ -392,7 +395,9 @@ void ShaderProgramManager::UseTrivialVertexShader() {
 void ShaderProgramManager::UseFixedGeometryShader(const Pica::RegsInternal& regs) {
     PicaFixedGSConfig gs_config(regs);
     ExtraFixedGSConfig extra{
-        .use_clip_planes = driver.HasClipCullDistance(),
+        // Citra-MMJ compat (DISABLE_CLIP_PLANES)
+        .use_clip_planes = driver.HasClipCullDistance() &&
+                           !Settings::values.disable_clip_coef,
         .separable_shader = impl->separable,
     };
 

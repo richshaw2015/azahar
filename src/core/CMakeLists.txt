@@ -1,6 +1,10 @@
-add_library(citra_core STATIC
+add_library(citra_core STATIC EXCLUDE_FROM_ALL
     3ds.h
     arm/arm_interface.h
+    arm/asm/arm_asm_exec.h
+    arm/asm/arm_asm_layout.h
+    arm/exception_handler.cpp
+    arm/exception_handler.h
     arm/dyncom/arm_dyncom.cpp
     arm/dyncom/arm_dyncom.h
     arm/dyncom/arm_dyncom_dec.cpp
@@ -12,6 +16,10 @@ add_library(citra_core STATIC
     arm/dyncom/arm_dyncom_thumb.h
     arm/dyncom/arm_dyncom_trans.cpp
     arm/dyncom/arm_dyncom_trans.h
+    arm/ir/arm_ir_cache.cpp
+    arm/ir/arm_ir_cache.h
+    arm/ir/arm_ir_interpreter.cpp
+    arm/ir/arm_ir_interpreter.h
     arm/exclusive_monitor.cpp
     arm/exclusive_monitor.h
     arm/skyeye_common/arm_regformat.h
@@ -24,6 +32,8 @@ add_library(citra_core STATIC
     arm/skyeye_common/vfp/vfp.h
     arm/skyeye_common/vfp/vfp_helper.h
     arm/skyeye_common/vfp/vfpdouble.cpp
+    arm/skyeye_common/vfp/vfp_host.cpp
+    arm/skyeye_common/vfp/vfp_host.h
     arm/skyeye_common/vfp/vfpinstr.cpp
     arm/skyeye_common/vfp/vfpsingle.cpp
     cheats/cheat_base.cpp
@@ -36,10 +46,6 @@ add_library(citra_core STATIC
     core.h
     core_timing.cpp
     core_timing.h
-    dumping/backend.cpp
-    dumping/backend.h
-    dumping/ffmpeg_backend.cpp
-    dumping/ffmpeg_backend.h
     file_sys/archive_artic.cpp
     file_sys/archive_artic.h
     file_sys/archive_backend.cpp
@@ -126,10 +132,6 @@ add_library(citra_core STATIC
     frontend/image_interface.cpp
     frontend/image_interface.h
     frontend/input.h
-    gdbstub/gdbstub.cpp
-    gdbstub/gdbstub.h
-    gdbstub/hio.cpp
-    gdbstub/hio.h
     hle/applets/applet.cpp
     hle/applets/applet.h
     hle/applets/erreula.cpp
@@ -225,6 +227,8 @@ add_library(citra_core STATIC
     hle/service/am/am_sys.h
     hle/service/am/am_u.cpp
     hle/service/am/am_u.h
+    hle/service/am/trust_chain.cpp
+    hle/service/am/trust_chain.h
     hle/service/apt/applet_manager.cpp
     hle/service/apt/applet_manager.h
     hle/service/apt/apt.cpp
@@ -350,6 +354,8 @@ add_library(citra_core STATIC
     hle/service/ldr_ro/ldr_ro.h
     hle/service/mcu/mcu_hwc.cpp
     hle/service/mcu/mcu_hwc.h
+    hle/service/mcu/mcu_rtc.cpp
+    hle/service/mcu/mcu_rtc.h
     hle/service/mcu/mcu.cpp
     hle/service/mcu/mcu.h
     hle/service/mic/mic_u.cpp
@@ -462,7 +468,6 @@ add_library(citra_core STATIC
     hw/aes/key.h
     hw/ecc.cpp
     hw/ecc.h
-    hw/default_keys.h
     hw/rsa/rsa.cpp
     hw/rsa/rsa.h
     hw/unique_data.cpp
@@ -492,17 +497,31 @@ add_library(citra_core STATIC
     precompiled_headers.h
     savestate.cpp
     savestate.h
-    savestate_data.h
     system_titles.cpp
     system_titles.h
     tracer/citrace.h
+    zip_pass.cpp
+    zip_pass.h
     tracer/recorder.cpp
     tracer/recorder.h
 )
 
+if (ENABLE_BUILTIN_KEYBLOB)
+    target_sources(citra_core PRIVATE hw/default_keys.h)
+endif()
+
+if(ENABLE_FFMPEG)
+    target_sources(citra_core PRIVATE
+        dumping/backend.cpp
+        dumping/backend.h
+        dumping/ffmpeg_backend.cpp
+        dumping/ffmpeg_backend.h
+    )
+endif()
+
 create_target_directory_groups(citra_core)
 
-target_link_libraries(citra_core PUBLIC citra_common PRIVATE audio_core network video_core)
+target_link_libraries(citra_core PUBLIC citra_common PRIVATE audio_core network video_core input_common)
 target_link_libraries(citra_core PRIVATE Boost::boost Boost::serialization Boost::iostreams httplib)
 target_link_libraries(citra_core PUBLIC dds-ktx PRIVATE cryptopp fmt lodepng open_source_archives)
 
@@ -512,6 +531,9 @@ endif()
 
 if (ENABLE_SCRIPTING)
     target_compile_definitions(citra_core PUBLIC -DENABLE_SCRIPTING)
+    if (ENABLE_SCRIPTING_SYNC)
+        target_compile_definitions(citra_core PUBLIC -DENABLE_SCRIPTING_SYNC)
+    endif()
     target_sources(citra_core PRIVATE
         rpc/packet.cpp
         rpc/packet.h
@@ -522,6 +544,21 @@ if (ENABLE_SCRIPTING)
         rpc/udp_server.cpp
         rpc/udp_server.h
     )
+endif()
+
+if (ENABLE_GDBSTUB)
+    target_compile_definitions(citra_core PUBLIC -DENABLE_GDBSTUB)
+    target_sources(citra_core PRIVATE
+        gdbstub/gdbstub.cpp
+        gdbstub/gdbstub.h
+        gdbstub/hio.cpp
+        gdbstub/hio.h
+    )
+endif()
+
+if (ENABLE_FFMPEG)
+    target_link_libraries(citra_core PRIVATE ${FFMPEG_LIBRARIES})
+    target_include_directories(citra_core PRIVATE ${FFMPEG_INCLUDE_DIRS})
 endif()
 
 if ("x86_64" IN_LIST ARCHITECTURE OR "arm64" IN_LIST ARCHITECTURE)
@@ -536,6 +573,29 @@ if ("x86_64" IN_LIST ARCHITECTURE OR "arm64" IN_LIST ARCHITECTURE)
         arm/dynarmic/arm_tick_counts.h
     )
     target_link_libraries(citra_core PRIVATE dynarmic)
+endif()
+
+# The OHOS build passes -DARCHITECTURE=arm64 (string) rather than letting
+# the detection function define ARCHITECTURE_ARM64, so accept both.
+if (ARCHITECTURE_ARM64 OR ARCHITECTURE STREQUAL "arm64")
+    target_sources(citra_core PRIVATE
+        arm/asm/arm_asm_exec.S
+        arm/asm/arm_asm_translate.cpp
+    )
+endif()
+
+# FastInterp's dispatch loop requires GCC/Clang computed goto; MSVC builds
+# fall back to DynCom when the JIT is off.
+if (NOT MSVC)
+    target_compile_definitions(citra_core PUBLIC HAVE_FASTINTERP)
+    target_sources(citra_core PRIVATE
+        arm/fastinterp/fastinterp.cpp
+        arm/fastinterp/fastinterp.h
+        arm/fastinterp/fastinterp_cache.h
+        arm/fastinterp/fastinterp_decode.cpp
+        arm/fastinterp/fastinterp_flags.h
+        arm/fastinterp/fastinterp_types.h
+    )
 endif()
 
 if (CITRA_USE_PRECOMPILED_HEADERS)

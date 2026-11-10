@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -16,6 +16,7 @@
 #include "video_core/renderer_vulkan/vk_rasterizer.h"
 #include "video_core/renderer_vulkan/vk_render_manager.h"
 #include "video_core/renderer_vulkan/vk_scheduler.h"
+#include "video_core/screen_filters.h"
 
 namespace Core {
 class System;
@@ -62,12 +63,17 @@ struct PresentUniformData {
     int screen_id_r = 0;
     int layer = 0;
     int reverse_interlaced = 0;
+    float time = 0.f;
 };
-static_assert(sizeof(PresentUniformData) == 112,
+static_assert(sizeof(PresentUniformData) == 116,
               "PresentUniformData does not structure in shader!");
 
 class RendererVulkan : public VideoCore::RendererBase {
-    static constexpr std::size_t PRESENT_PIPELINES = 3;
+    // Indices 0..2 are the fixed stereo-mode shaders; screen filters occupy the
+    // slots after them.
+    static constexpr std::size_t FILTER_PIPELINES_BASE = 3;
+    static constexpr std::size_t PRESENT_PIPELINES =
+        FILTER_PIPELINES_BASE + VideoCore::SCREEN_FILTERS.size();
 
 public:
     explicit RendererVulkan(Core::System& system, Pica::PicaCore& pica, Frontend::EmuWindow& window,
@@ -80,8 +86,11 @@ public:
 
     void NotifySurfaceChanged(bool second) override;
 
+    u8 GetSampleCount() const override;
+
     void SwapBuffers() override;
     void TryPresent(int timeout_ms, bool is_secondary) override {}
+    void ProcessPendingScreenshot() override;
 
 private:
     void ReloadPipeline(Settings::StereoRenderOption render_3d);
@@ -92,6 +101,7 @@ private:
                                      const Pica::FramebufferConfig& framebuffer);
     void ConfigureRenderPipeline();
     void PrepareRendertarget();
+    void LimitFramesAheadOfGpu() override;
     void RenderScreenshot();
     void RenderScreenshotWithStagingCopy();
     bool TryRenderScreenshotWithHostMemory();
@@ -134,7 +144,6 @@ private:
     DescriptorUpdateQueue update_queue;
     RasterizerVulkan rasterizer;
     std::unique_ptr<PresentWindow> secondary_present_window_ptr;
-
     DescriptorHeap present_heap;
     vk::UniquePipelineLayout present_pipeline_layout;
     std::array<vk::Pipeline, PRESENT_PIPELINES> present_pipelines;
@@ -151,6 +160,10 @@ private:
     vk::ShaderModule cursor_fragment_shader{};
     vk::Pipeline cursor_pipeline{};
     vk::UniquePipelineLayout cursor_pipeline_layout{};
+    bool isSecondaryWindow;
+    bool secondaryWindowEnabled;
+    bool screenRendered;
+    u64 previous_game_frame_tick{};
 };
 
 } // namespace Vulkan

@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -12,6 +12,8 @@
 #include <boost/optional.hpp>
 #include <boost/serialization/version.hpp>
 #include "common/common_types.h"
+#include "common/thread.h"
+#include "common/vector_math.h"
 #include "core/arm/arm_interface.h"
 #include "core/cheats/cheats.h"
 #include "core/hle/service/apt/applet_manager.h"
@@ -98,12 +100,18 @@ public:
                                         /// invalid format
         ErrorLoader_ErrorGbaTitle, ///< Error loading the specified application as it is GBA Virtual
                                    ///< Console
-        ErrorSystemFiles,          ///< Error in finding system files
-        ErrorSavestate,            ///< Error saving or loading
-        ErrorArticDisconnected,    ///< Error when artic base disconnects
-        ErrorN3DSApplication,      ///< Error launching New 3DS application in Old 3DS mode
-        ShutdownRequested,         ///< Emulated program requested a system shutdown
-        ErrorUnknown               ///< Any other error
+        ErrorLoader_ErrorPatches,  ///< Generic error while loading patches for an application
+        ErrorLoader_ErrorPatchesInvalidTitle, ///< A patch was loaded for the incorrect application
+        ErrorSystemFiles,                     ///< Error in finding system files
+        ErrorSavestate,                       ///< Error saving or loading
+        ErrorArticDisconnected,               ///< Error when artic base disconnects
+        ErrorN3DSApplication,        ///< Error launching New 3DS application in Old 3DS mode
+        ErrorCoreExceptionRaised,    ///< The CPU emulation raised an exception
+        ErrorSavestateBuildMismatch, ///< Tried to load savestate from a different Azahar version
+        ShutdownRequested,           ///< Emulated program requested a system shutdown
+        ErrorShaderCacheCrash,       ///< The emulator crashed the last time it built the disk
+                                     ///< shader cache
+        ErrorUnknown                 ///< Any other error
     };
 
     explicit System();
@@ -120,6 +128,26 @@ public:
      * @return Result status, indicating whethor or not the operation succeeded.
      */
     [[nodiscard]] ResultStatus RunLoop(bool tight_loop = true);
+
+    /**
+     * Runs one pass of all the work that must happen on the emulation thread outside of guest
+     * execution (such as GDB or scripting requests). Called by RunLoop between slices and from
+     * the frame limiter.
+     */
+    void ProcessPendingWork();
+
+    /**
+     * Runs ProcessPendingWork until the deadline, sleeping in between until either the deadline
+     * passes or NotifyPendingWork is called. The frame limiter calls this instead of sleeping.
+     * Must be called from the emulation thread.
+     */
+    void ProcessPendingWorkUntil(std::chrono::steady_clock::time_point deadline);
+
+    /**
+     * Wakes up the emulation thread if it is waiting in ProcessPendingWorkUntil, so that newly
+     * queued work is processed right away. This function is thread safe.
+     */
+    void NotifyPendingWork();
 
     /**
      * Step the CPU one instruction
@@ -189,6 +217,9 @@ public:
 
     double GetStableFrameTimeScale();
 
+    /// Excludes suspended time from the next frame-time measurements.
+    void ResetPerfStatsFrameTimeBaseline();
+
     /**
      * Gets a reference to the emulated CPU.
      * @returns A reference to the emulated CPU.
@@ -196,6 +227,10 @@ public:
 
     [[nodiscard]] ARM_Interface& GetRunningCore() {
         return *running_core;
+    };
+
+    [[nodiscard]] ARM_Interface* GetRunningCoreOrNull() {
+        return running_core;
     };
 
     /**
@@ -338,9 +373,14 @@ public:
     }
 
     /// Function for checking OS microphone permissions.
-
     void RegisterMicPermissionCheck(const std::function<bool()>& permission_func) {
         mic_permission_func = permission_func;
+    }
+
+    /// Fires the callback when System::Init() is called. Called with
+    /// true when initialization starts, and with false once its done.
+    void RegisterOnInitCallback(const std::function<void(bool)>& init_callback) {
+        on_init_callback = init_callback;
     }
 
     [[nodiscard]] bool HasMicPermission() {
@@ -381,6 +421,53 @@ public:
 
     bool IsInitialSetup();
 
+    // This returns the 3DS notification LED RGB value.
+    // Keep in mind this is used as a PWM duty cycle on real HW,
+    // so the percieved LED brightness is not linear.
+    const Common::Vec3<u8>& GetInfoLEDColor() const {
+        return info_led_color;
+    }
+
+    void SetInfoLEDColor(const Common::Vec3<u8>& color) {
+        if (color == info_led_color)
+            return;
+
+        info_led_color = color;
+        if (info_led_color_changed) {
+            info_led_color_changed();
+        }
+    }
+
+    void RegisterInfoLEDColorChanged(const std::function<void()>& func) {
+        info_led_color_changed = func;
+    }
+
+    void SetDebugNextProcessFlag() {
+        debug_next_process = true;
+    }
+
+    bool GetDebugNextProcessFlag() {
+        return debug_next_process;
+    }
+
+    void ClearDebugNextProcessFlag() {
+        debug_next_process = false;
+    }
+
+    void DebugUnscheduleAllThreadsFromFrontend(bool unschedule);
+
+    void SetGDBPortOverride(int port) {
+        override_gdb_port = port;
+    }
+
+    void RegisterCoreLoopThreadId() {
+        core_loop_thread_id = std::this_thread::get_id();
+    }
+
+    std::thread::id GetCoreLoopThreadId() {
+        return core_loop_thread_id;
+    }
+
 private:
     /**
      * Initialize the emulated system.
@@ -395,6 +482,10 @@ private:
 
     /// Reschedule the core emulation
     void Reschedule();
+
+    /// Registers the bundle being run, if any, and scans the installed titles in AM. Done at boot
+    /// and after a savestate load, which creates AM again.
+    void LoadAMTitles();
 
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
@@ -413,7 +504,7 @@ private:
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
 
     /// When true, signals that a reschedule should happen
-    bool reschedule_pending{};
+    bool curr_core_reschedule_pending{};
 
     std::unique_ptr<VideoCore::GPU> gpu;
 
@@ -455,6 +546,8 @@ private:
 private:
     static System s_instance;
 
+    Common::Event pending_work_event;
+
     std::atomic_bool is_powered_on{};
 
     SaveStateStatus save_state_status = SaveStateStatus::NONE;
@@ -479,6 +572,8 @@ private:
     std::function<bool()> mic_permission_func;
     bool mic_permission_granted = false;
 
+    std::function<void(bool)> on_init_callback;
+
     boost::optional<Service::APT::DeliverArg> restore_deliver_arg;
     boost::optional<Service::APT::SysMenuArg> restore_sys_menu_arg;
     boost::optional<Service::PLGLDR::PLG_LDR::PluginLoaderContext> restore_plugin_context;
@@ -486,6 +581,14 @@ private:
     std::vector<u8> restore_wireless_reboot_info;
 
     std::vector<u64> lle_modules;
+
+    Common::Vec3<u8> info_led_color;
+    std::function<void()> info_led_color_changed;
+
+    bool debug_next_process;
+    int override_gdb_port = -1;
+
+    std::thread::id core_loop_thread_id{};
 
     friend class boost::serialization::access;
     template <typename Archive>

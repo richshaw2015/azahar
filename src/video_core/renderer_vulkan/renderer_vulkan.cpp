@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/assert.h"
 #include "common/logging/log.h"
@@ -24,7 +24,6 @@
 #include "video_core/host_shaders/vulkan_cursor_vert.h"
 
 #include <vk_mem_alloc.h>
-
 #if defined(__APPLE__) && !defined(HAVE_LIBRETRO)
 #include "common/apple_utils.h"
 #endif
@@ -130,10 +129,21 @@ RendererVulkan::RendererVulkan(Core::System& system, Pica::PicaCore& pica_,
     CompileShaders();
     BuildLayouts();
     BuildPipelines();
+    // Apply the initial screen-filter/stereo pipeline selection right away; a
+    // filter configured before boot would otherwise not take effect until the
+    // next shader reload.
+    ReloadPipeline(Settings::values.render_3d.GetValue());
     if (secondary_window) {
         secondary_present_window_ptr = std::make_unique<PresentWindow>(
             *secondary_window, instance, scheduler, IsLowRefreshRate());
     }
+}
+
+u8 RendererVulkan::GetSampleCount() const {
+    // Clamp to single-sample when the device lacks full MSAA support, so a MSAA
+    // value set via config cannot create multisampled surfaces the backend
+    // cannot fully handle (e.g. missing shaderStorageImageMultisample).
+    return instance.IsMultiSampleSupported() ? VideoCore::RendererBase::GetSampleCount() : u8{1};
 }
 
 RendererVulkan::~RendererVulkan() {
@@ -187,7 +197,14 @@ void RendererVulkan::PrepareRendertarget() {
 }
 
 void RendererVulkan::PrepareDraw(Frame* frame, const Layout::FramebufferLayout& layout) {
-    const auto sampler = present_samplers[!Settings::values.filter_mode.GetValue()];
+    // Screen-filter pipelines have a required sampling mode; the plain present
+    // pipeline follows the user's filter_mode setting.
+    const int filter_index =
+        static_cast<int>(current_pipeline) - static_cast<int>(FILTER_PIPELINES_BASE);
+    const bool linear = filter_index >= 0
+                            ? VideoCore::SCREEN_FILTERS[filter_index].linear_sampling
+                            : Settings::values.filter_mode.GetValue();
+    const auto sampler = present_samplers[linear ? 0 : 1];
     const auto present_set = present_heap.Commit();
     for (u32 index = 0; index < screen_infos.size(); index++) {
         update_queue.AddImageSampler(present_set, 0, index, screen_infos[index].image_view,
@@ -237,23 +254,29 @@ void RendererVulkan::PrepareDraw(Frame* frame, const Layout::FramebufferLayout& 
 
 void RendererVulkan::RenderToWindow(PresentWindow& window, const Layout::FramebufferLayout& layout,
                                     bool flipped) {
-    Frame* frame = window.GetRenderFrame();
+    if (!Settings::values.use_skip_duplicate_frames.GetValue() ||
+        Core::PerfStats::game_frames_updated) {
+        Frame* frame = window.GetRenderFrame();
 
-    if (layout.width != frame->width || layout.height != frame->height) {
-        window.WaitPresent();
-        scheduler.Finish();
-        window.RecreateFrame(frame, layout.width, layout.height);
+        if (layout.width != frame->width || layout.height != frame->height) {
+            window.WaitPresent();
+            scheduler.Finish();
+            window.RecreateFrame(frame, layout.width, layout.height);
+        }
+
+        clear_color.float32[0] = Settings::values.bg_red.GetValue();
+        clear_color.float32[1] = Settings::values.bg_green.GetValue();
+        clear_color.float32[2] = Settings::values.bg_blue.GetValue();
+        clear_color.float32[3] = 1.0f;
+
+        DrawScreens(frame, layout, flipped);
+        scheduler.Flush(frame->render_ready);
+        window.Present(frame);
+        if ((secondaryWindowEnabled && isSecondaryWindow) || (!secondaryWindowEnabled)) {
+            Core::PerfStats::game_frames_updated = false;
+            screenRendered = true;
+        }
     }
-
-    clear_color.float32[0] = Settings::values.bg_red.GetValue();
-    clear_color.float32[1] = Settings::values.bg_green.GetValue();
-    clear_color.float32[2] = Settings::values.bg_blue.GetValue();
-    clear_color.float32[3] = 1.0f;
-
-    DrawScreens(frame, layout, flipped);
-    scheduler.Flush(frame->render_ready);
-
-    window.Present(frame);
 }
 
 void RendererVulkan::LoadFBToScreenInfo(const Pica::FramebufferConfig& framebuffer,
@@ -301,24 +324,36 @@ void RendererVulkan::CompileShaders() {
     present_shaders[2] = Compile(HostShaders::VULKAN_PRESENT_INTERLACED_FRAG,
                                  vk::ShaderStageFlagBits::eFragment, device, preamble);
 
+    const std::string filter_preamble =
+        VideoCore::ScreenFilterVulkanPreamble(instance.IsImageArrayDynamicIndexSupported());
+    for (u32 i = 0; i < VideoCore::SCREEN_FILTERS.size(); ++i) {
+        present_shaders[FILTER_PIPELINES_BASE + i] =
+            Compile(VideoCore::SCREEN_FILTERS[i].glsl, vk::ShaderStageFlagBits::eFragment, device,
+                    filter_preamble);
+    }
+
     cursor_vertex_shader =
         Compile(HostShaders::VULKAN_CURSOR_VERT, vk::ShaderStageFlagBits::eVertex, device);
     cursor_fragment_shader =
         Compile(HostShaders::VULKAN_CURSOR_FRAG, vk::ShaderStageFlagBits::eFragment, device);
 
-    auto properties = instance.GetPhysicalDevice().getProperties();
     for (std::size_t i = 0; i < present_samplers.size(); i++) {
-        const vk::Filter filter_mode = i == 0 ? vk::Filter::eLinear : vk::Filter::eNearest;
+        const bool linear = i == 0;
+        const vk::Filter filter_mode = linear ? vk::Filter::eLinear : vk::Filter::eNearest;
+        const vk::SamplerMipmapMode mipmap_mode =
+            linear ? vk::SamplerMipmapMode::eLinear : vk::SamplerMipmapMode::eNearest;
         const vk::SamplerCreateInfo sampler_info = {
             .magFilter = filter_mode,
             .minFilter = filter_mode,
-            .mipmapMode = vk::SamplerMipmapMode::eLinear,
+            .mipmapMode = mipmap_mode,
             .addressModeU = vk::SamplerAddressMode::eClampToEdge,
             .addressModeV = vk::SamplerAddressMode::eClampToEdge,
-            .anisotropyEnable = instance.IsAnisotropicFilteringSupported(),
-            .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+            .anisotropyEnable = VK_FALSE,
+            .maxAnisotropy = 1.0f,
             .compareEnable = false,
             .compareOp = vk::CompareOp::eAlways,
+            .minLod = 0.0f,
+            .maxLod = 0.0f,
             .borderColor = vk::BorderColor::eIntOpaqueBlack,
             .unnormalizedCoordinates = false,
         };
@@ -660,6 +695,11 @@ void RendererVulkan::ConfigureFramebufferTexture(TextureInfo& texture,
 }
 
 void RendererVulkan::FillScreen(Common::Vec3<u8> color, const TextureInfo& texture) {
+    // When loading some 3GX extensions, FillScreen may be called before texture image is available
+    if (!texture.image) {
+        return;
+    }
+
     const vk::ClearColorValue clear_color = {
         .float32 =
             std::array{
@@ -724,9 +764,14 @@ void RendererVulkan::ReloadPipeline(Settings::StereoRenderOption render_3d) {
         current_pipeline = 2;
         draw_info.reverse_interlaced = render_3d == Settings::StereoRenderOption::ReverseInterlaced;
         break;
-    default:
-        current_pipeline = 0;
+    default: {
+        const int filter_index =
+            VideoCore::ScreenFilterIndex(Settings::values.pp_shader_name.GetValue());
+        current_pipeline = filter_index >= 0
+                               ? static_cast<u32>(FILTER_PIPELINES_BASE + filter_index)
+                               : 0;
         break;
+    }
     }
 }
 
@@ -1015,6 +1060,7 @@ void RendererVulkan::DrawScreens(Frame* frame, const Layout::FramebufferLayout& 
     draw_info.modelview = MakeOrthographicMatrix(layout.width, layout.height);
 
     draw_info.layer = 0;
+    draw_info.time = VideoCore::ScreenFilterTime();
 
     // Apply the initial default opacity value; Needed to avoid flickering
     ApplySecondLayerOpacity(1.0f);
@@ -1037,7 +1083,7 @@ void RendererVulkan::DrawScreens(Frame* frame, const Layout::FramebufferLayout& 
 
     if (layout.additional_screen_enabled) {
         const auto& additional_screen = layout.additional_screen;
-        if (!Settings::values.swap_screen.GetValue()) {
+        if (!layout.additional_screen_is_bottom) {
             DrawTopScreen(layout, additional_screen);
         } else {
             DrawBottomScreen(layout, additional_screen);
@@ -1111,11 +1157,39 @@ void RendererVulkan::DrawCursor(const Layout::FramebufferLayout& layout) {
 
 void RendererVulkan::SwapBuffers() {
     system.perf_stats->StartSwap();
+    screenRendered = false;
+#if !defined(ANDROID) && !defined(OHOS) && !defined(MOBILE_DEVICE)
+    if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::SeparateWindows) {
+        ASSERT(secondary_window);
+        secondaryWindowEnabled = true;
+    } else {
+        secondaryWindowEnabled = false;
+    }
+#endif
+
+#if defined(ANDROID) || defined(OHOS) || defined(MOBILE_DEVICE)
+    if (secondary_window) {
+        secondaryWindowEnabled = true;
+    } else {
+        secondaryWindowEnabled = false;
+    }
+#endif
+
     const Layout::FramebufferLayout& layout = render_window.GetFramebufferLayout();
     PrepareRendertarget();
     RenderScreenshot();
+    isSecondaryWindow = false;
+#if defined(OHOS)
+    // OHOS 暂停时 surface 被置空（detach）：此时泵帧跑出的 SwapBuffers 不允许 present，
+    // 否则塌缩后的 framebuffer layout 会拉伸铺满仍被合成的旧 swapchain，
+    // 把暂停画面（背景游戏画面）的比例与位置改写
+    if (render_window.GetWindowInfo().render_surface) {
+        RenderToWindow(main_present_window, layout, false);
+    }
+#else
     RenderToWindow(main_present_window, layout, false);
-#if !defined(ANDROID) && !defined(OHOS_PLATFORM)
+#endif
+#if !defined(ANDROID) && !defined(OHOS) && !defined(MOBILE_DEVICE)
     if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::SeparateWindows) {
         ASSERT(secondary_window);
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();
@@ -1123,26 +1197,44 @@ void RendererVulkan::SwapBuffers() {
             secondary_present_window_ptr = std::make_unique<PresentWindow>(
                 *secondary_window, instance, scheduler, IsLowRefreshRate());
         }
+        isSecondaryWindow = true;
         RenderToWindow(*secondary_present_window_ptr, secondary_layout, false);
         secondary_window->PollEvents();
     }
 #endif
 
-#if defined(ANDROID) || defined(OHOS_PLATFORM)
+#if defined(ANDROID) || defined(OHOS) || defined(MOBILE_DEVICE)
     if (secondary_window) {
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();
         if (!secondary_present_window_ptr) {
             secondary_present_window_ptr = std::make_unique<PresentWindow>(
                 *secondary_window, instance, scheduler, IsLowRefreshRate());
         }
+        isSecondaryWindow = true;
+#if defined(OHOS)
+        if (secondary_window->GetWindowInfo().render_surface) {
+            RenderToWindow(*secondary_present_window_ptr, secondary_layout, false);
+        }
+#else
         RenderToWindow(*secondary_present_window_ptr, secondary_layout, false);
+#endif
         secondary_window->PollEvents();
     }
 #endif
+    if (!screenRendered) {
+        scheduler.Finish();
+    }
 
     system.perf_stats->EndSwap();
     rasterizer.TickFrame();
     EndFrame();
+}
+
+void RendererVulkan::LimitFramesAheadOfGpu() {
+    if (previous_game_frame_tick != 0) {
+        scheduler.Wait(previous_game_frame_tick);
+    }
+    previous_game_frame_tick = scheduler.CurrentTick() - 1;
 }
 
 void RendererVulkan::RenderScreenshot() {
@@ -1155,6 +1247,12 @@ void RendererVulkan::RenderScreenshot() {
     }
 
     settings.screenshot_complete_callback(false);
+}
+
+void RendererVulkan::ProcessPendingScreenshot() {
+    // 暂停时 emu 线程驻停、渲染器状态被本调用线程独占，可直接复用 SwapBuffers
+    // 内部的截图取帧路径（对齐 nds 在图形层取帧、不依赖模拟线程出新帧的做法）
+    RenderScreenshot();
 }
 
 void RendererVulkan::RenderScreenshotWithStagingCopy() {
@@ -1267,6 +1365,15 @@ void RendererVulkan::RenderScreenshotWithStagingCopy() {
 
     // Copy backing image data to the QImage screenshot buffer
     std::memcpy(settings.screenshot_bits, alloc_info.pMappedData, staging_buffer_info.size);
+
+    // QImage::Format_RGB32 expects BGRA byte order. If the swapchain format is RGBA,
+    // swap R and B channels so the screenshot colors are correct.
+    if (main_present_window.GetSurfaceFormat() == vk::Format::eR8G8B8A8Unorm) {
+        u8* pixels = static_cast<u8*>(settings.screenshot_bits);
+        for (u32 i = 0; i < width * height; i++) {
+            std::swap(pixels[i * 4 + 0], pixels[i * 4 + 2]);
+        }
+    }
 
     // Destroy allocated resources
     vmaDestroyBuffer(instance.GetAllocator(), staging_buffer, allocation);
@@ -1422,6 +1529,15 @@ bool RendererVulkan::TryRenderScreenshotWithHostMemory() {
 
     // Ensure the copy is fully completed before saving the screenshot
     scheduler.Finish();
+
+    // QImage::Format_RGB32 expects BGRA byte order. If the swapchain format is RGBA,
+    // swap R and B channels so the screenshot colors are correct.
+    if (main_present_window.GetSurfaceFormat() == vk::Format::eR8G8B8A8Unorm) {
+        u8* pixels = static_cast<u8*>(settings.screenshot_bits);
+        for (u32 i = 0; i < width * height; i++) {
+            std::swap(pixels[i * 4 + 0], pixels[i * 4 + 2]);
+        }
+    }
 
     // Image data has been copied directly to host memory
     device.destroyFramebuffer(frame.framebuffer);

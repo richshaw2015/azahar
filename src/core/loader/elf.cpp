@@ -1,10 +1,10 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 // Copyright 2013 Dolphin Emulator Project / 2014 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <cstring>
 #include <memory>
@@ -356,11 +356,11 @@ SectionID ElfReader::GetSectionByName(const char* name, int firstSection) const 
 
 namespace Loader {
 
-FileType AppLoader_ELF::IdentifyType(FileUtil::IOFile* file) {
+FileType AppLoader_ELF::IdentifyType(FileUtil::IOFileBase* file) {
     u32 magic{};
 
     if (file->Seek(0, SEEK_SET) && 1 == file->ReadArray<u32>(&magic, 1)) {
-        if (MakeMagic('\x7f', 'E', 'L', 'F') == magic)
+        if (FileUtil::MakeMagic('\x7f', 'E', 'L', 'F') == magic)
             return FileType::ELF;
     }
 
@@ -392,6 +392,8 @@ ResultStatus AppLoader_ELF::Load(std::shared_ptr<Kernel::Process>& process) {
     // Attach the default resource limit (APPLICATION) to the process
     process->resource_limit =
         system.Kernel().ResourceLimit().GetForCategory(Kernel::ResourceLimitCategory::Application);
+
+    process->resource_limit->ApplyAppMaxCPUSetting(process, 1, 89);
 
     process->Run(48, Kernel::DEFAULT_STACK_SIZE);
 

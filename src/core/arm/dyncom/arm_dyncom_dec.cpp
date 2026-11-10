@@ -1,8 +1,11 @@
 // Copyright 2012 Michael Kang, 2014 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "core/arm/dyncom/arm_dyncom_dec.h"
+
+#include <string_view>
+
 #include "core/arm/skyeye_common/armsupp.h"
 
 namespace {
@@ -500,4 +503,34 @@ ARMDecodeStatus DecodeARMInstruction(u32 instr, int* idx) {
         }
     }
     return ret;
+}
+
+bool IsARMInstructionDecodeSafe(u32 instr, int idx) {
+    constexpr int instruction_count = sizeof(arm_instruction) / sizeof(InstructionSetEncodingItem);
+    if (idx < 0 || idx >= instruction_count) {
+        return false;
+    }
+
+    const std::string_view name = arm_instruction[idx].name;
+    if (name == "vpush" || name == "vstm" || name == "vpop" || name == "vldm") {
+        const bool single = ((instr >> 8) & 1) == 0;
+        const u32 first_register =
+            single ? (((instr >> 12) & 0xF) << 1) | ((instr >> 22) & 1)
+                   : ((((instr >> 12) & 0xF) | (((instr >> 22) & 1) << 4)) * 2);
+        const u32 immediate = instr & 0xFF;
+        const bool count_matches_bytes = single || (immediate & 1) == 0;
+        const u32 register_words = single ? immediate : (immediate >> 1) * 2;
+        return count_matches_bytes && register_words != 0 &&
+               first_register + register_words <= 64;
+    }
+    if (name == "ldrd" || name == "strd") {
+        return ((instr >> 12) & 0xF) != 15;
+    }
+    if (name == "ldrexd") {
+        return ((instr >> 12) & 0xF) != 15;
+    }
+    if (name == "strexd") {
+        return (instr & 0xF) != 15;
+    }
+    return true;
 }

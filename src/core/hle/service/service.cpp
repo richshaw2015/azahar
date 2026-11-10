@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <fmt/format.h>
@@ -51,6 +51,7 @@
 #include "core/hle/service/pxi/pxi.h"
 #include "core/hle/service/qtm/qtm.h"
 #include "core/hle/service/service.h"
+#include "core/hw/unique_data.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hle/service/sm/srv.h"
 #include "core/hle/service/soc/soc_u.h"
@@ -69,7 +70,7 @@ const std::array<ServiceModuleInfo, 41> service_module_map{
      {"AC", 0x00040130'00002402, AC::InstallInterfaces, false},
      {"ACT", 0x00040130'00003802, ACT::InstallInterfaces, true},
      {"AM", 0x00040130'00001502, AM::InstallInterfaces, false},
-     {"BOSS", 0x00040130'00003402, BOSS::InstallInterfaces, false},
+     {"BOSS", 0x00040130'00003402, BOSS::InstallInterfaces, true},
      {"CAM", 0x00040130'00001602,
       [](Core::System& system) {
           CAM::InstallInterfaces(system);
@@ -178,7 +179,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
 void ServiceFrameworkBase::HandleSyncRequest(Kernel::HLERequestContext& context) {
     auto itr = handlers.find(context.CommandHeader().command_id.Value());
     const FunctionInfoBase* info = itr == handlers.end() ? nullptr : &itr->second;
-    if (info == nullptr || !info->implemented) {
+    if (info == nullptr || info->handler_callback == nullptr) {
         context.ReportUnimplemented();
         return ReportUnimplementedFunction(context.CommandBuffer(), info);
     }
@@ -202,9 +203,21 @@ static bool AttemptLLE(const ServiceModuleInfo& service_module, u64 loading_titl
         Common::Hacks::HackType::ONLINE_LLE_REQUIRED, loading_titleid,
         Settings::values.enable_required_online_lle_modules.GetValue());
 
-    if (!Settings::values.lle_modules.at(service_module.name) &&
+    const auto lle_module = Settings::values.lle_modules.find(service_module.name);
+    const bool use_lle =
+        lle_module != Settings::values.lle_modules.end() && lle_module->second;
+
+    if (!use_lle &&
         (!enable_recommended_lle_modules || !service_module.is_online_recommended))
         return false;
+
+    // AzaharPlus: skip LLE modules when no console data exists to avoid crashes
+    if (!HW::UniqueData::IsFullConsoleLinked()) {
+        LOG_ERROR(Service, "Service module \"{}\" ignored because !IsFullConsoleLinked()",
+                  service_module.name);
+        return false;
+    }
+
     std::unique_ptr<Loader::AppLoader> loader =
         Loader::GetLoader(AM::GetTitleContentPath(FS::MediaType::NAND, service_module.title_id));
     if (!loader) {

@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2017-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -8,6 +8,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
+#include <functional>
 #include <mutex>
 #include "common/bit_field.h"
 #include "common/common_types.h"
@@ -69,6 +70,14 @@ public:
         double time_remaining;
         /// Ratio of walltime / emulated time elapsed
         double emulation_speed;
+        double ir_mips{};
+        double ir_average_block_size{};
+        double ir_dense_cache_hit_rate{};
+        double ir_translations_per_second{};
+        double ir_fallbacks_per_second{};
+        double hardware_draw_rate{};
+        double geometry_cache_hit_rate{};
+        double time_host_gpu{};
         /// Artic base bytes per second
         double artic_transmitted = 0;
         /// Artic base events
@@ -85,7 +94,14 @@ public:
     void EndSwap();
     void BeginSystemFrame();
     void EndSystemFrame();
+    /// Resets active frame timing origins without changing the last valid frame durations.
+    void ResetFrameTimeBaseline();
     void EndGameFrame();
+    void ReportIRExecution(u64 instructions, u64 blocks, u64 cache_lookups, u64 dense_cache_hits,
+                           u64 translations, u64 fallbacks);
+    void ReportPicaDraw(bool hardware_accelerated);
+    void ReportGeometryCache(bool hit);
+    void ReportHostGpuTime(u64 nanoseconds);
 
     Results GetAndResetStats(std::chrono::microseconds current_system_time_us);
 
@@ -95,6 +111,12 @@ public:
      * Returns the arithmetic mean of all frametime values stored in the performance history.
      */
     double GetMeanFrametime() const;
+
+    /// Gets the host time spent on the last system frame, without the frame limiter wait.
+    Clock::duration GetLastSystemFrameTime() const;
+
+    /// Gets the number of game frames since the emulation started.
+    u64 GetGameFrameCount() const;
 
     /**
      * Gets the ratio between walltime and the emulated time of the previous system frame. This is
@@ -120,6 +142,8 @@ public:
             artic_events.Set(event, set);
         }
     }
+    /// Boolean representing whether game_frames has been updated since last time it was presented
+    static bool game_frames_updated;
 
 private:
     mutable std::mutex object_mutex;
@@ -143,6 +167,8 @@ private:
     u32 system_frames = 0;
     /// Cumulative number of game frames (GSP frame submissions) since last reset
     u32 game_frames = 0;
+    /// Number of game frames since the emulation started, without resets.
+    u64 total_game_frames = 0;
     /// Cumulative number of transmitted artic base traffic
     std::atomic<u32> artic_transmitted = 0;
     // System events that affect performance
@@ -156,6 +182,8 @@ private:
     Clock::time_point frame_begin = reset_point;
     /// Total visible duration (including frame-limiting, etc.) of the previous system frame
     Clock::duration previous_frame_length = Clock::duration::zero();
+    /// Duration of the last system frame, from BeginSystemFrame to EndSystemFrame
+    Clock::duration last_system_frame_time = Clock::duration::zero();
     /// Visible duration for the frame prior to previous_frame_length
     Clock::duration previous_previous_frame_length = Clock::duration::zero();
 
@@ -170,6 +198,19 @@ private:
 
     Clock::time_point start_swap_time = reset_point;
     Clock::duration accumulated_swap_time = Clock::duration::zero();
+
+    std::atomic<u64> ir_instructions{};
+    std::atomic<u64> ir_blocks{};
+    std::atomic<u64> ir_cache_lookups{};
+    std::atomic<u64> ir_dense_cache_hits{};
+    std::atomic<u64> ir_translations{};
+    std::atomic<u64> ir_fallbacks{};
+    std::atomic<u64> pica_draws{};
+    std::atomic<u64> hardware_draws{};
+    std::atomic<u64> geometry_cache_probes{};
+    std::atomic<u64> geometry_cache_hits{};
+    std::atomic<u64> host_gpu_nanoseconds{};
+    std::atomic<u64> host_gpu_samples{};
 
     /// Last recorded performance statistics.
     Results last_stats;
@@ -191,7 +232,20 @@ public:
     void AdvanceFrame();
     void WaitOnce();
 
+    using WaitCallback = std::function<void(std::chrono::steady_clock::time_point deadline)>;
+
+    /**
+     * Sets a function the emulation thread calls instead of sleeping when the frame limiter
+     * blocks (frame limiting sleeps and frame advance waits). It must return at the deadline,
+     * and may do work on the emulation thread while waiting.
+     */
+    void SetWaitCallback(WaitCallback callback);
+
 private:
+    void WaitForFrameAdvance();
+
+    WaitCallback wait_callback;
+
     /// Emulated system time (in microseconds) at the last limiter invocation
     std::chrono::microseconds previous_system_time_us{0};
     /// Walltime at the last limiter invocation

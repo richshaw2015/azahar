@@ -1,41 +1,54 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 package org.citra.citra_emu.features.settings.model.view
 
-import org.citra.citra_emu.features.settings.model.AbstractBooleanSetting
-import org.citra.citra_emu.features.settings.model.AbstractIntSetting
+import androidx.annotation.StringRes
+import org.citra.citra_emu.R
 import org.citra.citra_emu.features.settings.model.AbstractSetting
+import org.citra.citra_emu.features.settings.model.CitraSettings
 
 class SwitchSetting(
-    setting: AbstractBooleanSetting,
+    val settings: CitraSettings,
+    setting: AbstractSetting<Boolean>?,
     titleId: Int,
     descriptionId: Int,
     val key: String? = null,
     val defaultValue: Boolean = false,
-    override var isEnabled: Boolean = true
+    override var isEnabled: Boolean = true,
+    private val getValue: (() -> Boolean)? = null,
+    private val setValue: ((Boolean) -> Unit)? = null,
+    @StringRes override var disabledMessage: Int =
+        R.string.setting_disabled_description_incompatible_setting
 ) : SettingsItem(setting, titleId, descriptionId) {
     override val type = TYPE_SWITCH
 
     val isChecked: Boolean
         get() {
+            if (getValue != null) {
+                return getValue.invoke()
+            }
             if (setting == null) {
                 return defaultValue
             }
-            val setting = setting as AbstractBooleanSetting
-            return setting.boolean
+            @Suppress("UNCHECKED_CAST")
+            val setting = setting as AbstractSetting<Boolean>
+            return settings.get(setting)
         }
 
     /**
      * Write a value to the backing boolean.
      *
      * @param checked Pretty self explanatory.
-     * @return the existing setting with the new value applied.
      */
-    fun setChecked(checked: Boolean): AbstractBooleanSetting {
-        val setting = setting as AbstractBooleanSetting
-        setting.boolean = checked
-        return setting
+    fun setChecked(checked: Boolean) {
+        if (setValue != null) {
+            setValue(checked)
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            val setting = setting as AbstractSetting<Boolean>
+            settings.setBySettingsContext(setting, checked)
+        }
     }
 }

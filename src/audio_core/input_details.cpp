@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <memory>
@@ -18,27 +18,28 @@
 #ifdef HAVE_LIBRETRO
 #include "audio_core/libretro_input.h"
 #endif
-#ifdef HAVE_OHOS_INPUT
-#include "ohos_mic_input.h"
+#ifdef HAVE_OHOS_AUDIO
+#include "audio_core/blow_input.h"
+#include "audio_core/ohos_input.h"
 #endif
 #include "common/logging/log.h"
 #include "core/core.h"
 
 namespace AudioCore {
 namespace {
-// sink_details is ordered in terms of desirability, with the best choice at the top.
+// input_details is ordered in terms of desirability, with the best choice at the top.
 constexpr std::array input_details = {
-#ifdef HAVE_OHOS_INPUT
-    InputDetails{InputType::OhosRealMic, "Real Device (OHAudio)", true,
+#ifdef HAVE_OHOS_AUDIO
+    InputDetails{InputType::Ohos, "Real Device (OHOS)", true,
                  [](Core::System& system, std::string_view device_id) -> std::unique_ptr<Input> {
                      if (!system.HasMicPermission()) {
                          LOG_WARNING(Audio,
                                      "Microphone permission denied, falling back to null input.");
                          return std::make_unique<NullInput>();
                      }
-                     return std::make_unique<OhosMicInput>(std::string(device_id));
+                     return std::make_unique<OhosInput>();
                  },
-                 &ListOhosMicInputDevices},
+                 &ListOhosInputDevices},
 #endif
 #ifdef HAVE_LIBRETRO
     InputDetails{InputType::LibRetro, "Real Device (LibRetro)", true,
@@ -75,6 +76,14 @@ constexpr std::array input_details = {
                      return std::make_unique<OpenALInput>(std::string(device_id));
                  },
                  &ListOpenALInputDevices},
+#endif
+#ifdef HAVE_OHOS_AUDIO
+    // 吹气模拟（对齐 melonDS MicSource::Blow）：模拟源，无需麦克风权限
+    InputDetails{InputType::Blow, "Blow Simulation", false,
+                 [](Core::System& system, std::string_view device_id) -> std::unique_ptr<Input> {
+                     return std::make_unique<BlowInput>();
+                 },
+                 [] { return std::vector<std::string>{"Blow Simulation"}; }},
 #endif
     InputDetails{InputType::Static, "Static Noise", false,
                  [](Core::System& system, std::string_view device_id) -> std::unique_ptr<Input> {

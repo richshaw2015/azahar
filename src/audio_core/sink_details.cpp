@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2016-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <memory>
@@ -21,7 +21,7 @@
 #include "audio_core/openal_sink.h"
 #endif
 #ifdef HAVE_OHOS_AUDIO
-#include "citra_ohos_audio_sink.h"
+#include "audio_core/ohos_sink.h"
 #endif
 #include "common/logging/log.h"
 
@@ -30,11 +30,11 @@ namespace {
 // sink_details is ordered in terms of desirability, with the best choice at the top.
 constexpr std::array sink_details = {
 #ifdef HAVE_OHOS_AUDIO
-    SinkDetails{SinkType::Cubeb, "OHAudio",
+    SinkDetails{SinkType::Ohos, "OHAudio",
                 [](std::string_view device_id) -> std::unique_ptr<Sink> {
-                    return std::make_unique<OhosAudioSink>(std::string(device_id));
+                    return std::make_unique<OhosSink>(device_id);
                 },
-                &ListOhosAudioDevices},
+                &ListOhosSinkDevices},
 #endif
 #ifdef HAVE_LIBRETRO
     SinkDetails{SinkType::LibRetro, "libretro",

@@ -1,6 +1,6 @@
 // Copyright 2017 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <atomic>
@@ -12,6 +12,13 @@
 #include "enet/enet.h"
 #include "network/packet.h"
 #include "network/room_member.h"
+#include "common/file_util.h"
+#include "core/zip_pass.h"
+
+// AzaharPlus: local decl keeps ncch.h (heavy deps) out of the network library
+namespace Loader {
+std::string getProgramId();
+}
 
 namespace Network {
 
@@ -77,6 +84,9 @@ public:
      * @param packet The data to send
      */
     void Send(Packet&& packet);
+
+    // AzaharPlus: ZipPass-over-room protocol handlers
+    void HandleAzaharPlusSpecificPacket(const ENetEvent* event);
 
     /**
      * Sends a request to the server, asking for permission to join a room with the specified
@@ -234,6 +244,10 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 case IdModNoSuchUser:
                     SetError(Error::NoSuchUser);
                     break;
+                // AzaharPlus: ZipPass-over-room protocol
+                case idAzaharPlusSpecific:
+                    HandleAzaharPlusSpecificPacket(&event);
+                    break;
                 }
                 enet_packet_destroy(event.packet);
                 break;
@@ -270,6 +284,150 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
 
 void RoomMember::RoomMemberImpl::StartLoop() {
     loop_thread = std::make_unique<std::thread>(&RoomMember::RoomMemberImpl::MemberLoop, this);
+}
+
+void RoomMember::RoomMemberImpl::HandleAzaharPlusSpecificPacket(const ENetEvent* event) {
+    if (event->packet->dataLength < 2) {
+        LOG_WARNING(Network, "AzaharPlus packet too short: {}", event->packet->dataLength);
+        return;
+    }
+
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
+    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
+
+    u8 subType = 0;
+    if (!(packet >> subType)) {
+        LOG_WARNING(Network, "Failed to read AzaharPlus packet subtype");
+        return;
+    }
+
+    switch (subType) {
+    case IdZipPassAnnounce: {
+        LOG_INFO(Network, "IdZipPassAnnounce");
+
+        u32 version = 0;
+        if (!(packet >> version)) {
+            LOG_WARNING(Network, "Truncated IdZipPassAnnounce");
+            break;
+        }
+
+        const std::string path{fmt::format(
+            "{}/zippass/myAutoExport.pass.zip",
+            FileUtil::GetUserPath(FileUtil::UserPath::UserDir))};
+
+        if (!FileUtil::CreateFullPath(path)) {
+            LOG_ERROR(Service_FS, "Failed to create myAutoExport.pass.zip");
+            break;
+        }
+
+        int ret = Core::exportZipPass(path);
+
+        if (ret > 0) {
+            std::vector<char> buffer(1000000);
+            FileUtil::IOFile efile(path, "rb");
+            int tocopy = static_cast<int>(efile.ReadBytes(buffer.data(), buffer.size()));
+            efile.Close();
+
+            if (tocopy > 0 && tocopy < static_cast<int>(buffer.size())) {
+                Packet packet;
+                packet << static_cast<u8>(idAzaharPlusSpecific);
+                packet << static_cast<u8>(IdZipPassUpload);
+                packet << static_cast<u32>(azaharplus_network_version);
+                packet << static_cast<u32>(tocopy);
+                packet.Append(buffer.data(), tocopy);
+                Send(std::move(packet));
+            }
+        }
+
+        break;
+    }
+
+    case IdZipPassUpload:
+        LOG_INFO(Network, "IdZipPassUpload");
+        break;
+
+    case IdZipPassDownload: {
+        LOG_INFO(Network, "IdZipPassDownload");
+
+        std::string nickname;
+        u32 nicknameLength = 0;
+        if (!(packet >> nicknameLength)) {
+            LOG_WARNING(Network, "Truncated IdZipPassDownload header");
+            break;
+        }
+
+        if (nicknameLength < 64 &&
+            event->packet->dataLength >=
+                2 * sizeof(u8) + 2 * sizeof(u32) + nicknameLength) {
+            nickname.resize(nicknameLength);
+            memcpy(nickname.data(), event->packet->data + 2 * sizeof(u8) + sizeof(u32),
+                   nicknameLength);
+            packet.IgnoreBytes(nicknameLength);
+
+            u32 dataSize = 0;
+            if (!(packet >> dataSize)) {
+                LOG_WARNING(Network, "Truncated IdZipPassDownload data");
+                break;
+            }
+
+            if (dataSize > 0 && dataSize < 1000000 &&
+                event->packet->dataLength ==
+                    dataSize + 2 * sizeof(u8) + 2 * sizeof(u32) + nicknameLength) {
+                std::string dir = "history";
+
+                if (Loader::getProgramId() != "") {
+                    FileUtil::FSTEntry data_dir;
+                    std::vector<FileUtil::FSTEntry> files;
+                    const std::string queue_path{fmt::format(
+                        "{}/zippass/queue", FileUtil::GetUserPath(FileUtil::UserPath::UserDir))};
+                    FileUtil::ScanDirectoryTree(queue_path, data_dir, 2048);
+                    FileUtil::GetAllFilesFromNestedEntries(data_dir, files);
+
+                    if (files.size() > 99) {
+                        LOG_ERROR(Service_FS, "ZipPass queue is full");
+                        break;
+                    }
+
+                    dir = "queue";
+                }
+
+                const std::string path{fmt::format(
+                    "{}/zippass/{}/{}.pass.zip",
+                    FileUtil::GetUserPath(FileUtil::UserPath::UserDir), dir, nickname)};
+
+                if (!FileUtil::CreateFullPath(path)) {
+                    LOG_ERROR(Service_FS, "Failed to create {}", path);
+                    break;
+                }
+
+                FileUtil::IOFile dfile(path, "wb");
+                const size_t written = dfile.WriteBytes(
+                    event->packet->data + 2 * sizeof(u8) + 2 * sizeof(u32) + nicknameLength,
+                    dataSize);
+                dfile.Close();
+                if (written != dataSize) {
+                    LOG_ERROR(Service_FS, "failed to write {}", path);
+                    FileUtil::Delete(path);
+                    break;
+                }
+
+                if (dir == "history") {
+                    Core::importZipPass(path);
+                    Core::trimZipPassHistory();
+                }
+            } else {
+                LOG_ERROR(Network, "bad data size {} / {}", dataSize, event->packet->dataLength);
+            }
+        }
+
+        break;
+    }
+
+    default:
+        LOG_WARNING(Network, "unknown subtype {}", subType);
+        break;
+    }
 }
 
 void RoomMember::RoomMemberImpl::Send(Packet&& packet) {

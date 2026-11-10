@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -26,6 +26,10 @@ void Start();
 void Stop();
 
 void DisableLoggingInTests();
+
+/// Lets messages flow through the uninitialized-logging PrintMessage path;
+/// on OHOS that path mirrors to hilog so assert/abort text is visible.
+void EnableLoggingForTests();
 
 /**
  * The global filter will prevent any messages from even being processed if they are filtered.

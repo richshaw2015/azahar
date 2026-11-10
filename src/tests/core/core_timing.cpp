@@ -197,3 +197,26 @@ TEST_CASE("CoreTiming[ChainScheduling]", "[core]") {
 }
 
 // TODO: Add tests for multiple timers
+
+TEST_CASE("CoreTiming[DowncountHack]", "[core]") {
+    Core::Timing timing(1, 100);
+
+    // Enter slice 0
+    timing.GetTimer(0)->Advance();
+    timing.GetTimer(0)->SetNextSlice();
+    REQUIRE(MAX_SLICE_LENGTH == timing.GetTimer(0)->GetDowncount());
+
+    // The cpu_usage_limit quirk shrinks the next slice budget by right-shift.
+    timing.GetTimer(0)->SetDowncountHack(4);
+    timing.GetTimer(0)->SetNextSlice();
+    REQUIRE(MAX_SLICE_LENGTH >> 4 == timing.GetTimer(0)->GetDowncount());
+
+    timing.GetTimer(0)->SetDowncountHack(1);
+    timing.GetTimer(0)->SetNextSlice();
+    REQUIRE(MAX_SLICE_LENGTH >> 1 == timing.GetTimer(0)->GetDowncount());
+
+    // Clearing the hack restores the full slice.
+    timing.GetTimer(0)->SetDowncountHack(0);
+    timing.GetTimer(0)->SetNextSlice();
+    REQUIRE(MAX_SLICE_LENGTH == timing.GetTimer(0)->GetDowncount());
+}

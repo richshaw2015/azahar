@@ -1,6 +1,6 @@
-// Copyright 2017 Citra Emulator Project
+// Copyright 2017-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 
@@ -238,12 +238,14 @@ void DecryptBeacon(const NetworkInfo& network_info, std::vector<u8>& buffer) {
  */
 std::vector<u8> GenerateNintendoFirstEncryptedDataTag(const NetworkInfo& network_info,
                                                       const NodeList& nodes) {
-    const std::size_t payload_size =
-        std::min<std::size_t>(EncryptedDataSizeCutoff, nodes.size() * sizeof(NodeInfo));
+    const std::size_t payload_size = std::min<std::size_t>(
+        EncryptedDataSizeCutoff, nodes.size() * sizeof(BeaconNodeInfo) + sizeof(BeaconData));
+
+    const std::size_t tag_length = sizeof(EncryptedDataTag) - sizeof(TagHeader) + payload_size;
 
     EncryptedDataTag tag{};
     tag.header.tag_id = static_cast<u8>(TagId::VendorSpecific);
-    tag.header.length = static_cast<u8>(sizeof(tag) - sizeof(TagHeader) + payload_size);
+    tag.header.length = static_cast<u8>(tag_length);
     tag.oui_type = static_cast<u8>(NintendoTagId::EncryptedData0);
     tag.oui = NintendoOUI;
 
@@ -267,10 +269,11 @@ std::vector<u8> GenerateNintendoFirstEncryptedDataTag(const NetworkInfo& network
 std::vector<u8> GenerateNintendoSecondEncryptedDataTag(const NetworkInfo& network_info,
                                                        const NodeList& nodes) {
     // This tag is only present if the payload is larger than EncryptedDataSizeCutoff (0xFA).
-    if (nodes.size() * sizeof(NodeInfo) <= EncryptedDataSizeCutoff)
+    if (nodes.size() * sizeof(BeaconNodeInfo) + sizeof(BeaconData) <= EncryptedDataSizeCutoff)
         return {};
 
-    const std::size_t payload_size = nodes.size() * sizeof(NodeInfo) - EncryptedDataSizeCutoff;
+    const std::size_t payload_size =
+        (nodes.size() * sizeof(BeaconNodeInfo) + sizeof(BeaconData)) - EncryptedDataSizeCutoff;
 
     const std::size_t tag_length = sizeof(EncryptedDataTag) - sizeof(TagHeader) + payload_size;
 
@@ -298,15 +301,45 @@ std::vector<u8> GenerateNintendoSecondEncryptedDataTag(const NetworkInfo& networ
  * for UDS communication.
  * @returns A buffer with the Nintendo tagged parameters of the beacon frame.
  */
+// AzaharPlus: probe tag support for SetProbeResponseParam
+/**
+ * Generates a buffer with the Probe Nintendo tag.
+ * @returns A buffer with the Nintendo probe parameter of the beacon frame.
+ */
+std::vector<u8> GenerateNintendoProbeTag(u32 probe_oui, u8 probe_data) {
+    // If the OUI is 0, we assume it's invalid/not set and return an empty tag.
+    if (probe_oui == 0) {
+        return {};
+    }
+
+    ProbeTag tag{};
+    tag.header.tag_id = static_cast<u8>(TagId::VendorSpecific);
+    tag.header.length = sizeof(ProbeTag) - sizeof(TagHeader);
+    tag.oui_type = static_cast<u8>((probe_oui >> 24) & 0xFF);
+
+    tag.oui[0] = static_cast<u8>((probe_oui >> 16) & 0xFF);
+    tag.oui[1] = static_cast<u8>((probe_oui >> 8) & 0xFF);
+    tag.oui[2] = static_cast<u8>(probe_oui & 0xFF);
+    tag.data = probe_data;
+
+    std::vector<u8> buffer(sizeof(ProbeTag));
+    std::memcpy(buffer.data(), &tag, sizeof(ProbeTag));
+
+    return buffer;
+}
+
 std::vector<u8> GenerateNintendoTaggedParameters(const NetworkInfo& network_info,
-                                                 const NodeList& nodes) {
+                                                 const NodeList& nodes, u32 probe_oui,
+                                                 u8 probe_data) {
     ASSERT_MSG(network_info.max_nodes == nodes.size(), "Inconsistent network state.");
 
     std::vector<u8> buffer = GenerateNintendoDummyTag();
+    std::vector<u8> probe_tag = GenerateNintendoProbeTag(probe_oui, probe_data);
     std::vector<u8> network_info_tag = GenerateNintendoNetworkInfoTag(network_info);
     std::vector<u8> first_data_tag = GenerateNintendoFirstEncryptedDataTag(network_info, nodes);
     std::vector<u8> second_data_tag = GenerateNintendoSecondEncryptedDataTag(network_info, nodes);
 
+    buffer.insert(buffer.begin(), probe_tag.begin(), probe_tag.end());
     buffer.insert(buffer.end(), network_info_tag.begin(), network_info_tag.end());
     buffer.insert(buffer.end(), first_data_tag.begin(), first_data_tag.end());
     buffer.insert(buffer.end(), second_data_tag.begin(), second_data_tag.end());
@@ -314,10 +347,12 @@ std::vector<u8> GenerateNintendoTaggedParameters(const NetworkInfo& network_info
     return buffer;
 }
 
-std::vector<u8> GenerateBeaconFrame(const NetworkInfo& network_info, const NodeList& nodes) {
+std::vector<u8> GenerateBeaconFrame(const NetworkInfo& network_info, const NodeList& nodes,
+                                    u32 probe_oui, u8 probe_data) {
     std::vector<u8> buffer = GenerateFixedParameters();
     std::vector<u8> basic_tags = GenerateBasicTaggedParameters();
-    std::vector<u8> nintendo_tags = GenerateNintendoTaggedParameters(network_info, nodes);
+    std::vector<u8> nintendo_tags =
+        GenerateNintendoTaggedParameters(network_info, nodes, probe_oui, probe_data);
 
     buffer.insert(buffer.end(), basic_tags.begin(), basic_tags.end());
     buffer.insert(buffer.end(), nintendo_tags.begin(), nintendo_tags.end());

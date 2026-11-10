@@ -1,6 +1,6 @@
-// Copyright 2015 Citra Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -19,7 +19,7 @@ namespace Service::PTM {
 constexpr std::array<u8, 12> ptm_shared_extdata_id = {0, 0, 0, 0, 0x0B, 0, 0, 0xF0, 0, 0, 0, 0};
 
 /// Charge levels used by PTM functions
-enum class ChargeLevels : u32 {
+enum class ChargeLevels : u8 {
     CriticalBattery = 1,
     LowBattery = 2,
     HalfFull = 3,
@@ -53,9 +53,23 @@ public:
     static u16 GetPlayCoins();
     static void SetPlayCoins(u16 play_coins);
 
+    void UpdateSharedPage();
+
+    // 翻盖（外壳）开合状态：GetShellState 服务调用读到的是同一个字段；
+    // 开合同时会经 APT 发起真机睡眠协商/唤醒（见 ptm.cpp）
+    void SetShellOpen(bool open);
+    bool IsShellOpen() const {
+        return shell_open;
+    }
+
     class Interface : public ServiceFramework<Interface> {
     public:
         Interface(std::shared_ptr<Module> ptm, const char* name, u32 max_session);
+
+        // 供前端经 GetService 直取共享 Module（翻盖开关这类会话外状态）
+        std::shared_ptr<Module> GetModule() const {
+            return ptm;
+        }
 
     protected:
         /**
@@ -139,6 +153,14 @@ public:
          */
         void CheckNew3DS(Kernel::HLERequestContext& ctx);
 
+        void SetInfoLEDPattern(Kernel::HLERequestContext& ctx);
+
+        void SetInfoLEDPatternHeader(Kernel::HLERequestContext& ctx);
+
+        void GetInfoLEDStatus(Kernel::HLERequestContext& ctx);
+
+        void SetBatteryEmptyLEDPattern(Kernel::HLERequestContext& ctx);
+
         /**
          * PTM::GetSystemTime service function
          *  Outputs:
@@ -155,8 +177,12 @@ private:
     Core::System& system;
 
     bool shell_open = true;
-    bool battery_is_charging = true;
+    bool battery_charger_connected = false;
+    bool battery_is_charging = false;
+    ChargeLevels charge_level = ChargeLevels::CompletelyFull;
     bool pedometer_is_counting = false;
+
+    Core::TimingEventType* update_shared_page_event{};
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int);

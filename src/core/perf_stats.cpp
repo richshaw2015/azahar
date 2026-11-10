@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2017-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <algorithm>
 #include <chrono>
@@ -28,6 +28,8 @@ constexpr double FRAME_LENGTH = 1.0 / SCREEN_REFRESH_RATE;
 constexpr std::size_t IgnoreFrames = 5;
 
 namespace Core {
+
+bool PerfStats::game_frames_updated = true;
 
 PerfStats::PerfStats(u64 title_id) : title_id(title_id) {}
 
@@ -96,6 +98,7 @@ void PerfStats::EndSystemFrame() {
             std::chrono::duration<double, std::milli>(frame_time).count();
     }
     accumulated_frametime += frame_time;
+    last_system_frame_time = frame_time;
     system_frames += 1;
 
     // TODO: Track previous frame times in a less stupid way. -OS
@@ -105,10 +108,45 @@ void PerfStats::EndSystemFrame() {
     previous_frame_end = frame_end;
 }
 
+void PerfStats::ResetFrameTimeBaseline() {
+    std::scoped_lock lock{object_mutex};
+
+    const auto now = Clock::now();
+    frame_begin = now;
+    previous_frame_end = now;
+}
+
 void PerfStats::EndGameFrame() {
     std::scoped_lock lock{object_mutex};
 
     game_frames += 1;
+    total_game_frames += 1;
+    PerfStats::game_frames_updated = true;
+}
+
+void PerfStats::ReportIRExecution(u64 instructions, u64 blocks, u64 cache_lookups,
+                                  u64 dense_cache_hits, u64 translations, u64 fallbacks) {
+    ir_instructions.fetch_add(instructions, std::memory_order_relaxed);
+    ir_blocks.fetch_add(blocks, std::memory_order_relaxed);
+    ir_cache_lookups.fetch_add(cache_lookups, std::memory_order_relaxed);
+    ir_dense_cache_hits.fetch_add(dense_cache_hits, std::memory_order_relaxed);
+    ir_translations.fetch_add(translations, std::memory_order_relaxed);
+    ir_fallbacks.fetch_add(fallbacks, std::memory_order_relaxed);
+}
+
+void PerfStats::ReportPicaDraw(bool hardware_accelerated) {
+    pica_draws.fetch_add(1, std::memory_order_relaxed);
+    hardware_draws.fetch_add(hardware_accelerated ? 1 : 0, std::memory_order_relaxed);
+}
+
+void PerfStats::ReportGeometryCache(bool hit) {
+    geometry_cache_probes.fetch_add(1, std::memory_order_relaxed);
+    geometry_cache_hits.fetch_add(hit ? 1 : 0, std::memory_order_relaxed);
+}
+
+void PerfStats::ReportHostGpuTime(u64 nanoseconds) {
+    host_gpu_nanoseconds.fetch_add(nanoseconds, std::memory_order_relaxed);
+    host_gpu_samples.fetch_add(1, std::memory_order_relaxed);
 }
 
 double PerfStats::GetMeanFrametime() const {
@@ -121,6 +159,16 @@ double PerfStats::GetMeanFrametime() const {
     const double sum = std::accumulate(perf_history.begin() + IgnoreFrames,
                                        perf_history.begin() + current_index, 0.0);
     return sum / static_cast<double>(current_index - IgnoreFrames);
+}
+
+PerfStats::Clock::duration PerfStats::GetLastSystemFrameTime() const {
+    std::scoped_lock lock{object_mutex};
+    return last_system_frame_time;
+}
+
+u64 PerfStats::GetGameFrameCount() const {
+    std::scoped_lock lock{object_mutex};
+    return total_game_frames;
 }
 
 PerfStats::Results PerfStats::GetAndResetStats(microseconds current_system_time_us) {
@@ -163,6 +211,47 @@ PerfStats::Results PerfStats::GetAndResetStats(microseconds current_system_time_
                          static_cast<double>(system_frames))
                       : 0;
     last_stats.emulation_speed = system_us_per_second.count() / 1'000'000.0;
+    const u64 interval_ir_instructions = ir_instructions.exchange(0, std::memory_order_relaxed);
+    const u64 interval_ir_blocks = ir_blocks.exchange(0, std::memory_order_relaxed);
+    const u64 interval_ir_lookups = ir_cache_lookups.exchange(0, std::memory_order_relaxed);
+    const u64 interval_ir_dense_hits = ir_dense_cache_hits.exchange(0, std::memory_order_relaxed);
+    const u64 interval_ir_translations = ir_translations.exchange(0, std::memory_order_relaxed);
+    const u64 interval_ir_fallbacks = ir_fallbacks.exchange(0, std::memory_order_relaxed);
+    last_stats.ir_mips = interval > 0.0
+                             ? static_cast<double>(interval_ir_instructions) / interval / 1'000'000.0
+                             : 0.0;
+    last_stats.ir_average_block_size =
+        interval_ir_blocks ? static_cast<double>(interval_ir_instructions) /
+                                 static_cast<double>(interval_ir_blocks)
+                           : 0.0;
+    last_stats.ir_dense_cache_hit_rate =
+        interval_ir_lookups ? static_cast<double>(interval_ir_dense_hits) /
+                                  static_cast<double>(interval_ir_lookups)
+                            : 0.0;
+    last_stats.ir_translations_per_second =
+        interval > 0.0 ? static_cast<double>(interval_ir_translations) / interval : 0.0;
+    last_stats.ir_fallbacks_per_second =
+        interval > 0.0 ? static_cast<double>(interval_ir_fallbacks) / interval : 0.0;
+    const u64 interval_pica_draws = pica_draws.exchange(0, std::memory_order_relaxed);
+    const u64 interval_hardware_draws = hardware_draws.exchange(0, std::memory_order_relaxed);
+    const u64 interval_geometry_probes =
+        geometry_cache_probes.exchange(0, std::memory_order_relaxed);
+    const u64 interval_geometry_hits = geometry_cache_hits.exchange(0, std::memory_order_relaxed);
+    last_stats.hardware_draw_rate =
+        interval_pica_draws ? static_cast<double>(interval_hardware_draws) /
+                                  static_cast<double>(interval_pica_draws)
+                            : 0.0;
+    last_stats.geometry_cache_hit_rate =
+        interval_geometry_probes ? static_cast<double>(interval_geometry_hits) /
+                                       static_cast<double>(interval_geometry_probes)
+                                 : 0.0;
+    const u64 interval_host_gpu_ns = host_gpu_nanoseconds.exchange(0, std::memory_order_relaxed);
+    const u64 interval_host_gpu_samples = host_gpu_samples.exchange(0, std::memory_order_relaxed);
+    last_stats.time_host_gpu =
+        interval_host_gpu_samples ? static_cast<double>(interval_host_gpu_ns) /
+                                        static_cast<double>(interval_host_gpu_samples) /
+                                        1'000'000'000.0
+                                  : 0.0;
     last_stats.artic_transmitted = static_cast<double>(artic_transmitted) / interval;
     last_stats.artic_events.raw = artic_events.raw | prev_artic_event.raw;
 
@@ -204,19 +293,33 @@ double PerfStats::GetStableFrameTimeScale() const {
     return stable_previous_frame_length / FRAME_LENGTH;
 }
 
+void FrameLimiter::WaitForFrameAdvance() {
+    if (wait_callback) {
+        // Let the callback wait in short steps, checking for the frame advance in between
+        constexpr auto check_interval = std::chrono::milliseconds(2);
+        while (!frame_advance_event.IsSet()) {
+            wait_callback(std::chrono::steady_clock::now() + check_interval);
+        }
+    }
+    frame_advance_event.Wait();
+    frame_advance_event.Reset();
+}
+
+void FrameLimiter::SetWaitCallback(WaitCallback callback) {
+    wait_callback = std::move(callback);
+}
+
 void FrameLimiter::WaitOnce() {
     if (frame_advancing_enabled) {
         // Frame advancing is enabled: wait on event instead of doing framelimiting
-        frame_advance_event.Wait();
-        frame_advance_event.Reset();
+        WaitForFrameAdvance();
     }
 }
 
 void FrameLimiter::DoFrameLimiting(microseconds current_system_time_us) {
     if (frame_advancing_enabled) {
         // Frame advancing is enabled: wait on event instead of doing framelimiting
-        frame_advance_event.Wait();
-        frame_advance_event.Reset();
+        WaitForFrameAdvance();
         return;
     }
 
@@ -240,7 +343,11 @@ void FrameLimiter::DoFrameLimiting(microseconds current_system_time_us) {
         std::clamp(frame_limiting_delta_err, -max_lag_time_us, max_lag_time_us);
 
     if (frame_limiting_delta_err > microseconds::zero()) {
-        std::this_thread::sleep_for(frame_limiting_delta_err);
+        if (wait_callback) {
+            wait_callback(std::chrono::steady_clock::now() + frame_limiting_delta_err);
+        } else {
+            std::this_thread::sleep_for(frame_limiting_delta_err);
+        }
         auto now_after_sleep = Clock::now();
         frame_limiting_delta_err -= duration_cast<microseconds>(now_after_sleep - now);
         now = now_after_sleep;

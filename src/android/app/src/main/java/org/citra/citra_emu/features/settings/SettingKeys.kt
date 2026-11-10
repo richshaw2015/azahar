@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 package org.citra.citra_emu.features.settings
 
@@ -11,6 +11,7 @@ object SettingKeys {
     // Shared
     external fun use_artic_base_controller(): String
     external fun use_cpu_jit(): String
+    external fun use_fastinterp(): String
     external fun cpu_clock_percentage(): String
     external fun is_new_3ds(): String
     external fun lle_applets(): String
@@ -18,11 +19,15 @@ object SettingKeys {
     external fun enable_required_online_lle_modules(): String
     external fun use_virtual_sd(): String
     external fun compress_cia_installs(): String
+    external fun async_fs_operations(): String
     external fun region_value(): String
     external fun init_clock(): String
     external fun init_time(): String
     external fun init_ticks_type(): String
     external fun init_ticks_override(): String
+    external fun battery_state_source(): String
+    external fun battery_charging(): String
+    external fun battery_level(): String
     external fun plugin_loader(): String
     external fun allow_plugin_loader(): String
     external fun steps_per_hour(): String
@@ -38,6 +43,7 @@ object SettingKeys {
     external fun use_disk_shader_cache(): String
     external fun shaders_accurate_mul(): String
     external fun use_vsync(): String
+    external fun use_skip_duplicate_frames(): String
     external fun use_shader_jit(): String
     external fun resolution_factor(): String
     external fun frame_limit(): String
@@ -45,6 +51,7 @@ object SettingKeys {
     external fun texture_filter(): String
     external fun texture_sampling(): String
     external fun delay_game_render_thread_us(): String
+    external fun simulate_3ds_gpu_timings(): String
     external fun layout_option(): String
     external fun swap_screen(): String
     external fun upright_screen(): String
@@ -92,6 +99,7 @@ object SettingKeys {
     external fun audio_emulation(): String
     external fun enable_audio_stretching(): String
     external fun enable_realtime_audio(): String
+    external fun simulate_headphones_plugged(): String
     external fun volume(): String
     external fun output_type(): String
     external fun output_device(): String
@@ -123,6 +131,10 @@ object SettingKeys {
     external fun udp_input_port(): String
     external fun udp_pad_index(): String
     external fun record_frame_times(): String
+    external fun web_api_url(): String
+    external fun network_token(): String
+    external fun check_for_update_on_start(): String
+    external fun update_check_channel(): String
 
     // Android
     external fun expand_to_cutout_area(): String
@@ -138,4 +150,41 @@ object SettingKeys {
     external fun android_hide_images(): String
     external fun screen_orientation(): String
     external fun performance_overlay_position(): String
+    external fun enable_secondary_display(): String
+    external fun combo_button_buttons(): String
+
+    // Inputs
+    external fun button_a(): String
+    external fun button_b(): String
+    external fun button_x(): String
+    external fun button_y(): String
+    external fun button_home(): String
+    external fun circlepad_up(): String
+    external fun circlepad_down(): String
+    external fun circlepad_left(): String
+    external fun circlepad_right(): String
+    external fun button_r(): String
+    external fun button_l(): String
+    external fun button_zr(): String
+    external fun button_zl(): String
+    external fun button_start(): String
+    external fun button_select(): String
+    external fun dpad_up(): String
+    external fun dpad_down(): String
+    external fun dpad_left(): String
+    external fun dpad_right(): String
+    external fun cstick_up(): String
+    external fun cstick_down(): String
+    external fun cstick_left(): String
+    external fun cstick_right(): String
+    external fun hotkey_cycle_layout(): String
+    external fun hotkey_close(): String
+    external fun hotkey_swap(): String
+    external fun hotkey_pause_resume(): String
+    external fun hotkey_quicksave(): String
+    external fun hotkey_turbo_toggle(): String
+    external fun hotkey_turbo_hold(): String
+    external fun hotkey_quickload(): String
+    external fun hotkey_enable(): String
+    external fun hotkey_combo_button(): String
 }

@@ -1,0 +1,6 @@
+{
+  "name": "libazahar_ohos.so",
+  "types": "./Index.d.ts",
+  "version": "1.0.0",
+  "description": "Azahar HarmonyOS native module declarations."
+}

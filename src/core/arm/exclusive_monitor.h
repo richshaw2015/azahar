@@ -30,6 +30,7 @@ public:
 };
 
 std::unique_ptr<Core::ExclusiveMonitor> MakeExclusiveMonitor(Memory::MemorySystem& memory,
-                                                             std::size_t num_cores);
+                                                             std::size_t num_cores,
+                                                             bool use_jit_backend);
 
 } // namespace Core

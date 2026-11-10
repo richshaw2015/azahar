@@ -1,9 +1,10 @@
-// Copyright 2023 Citra Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
+#include <bit>
 #include <boost/serialization/binary_object.hpp>
 
 #include "common/vector_math.h"

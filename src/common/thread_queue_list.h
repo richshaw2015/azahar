@@ -1,12 +1,17 @@
-// Copyright 2014 Citra Emulator Project / PPSSPP Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
+
+// Copyright 2014 PPSSPP Project
+// Licensed under GPLv2 or any later version
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
 #include <algorithm>
 #include <array>
 #include <deque>
+#include <tuple>
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/split_member.hpp>
 #include "common/common_types.h"
@@ -52,33 +57,35 @@ struct ThreadQueueList {
         return T();
     }
 
-    T pop_first() {
+    std::pair<Priority, T> pop_first() {
         Queue* cur = first;
         while (cur != nullptr) {
             if (!cur->data.empty()) {
                 auto tmp = std::move(cur->data.front());
                 cur->data.pop_front();
-                return tmp;
+                Priority prio = static_cast<Priority>(ToIndex(cur));
+                return {prio, tmp};
             }
             cur = cur->next_nonempty;
         }
 
-        return T();
+        return {Priority(), T()};
     }
 
-    T pop_first_better(Priority priority) {
+    std::pair<Priority, T> pop_first_better(Priority priority) {
         Queue* cur = first;
         Queue* stop = &queues[priority];
         while (cur < stop) {
             if (!cur->data.empty()) {
                 auto tmp = std::move(cur->data.front());
                 cur->data.pop_front();
-                return tmp;
+                Priority prio = static_cast<Priority>(ToIndex(cur));
+                return {prio, tmp};
             }
             cur = cur->next_nonempty;
         }
 
-        return T();
+        return {Priority(), T()};
     }
 
     void push_front(Priority priority, const T& thread_id) {

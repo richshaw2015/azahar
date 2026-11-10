@@ -1,6 +1,6 @@
-// Copyright 2023 Citra Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "common/assert.h"
 #include "common/bit_set.h"
@@ -24,20 +24,20 @@ void ShaderUnit::LoadInput(const ShaderRegs& config, const AttributeBuffer& buff
 void ShaderUnit::WriteOutput(const ShaderRegs& config, AttributeBuffer& buffer) {
     u32 output_index{};
     for (u32 reg : Common::BitSet<u32>(config.output_mask)) {
-        buffer[output_index++] = output[reg];
+        buffer[output_index++] = output[output_bank][reg];
     }
 }
 
 void GeometryEmitter::Emit(std::span<Common::Vec4<f24>, 16> output_regs) {
-    ASSERT(vertex_id < 3);
+    ASSERT(emit_state.vertex_id < 3);
 
     u32 output_index{};
     for (u32 reg : Common::BitSet<u32>(output_mask)) {
-        buffer[vertex_id][output_index++] = output_regs[reg];
+        buffer[emit_state.vertex_id][output_index++] = output_regs[reg];
     }
 
-    if (prim_emit) {
-        if (winding) {
+    if (emit_state.prim_emit) {
+        if (emit_state.winding) {
             handlers->winding_setter();
         }
         for (std::size_t i = 0; i < buffer.size(); ++i) {

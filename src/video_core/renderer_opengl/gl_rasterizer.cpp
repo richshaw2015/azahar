@@ -1,6 +1,8 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2022-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
+
+#include <cstring>
 
 #include "common/alignment.h"
 #include "common/assert.h"
@@ -8,6 +10,7 @@
 #include "common/logging/log.h"
 #include "common/math_util.h"
 #include "common/microprofile.h"
+#include "core/core.h"
 #include "core/loader/loader.h"
 #include "video_core/pica/pica_core.h"
 #include "video_core/renderer_opengl/gl_rasterizer.h"
@@ -15,6 +18,10 @@
 #include "video_core/renderer_opengl/renderer_opengl.h"
 #include "video_core/shader/generator/shader_gen.h"
 #include "video_core/texture/texture_decode.h"
+
+#if defined(OHOS)
+#include <EGL/egl.h>
+#endif
 
 namespace OpenGL {
 
@@ -30,10 +37,17 @@ using VideoCore::SurfaceType;
 using namespace Common::Literals;
 using namespace Pica::Shader::Generator;
 
-constexpr std::size_t VERTEX_BUFFER_SIZE = 16_MiB;
-constexpr std::size_t INDEX_BUFFER_SIZE = 2_MiB;
+constexpr std::size_t VERTEX_BUFFER_SIZE = 64_MiB;
+constexpr std::size_t INDEX_BUFFER_SIZE = 8_MiB;
 constexpr std::size_t UNIFORM_BUFFER_SIZE = 8_MiB;
 constexpr std::size_t TEXTURE_BUFFER_SIZE = 2_MiB;
+constexpr std::size_t GEOMETRY_SNAPSHOT_BUDGET = 56_MiB;
+#if defined(OHOS)
+constexpr GLenum GL_TIME_ELAPSED_EXT_VALUE = 0x88BF;
+constexpr GLenum GL_QUERY_RESULT_EXT_VALUE = 0x8866;
+constexpr GLenum GL_QUERY_RESULT_AVAILABLE_EXT_VALUE = 0x8867;
+constexpr GLenum GL_GPU_DISJOINT_EXT_VALUE = 0x8FBB;
+#endif
 
 GLenum MakePrimitiveMode(Pica::PipelineRegs::TriangleTopology topology) {
     switch (topology) {
@@ -87,9 +101,17 @@ RasterizerOpenGL::RasterizerOpenGL(Memory::MemorySystem& memory, Pica::PicaCore&
     : VideoCore::RasterizerAccelerated{memory, pica}, driver{driver_},
       render_window{renderer.GetRenderWindow()}, runtime{driver, renderer},
       res_cache{memory, custom_tex_manager, runtime, regs, renderer},
-      vertex_buffer{driver, GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE},
+      vertex_buffer{driver, GL_ARRAY_BUFFER,
+                    static_cast<GLsizeiptr>(Settings::values.use_hw_geometry_cache.GetValue()
+                                                ? VERTEX_BUFFER_SIZE
+                                                : 16_MiB),
+                    false, 16_MiB},
       uniform_buffer{driver, GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE},
-      index_buffer{driver, GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE},
+      index_buffer{driver, GL_ELEMENT_ARRAY_BUFFER,
+                   static_cast<GLsizeiptr>(Settings::values.use_hw_geometry_cache.GetValue()
+                                               ? INDEX_BUFFER_SIZE
+                                               : 2_MiB),
+                   false, 2_MiB},
       texture_buffer{driver, GL_TEXTURE_BUFFER, TextureBufferSize(driver, false)},
       texture_lf_buffer{driver, GL_TEXTURE_BUFFER, TextureBufferSize(driver, true)} {
 
@@ -164,12 +186,97 @@ RasterizerOpenGL::RasterizerOpenGL(Memory::MemorySystem& memory, Pica::PicaCore&
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer.GetHandle());
 
     glEnable(GL_BLEND);
+    InitializeGpuTimer();
+
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_SAMPLE_SHADING);
+    glMinSampleShading(1.0f);
 }
 
-RasterizerOpenGL::~RasterizerOpenGL() = default;
+RasterizerOpenGL::~RasterizerOpenGL() {
+#if defined(OHOS)
+    if (gpu_timer_supported && delete_queries_ext) {
+        if (gpu_timer_active && end_query_ext) {
+            end_query_ext(GL_TIME_ELAPSED_EXT_VALUE);
+        }
+        delete_queries_ext(static_cast<GLsizei>(gpu_timer_queries.size()),
+                           gpu_timer_queries.data());
+    }
+#endif
+}
 
 void RasterizerOpenGL::TickFrame() {
+    EndAndCollectGpuTimer();
     res_cache.TickFrame();
+    geometry_cache_frame++;
+}
+
+void RasterizerOpenGL::InitializeGpuTimer() {
+#if defined(OHOS)
+    const char* extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    if (!extensions || !std::strstr(extensions, "GL_EXT_disjoint_timer_query")) {
+        return;
+    }
+    gen_queries_ext = reinterpret_cast<GenQueriesExt>(eglGetProcAddress("glGenQueriesEXT"));
+    delete_queries_ext =
+        reinterpret_cast<DeleteQueriesExt>(eglGetProcAddress("glDeleteQueriesEXT"));
+    begin_query_ext = reinterpret_cast<BeginQueryExt>(eglGetProcAddress("glBeginQueryEXT"));
+    end_query_ext = reinterpret_cast<EndQueryExt>(eglGetProcAddress("glEndQueryEXT"));
+    get_query_object_uiv_ext = reinterpret_cast<GetQueryObjectuivExt>(
+        eglGetProcAddress("glGetQueryObjectuivEXT"));
+    get_query_object_ui64v_ext = reinterpret_cast<GetQueryObjectui64vExt>(
+        eglGetProcAddress("glGetQueryObjectui64vEXT"));
+    gpu_timer_supported = gen_queries_ext && delete_queries_ext && begin_query_ext && end_query_ext &&
+                          get_query_object_uiv_ext && get_query_object_ui64v_ext;
+    if (gpu_timer_supported) {
+        gen_queries_ext(static_cast<GLsizei>(gpu_timer_queries.size()), gpu_timer_queries.data());
+    }
+#endif
+}
+
+void RasterizerOpenGL::BeginGpuTimer() {
+#if defined(OHOS)
+    if (!gpu_timer_supported || gpu_timer_active || gpu_timer_pending[gpu_timer_write_index]) {
+        return;
+    }
+    begin_query_ext(GL_TIME_ELAPSED_EXT_VALUE, gpu_timer_queries[gpu_timer_write_index]);
+    gpu_timer_active = true;
+#endif
+}
+
+void RasterizerOpenGL::EndAndCollectGpuTimer() {
+#if defined(OHOS)
+    if (!gpu_timer_supported) {
+        return;
+    }
+    if (gpu_timer_active) {
+        end_query_ext(GL_TIME_ELAPSED_EXT_VALUE);
+        gpu_timer_pending[gpu_timer_write_index] = true;
+        gpu_timer_write_index = (gpu_timer_write_index + 1) % gpu_timer_queries.size();
+        gpu_timer_active = false;
+    }
+
+    GLint disjoint = GL_FALSE;
+    glGetIntegerv(GL_GPU_DISJOINT_EXT_VALUE, &disjoint);
+    for (std::size_t index = 0; index < gpu_timer_queries.size(); ++index) {
+        if (!gpu_timer_pending[index]) {
+            continue;
+        }
+        GLuint available = GL_FALSE;
+        get_query_object_uiv_ext(gpu_timer_queries[index], GL_QUERY_RESULT_AVAILABLE_EXT_VALUE,
+                                 &available);
+        if (available != GL_TRUE) {
+            continue;
+        }
+        GLuint64 nanoseconds{};
+        get_query_object_ui64v_ext(gpu_timer_queries[index], GL_QUERY_RESULT_EXT_VALUE,
+                                   &nanoseconds);
+        gpu_timer_pending[index] = false;
+        if (disjoint == GL_FALSE && Core::System::GetInstance().perf_stats) {
+            Core::System::GetInstance().perf_stats->ReportHostGpuTime(nanoseconds);
+        }
+    }
+#endif
 }
 
 void RasterizerOpenGL::LoadDefaultDiskResources(
@@ -260,7 +367,8 @@ void RasterizerOpenGL::SyncDrawState() {
     // SyncClipEnabled();
     state.clip_distance[1] = regs.rasterizer.clip_enable != 0;
     // SyncCullMode();
-    state.cull.enabled = regs.rasterizer.cull_mode != Pica::RasterizerRegs::CullMode::KeepAll;
+    state.cull.enabled = regs.rasterizer.cull_mode != Pica::RasterizerRegs::CullMode::KeepAll &&
+                         regs.rasterizer.cull_mode != Pica::RasterizerRegs::CullMode::KeepAll2;
     if (state.cull.enabled) {
         state.cull.front_face =
             regs.rasterizer.cull_mode == Pica::RasterizerRegs::CullMode::KeepClockWise ? GL_CW
@@ -364,7 +472,9 @@ void RasterizerOpenGL::SyncDrawState() {
 }
 
 void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
-                                        GLuint vs_input_index_min, GLuint vs_input_index_max) {
+                                        GLuint vs_input_index_min, GLuint vs_input_index_max,
+                                        std::vector<GeometryRange>* ranges,
+                                        std::vector<u8>* snapshot) {
     MICROPROFILE_SCOPE(OpenGL_VAO);
     const auto& vertex_attributes = regs.pipeline.vertex_attributes;
     PAddr base_address = vertex_attributes.GetPhysicalBaseAddress();
@@ -412,10 +522,24 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
         const u32 vertex_num = vs_input_index_max - vs_input_index_min + 1;
         const u32 data_size = loader.byte_count * vertex_num;
 
-        res_cache.FlushRegion(data_addr, data_size);
-        std::memcpy(array_ptr, memory.GetPhysicalPointer(data_addr), data_size);
+        if (array_ptr || (ranges && snapshot)) {
+            res_cache.FlushRegion(data_addr, data_size);
+            const u8* source = memory.GetPhysicalPointer(data_addr);
+            if (array_ptr) {
+                std::memcpy(array_ptr, source, data_size);
+                array_ptr += data_size;
+            }
+            if (ranges && snapshot) {
+                const u32 snapshot_offset = static_cast<u32>(snapshot->size());
+                ranges->push_back({
+                    .address = data_addr,
+                    .size = data_size,
+                    .snapshot_offset = snapshot_offset,
+                });
+                snapshot->insert(snapshot->end(), source, source + data_size);
+            }
+        }
 
-        array_ptr += data_size;
         buffer_offset += data_size;
     }
 
@@ -443,6 +567,84 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
 bool RasterizerOpenGL::SetupVertexShader() {
     MICROPROFILE_SCOPE(OpenGL_VS);
     return curr_shader_manager->UseProgrammableVertexShader(regs, pica.vs_setup, accurate_mul);
+}
+
+std::size_t RasterizerOpenGL::GeometryKeyHash::operator()(const GeometryKey& key) const {
+    std::size_t hash = static_cast<std::size_t>(key.base_address);
+    const auto mix = [&hash](u32 value) {
+        hash ^= static_cast<std::size_t>(value) + 0x9E3779B9U + (hash << 6) + (hash >> 2);
+    };
+    mix(key.vertex_min);
+    mix(key.vertex_max);
+    mix(key.index_offset);
+    mix(key.vertex_count);
+    mix(static_cast<u32>(key.indexed));
+    mix(static_cast<u32>(key.index_u16));
+    for (u32 word : key.layout) {
+        mix(word);
+    }
+    return hash;
+}
+
+RasterizerOpenGL::GeometryKey RasterizerOpenGL::MakeGeometryKey(bool is_indexed, u32 vertex_min,
+                                                                 u32 vertex_max) const {
+    GeometryKey key{
+        .base_address = regs.pipeline.vertex_attributes.GetPhysicalBaseAddress(),
+        .vertex_min = vertex_min,
+        .vertex_max = vertex_max,
+        .index_offset = regs.pipeline.index_array.offset,
+        .vertex_count = regs.pipeline.num_vertices,
+        .indexed = is_indexed,
+        .index_u16 = regs.pipeline.index_array.format != 0,
+    };
+    static_assert(sizeof(regs.pipeline.vertex_attributes) <= (48 - 2) * sizeof(u32));
+    std::memcpy(key.layout.data(), &regs.pipeline.vertex_attributes,
+                sizeof(regs.pipeline.vertex_attributes));
+    key.layout[key.layout.size() - 2] = regs.vs.input_attribute_to_register_map_low;
+    key.layout[key.layout.size() - 1] = regs.vs.input_attribute_to_register_map_high;
+    return key;
+}
+
+bool RasterizerOpenGL::ValidateGeometryCacheEntry(const GeometryKey& key,
+                                                   const GeometryCacheEntry& entry) {
+    for (const GeometryRange& range : entry.vertex_ranges) {
+        res_cache.FlushRegion(range.address, range.size);
+        const u8* current = memory.GetPhysicalPointer(range.address);
+        if (!current ||
+            std::memcmp(current, entry.vertex_snapshot.data() + range.snapshot_offset, range.size) !=
+                0) {
+            return false;
+        }
+    }
+
+    if (key.indexed) {
+        const u32 index_size = key.vertex_count * (key.index_u16 ? 2U : 1U);
+        const PAddr index_address = key.base_address + key.index_offset;
+        res_cache.FlushRegion(index_address, index_size);
+        const u8* current = memory.GetPhysicalPointer(index_address);
+        if (!current || entry.index_snapshot.size() != index_size ||
+            std::memcmp(current, entry.index_snapshot.data(), index_size) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void RasterizerOpenGL::TrimGeometryCache() {
+    while (geometry_cache_bytes > GEOMETRY_SNAPSHOT_BUDGET && !geometry_cache.empty()) {
+        auto victim = std::min_element(
+            geometry_cache.begin(), geometry_cache.end(), [](const auto& left, const auto& right) {
+                return left.second.last_used_frame < right.second.last_used_frame;
+            });
+        geometry_cache_bytes -=
+            victim->second.vertex_snapshot.size() + victim->second.index_snapshot.size();
+        geometry_cache.erase(victim);
+    }
+}
+
+void RasterizerOpenGL::ClearGeometryCache() {
+    geometry_cache.clear();
+    geometry_cache_bytes = 0;
 }
 
 bool RasterizerOpenGL::SetupGeometryShader() {
@@ -488,45 +690,126 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
 
 bool RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed) {
     const GLenum primitive_mode = MakePrimitiveMode(regs.pipeline.triangle_topology);
-    auto [vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
+    const auto vertex_array_info = AnalyzeVertexArray(is_indexed);
 
-    if (vs_input_size > VERTEX_BUFFER_SIZE) {
-        LOG_WARNING(Render_OpenGL, "Too large vertex input size {}", vs_input_size);
+    if (vertex_array_info.Invalid()) {
+        // Do not draw anything if the vertex array is invalid.
+        return true;
+    }
+
+    if (vertex_array_info.vs_input_size > static_cast<std::size_t>(vertex_buffer.GetSize())) {
+        LOG_WARNING(Render_OpenGL, "Too large vertex input size {}",
+                    vertex_array_info.vs_input_size);
         return false;
     }
 
     state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
 
-    u8* buffer_ptr;
-    GLintptr buffer_offset;
-    std::tie(buffer_ptr, buffer_offset, std::ignore) = vertex_buffer.Map(vs_input_size, 4);
-    SetupVertexArray(buffer_ptr, buffer_offset, vs_input_index_min, vs_input_index_max);
-    vertex_buffer.Unmap(vs_input_size);
+    const GeometryKey geometry_key =
+        MakeGeometryKey(is_indexed, vertex_array_info.vs_input_index_min,
+                        vertex_array_info.vs_input_index_max);
+    const bool use_geometry_cache = Settings::values.use_hw_geometry_cache.GetValue();
+    const auto disabled = geometry_disabled_until.find(geometry_key);
+    const bool geometry_cache_allowed =
+        use_geometry_cache &&
+        (disabled == geometry_disabled_until.end() || disabled->second <= geometry_cache_frame);
+    auto cached =
+        geometry_cache_allowed ? geometry_cache.find(geometry_key) : geometry_cache.end();
+    if (cached != geometry_cache.end() && !ValidateGeometryCacheEntry(geometry_key, cached->second)) {
+        geometry_cache_bytes -=
+            cached->second.vertex_snapshot.size() + cached->second.index_snapshot.size();
+        geometry_cache.erase(cached);
+        geometry_probation[geometry_key] = 0;
+        geometry_disabled_until[geometry_key] = geometry_cache_frame + 120;
+        cached = geometry_cache.end();
+    }
+    if (use_geometry_cache && Core::System::GetInstance().perf_stats) {
+        Core::System::GetInstance().perf_stats->ReportGeometryCache(cached != geometry_cache.end());
+    }
+
+    u8* buffer_ptr = nullptr;
+    GLintptr vertex_buffer_offset{};
+    GLintptr index_buffer_offset{};
+    if (cached != geometry_cache.end()) {
+        cached->second.last_used_frame = geometry_cache_frame;
+        vertex_buffer_offset = cached->second.vertex_offset;
+        index_buffer_offset = cached->second.index_buffer_offset;
+        SetupVertexArray(nullptr, vertex_buffer_offset, vertex_array_info.vs_input_index_min,
+                         vertex_array_info.vs_input_index_max);
+    } else {
+        bool capture_geometry = false;
+        if (geometry_cache_allowed) {
+            if (geometry_probation.size() > 4096) {
+                geometry_probation.clear();
+            }
+            if (geometry_disabled_until.size() > 4096) {
+                geometry_disabled_until.clear();
+            }
+            u8& probation = geometry_probation[geometry_key];
+            capture_geometry = probation >= 1;
+            probation = static_cast<u8>(std::min<u32>(probation + 1, 2));
+        }
+
+        bool vertex_invalidated = false;
+        std::tie(buffer_ptr, vertex_buffer_offset, vertex_invalidated) =
+            vertex_buffer.Map(vertex_array_info.vs_input_size, 4);
+        if (vertex_invalidated) {
+            ClearGeometryCache();
+        }
+
+        GeometryCacheEntry new_entry;
+        new_entry.vertex_offset = vertex_buffer_offset;
+        new_entry.last_used_frame = geometry_cache_frame;
+        SetupVertexArray(buffer_ptr, vertex_buffer_offset, vertex_array_info.vs_input_index_min,
+                         vertex_array_info.vs_input_index_max,
+                         capture_geometry ? &new_entry.vertex_ranges : nullptr,
+                         capture_geometry ? &new_entry.vertex_snapshot : nullptr);
+        vertex_buffer.Unmap(vertex_array_info.vs_input_size);
+
+        if (is_indexed) {
+            const u32 index_buffer_size =
+                regs.pipeline.num_vertices * (geometry_key.index_u16 ? 2U : 1U);
+            if (index_buffer_size > static_cast<std::size_t>(index_buffer.GetSize())) {
+                LOG_WARNING(Render_OpenGL, "Too large index input size {}", index_buffer_size);
+                return false;
+            }
+            const PAddr index_address = geometry_key.base_address + geometry_key.index_offset;
+            res_cache.FlushRegion(index_address, index_buffer_size);
+            const u8* index_data = memory.GetPhysicalPointer(index_address);
+            bool index_invalidated = false;
+            std::tie(buffer_ptr, index_buffer_offset, index_invalidated) =
+                index_buffer.Map(index_buffer_size, 4);
+            if (index_invalidated) {
+                ClearGeometryCache();
+            }
+            std::memcpy(buffer_ptr, index_data, index_buffer_size);
+            index_buffer.Unmap(index_buffer_size);
+            new_entry.index_buffer_offset = index_buffer_offset;
+            if (capture_geometry) {
+                new_entry.index_snapshot.assign(index_data, index_data + index_buffer_size);
+            }
+        }
+
+        if (capture_geometry) {
+            geometry_cache_bytes +=
+                new_entry.vertex_snapshot.size() + new_entry.index_snapshot.size();
+            geometry_cache.insert_or_assign(geometry_key, std::move(new_entry));
+            geometry_disabled_until.erase(geometry_key);
+            TrimGeometryCache();
+        }
+    }
 
     curr_shader_manager->ApplyTo(state, accurate_mul);
     state.Apply();
 
     if (is_indexed) {
-        bool index_u16 = regs.pipeline.index_array.format != 0;
-        std::size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
-
-        if (index_buffer_size > INDEX_BUFFER_SIZE) {
-            LOG_WARNING(Render_OpenGL, "Too large index input size {}", index_buffer_size);
-            return false;
-        }
-
-        const u8* index_data =
-            memory.GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
-                                      regs.pipeline.index_array.offset);
-        std::tie(buffer_ptr, buffer_offset, std::ignore) = index_buffer.Map(index_buffer_size, 4);
-        std::memcpy(buffer_ptr, index_data, index_buffer_size);
-        index_buffer.Unmap(index_buffer_size);
-
         glDrawRangeElementsBaseVertex(
-            primitive_mode, vs_input_index_min, vs_input_index_max, regs.pipeline.num_vertices,
-            index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
-            reinterpret_cast<const void*>(buffer_offset), -static_cast<GLint>(vs_input_index_min));
+            primitive_mode, vertex_array_info.vs_input_index_min,
+            vertex_array_info.vs_input_index_max, regs.pipeline.num_vertices,
+            geometry_key.index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
+            reinterpret_cast<const void*>(index_buffer_offset),
+            -static_cast<GLint>(vertex_array_info.vs_input_index_min));
     } else {
         glDrawArrays(primitive_mode, 0, regs.pipeline.num_vertices);
     }
@@ -541,6 +824,9 @@ void RasterizerOpenGL::DrawTriangles() {
 
 bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     MICROPROFILE_SCOPE(OpenGL_Drawing);
+    BeginGpuTimer();
+    const DebugScope scope(runtime, Common::Vec4f{}, "RasterizerOpenGL::Draw");
+
     SyncDrawState();
 
     const bool shadow_rendering = regs.framebuffer.IsShadowRendering();
@@ -568,9 +854,16 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         return true;
     }
 
+    const auto draw_rect = fb_helper.DrawRect();
+    if (draw_rect.GetArea() == 0) {
+        return true;
+    }
+
     // Bind the framebuffer surfaces
     if (shadow_rendering) {
         state.image_shadow_buffer = framebuffer->Attachment(SurfaceType::Color);
+    } else {
+        state.image_shadow_buffer = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID).Handle();
     }
     state.draw.draw_framebuffer = framebuffer->Handle();
 
@@ -583,7 +876,6 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
 
     // Viewport can have negative offsets or larger dimensions than our framebuffer sub-rect.
     // Enable scissor test to prevent drawing outside of the framebuffer region
-    const auto draw_rect = fb_helper.DrawRect();
     state.scissor.enabled = true;
     state.scissor.x = draw_rect.left;
     state.scissor.y = draw_rect.bottom;
@@ -643,6 +935,22 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         }
     }
 
+    // Resolve after drawing, slow initial approach to ensure the MSAA and non-MSAA buffers are
+    // always in sync
+    if (framebuffer->color_id != VideoCore::SurfaceId{}) {
+        Surface& color_surface = res_cache.GetSurface(framebuffer->color_id);
+        if (color_surface.GetSampleCount() > 1) {
+            runtime.ResolveTexture(color_surface, framebuffer->color_level);
+        }
+    }
+
+    if (framebuffer->depth_id != VideoCore::SurfaceId{}) {
+        Surface& depth_surface = res_cache.GetSurface(framebuffer->depth_id);
+        if (depth_surface.GetSampleCount() > 1) {
+            runtime.ResolveTexture(depth_surface, framebuffer->depth_level);
+        }
+    }
+
     vertex_batch.clear();
 
     if (shadow_rendering) {
@@ -666,8 +974,21 @@ void RasterizerOpenGL::SyncTextureUnits(const Framebuffer* framebuffer) {
 
         // If the texture unit is disabled unbind the corresponding gl unit
         if (!texture.enabled) {
-            const Surface& null_surface = res_cache.GetSurface(VideoCore::NULL_SURFACE_ID);
-            state.texture_units[texture_index].texture_2d = null_surface.Handle();
+            switch (texture.config.type.Value()) {
+            case TextureType::TextureCube:
+            case TextureType::ShadowCube: {
+                state.texture_units[texture_index].texture_2d =
+                    res_cache.GetSurface(VideoCore::NULL_SURFACE_CUBE_ID).Handle();
+                state.texture_units[texture_index].target = GL_TEXTURE_CUBE_MAP;
+                break;
+            }
+            default: {
+                state.texture_units[texture_index].texture_2d =
+                    res_cache.GetSurface(VideoCore::NULL_SURFACE_ID).Handle();
+                state.texture_units[texture_index].target = GL_TEXTURE_2D;
+                break;
+            }
+            }
             continue;
         }
 
@@ -676,7 +997,7 @@ void RasterizerOpenGL::SyncTextureUnits(const Framebuffer* framebuffer) {
             switch (texture.config.type.Value()) {
             case TextureType::Shadow2D: {
                 Surface& surface = res_cache.GetTextureSurface(texture);
-                surface.flags |= VideoCore::SurfaceFlagBits::ShadowMap;
+                surface.flags |= VideoCore::SurfaceFlagBits::ShadowSource;
                 state.image_shadow_texture_px = surface.Handle();
                 continue;
             }
@@ -702,6 +1023,7 @@ void RasterizerOpenGL::SyncTextureUnits(const Framebuffer* framebuffer) {
         if (!IsFeedbackLoop(texture_index, framebuffer, surface)) {
             BindMaterial(texture_index, surface);
             state.texture_units[texture_index].texture_2d = surface.Handle();
+            state.texture_units[texture_index].target = GL_TEXTURE_2D;
         }
     }
 
@@ -724,7 +1046,7 @@ void RasterizerOpenGL::BindShadowCube(const Pica::TexturingRegs::FullTextureConf
 
         VideoCore::SurfaceId surface_id = res_cache.GetTextureSurface(info);
         Surface& surface = res_cache.GetSurface(surface_id);
-        surface.flags |= VideoCore::SurfaceFlagBits::ShadowMap;
+        surface.flags |= VideoCore::SurfaceFlagBits::ShadowSource;
         state.image_shadow_texture[binding] = surface.Handle();
     }
 }
@@ -809,6 +1131,9 @@ void RasterizerOpenGL::FlushAndInvalidateRegion(PAddr addr, u32 size) {
 }
 
 void RasterizerOpenGL::ClearAll(bool flush) {
+    ClearGeometryCache();
+    geometry_probation.clear();
+    geometry_disabled_until.clear();
     res_cache.ClearAll(flush);
 }
 
@@ -930,7 +1255,10 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
 
     std::size_t bytes_used = 0;
     glBindBuffer(GL_TEXTURE_BUFFER, texture_buffer.GetHandle());
-    const auto [buffer, offset, invalidate] = texture_buffer.Map(max_size, sizeof(Common::Vec4f));
+    const auto mapped_buffer = texture_buffer.Map(max_size, sizeof(Common::Vec4f));
+    auto* const buffer = std::get<0>(mapped_buffer);
+    const auto offset = std::get<1>(mapped_buffer);
+    const auto invalidate = std::get<2>(mapped_buffer);
 
     if (invalidate) {
         pica.proctex.table_dirty = pica.proctex.TableAllDirty;
@@ -963,7 +1291,7 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
     }
 
     // Sync the proctex lut
-    if (pica.proctex.lut_dirty) {
+    if (pica.proctex.color_lut_dirty) {
         Common::Vec4f* new_data = reinterpret_cast<Common::Vec4f*>(buffer + bytes_used);
         for (u32 i = 0; i < pica.proctex.color_table.size(); i++) {
             new_data[i] = pica.proctex.color_table[i].ToVector() / 255.0f;
@@ -975,7 +1303,7 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
     }
 
     // Sync the proctex difference lut
-    if (pica.proctex.diff_lut_dirty) {
+    if (pica.proctex.color_diff_lut_dirty) {
         Common::Vec4f* new_data = reinterpret_cast<Common::Vec4f*>(buffer + bytes_used);
         for (u32 i = 0; i < pica.proctex.color_diff_table.size(); i++) {
             new_data[i] = pica.proctex.color_diff_table[i].ToVector() / 255.0f;
@@ -992,7 +1320,8 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
 }
 
 void RasterizerOpenGL::UploadUniforms(bool accelerate_draw) {
-    // glBindBufferRange also changes the generic buffer binding point, so we sync the state first.
+    // glBindBufferRange also changes the generic buffer binding point, so we sync the state
+    // first.
     state.draw.uniform_buffer = uniform_buffer.GetHandle();
     state.Apply();
 

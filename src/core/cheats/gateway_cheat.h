@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -78,6 +78,7 @@ public:
     ///     Comment lines start with a '*'
     /// This function will pares the file for such structures
     static std::vector<std::shared_ptr<CheatBase>> LoadFile(const std::string& filepath);
+    static std::vector<std::shared_ptr<CheatBase>> LoadString(const std::string& contents);
 
 private:
     std::atomic<bool> enabled = false;

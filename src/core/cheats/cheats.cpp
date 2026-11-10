@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <fstream>
 #include <functional>
@@ -79,13 +79,6 @@ void CheatEngine::SaveCheatFile(u64 title_id) const {
 }
 
 void CheatEngine::LoadCheatFile(u64 title_id) {
-    {
-        std::unique_lock lock{cheats_list_mutex};
-        if (loaded_title_id.has_value() && loaded_title_id == title_id) {
-            return;
-        }
-    }
-
     const std::string cheat_dir = FileUtil::GetUserPath(FileUtil::UserPath::CheatsDir);
     const std::string filepath = fmt::format("{}{:016X}.txt", cheat_dir, title_id);
 
@@ -98,7 +91,6 @@ void CheatEngine::LoadCheatFile(u64 title_id) {
     auto gateway_cheats = GatewayCheat::LoadFile(filepath);
     {
         std::unique_lock lock{cheats_list_mutex};
-        loaded_title_id = title_id;
         cheats_list = std::move(gateway_cheats);
     }
 }

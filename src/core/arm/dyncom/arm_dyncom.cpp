@@ -1,6 +1,6 @@
-// Copyright 2014 Citra Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <cstring>
@@ -24,19 +24,21 @@ ARM_DynCom::ARM_DynCom(Core::System& system_, Memory::MemorySystem& memory,
 ARM_DynCom::~ARM_DynCom() {}
 
 void ARM_DynCom::Run() {
+    if (break_flag) [[unlikely]] {
+        return;
+    }
     ExecuteInstructions(std::max<s64>(timer->GetDowncount(), 0));
 }
 
 void ARM_DynCom::Step() {
+    if (break_flag) [[unlikely]] {
+        return;
+    }
     ExecuteInstructions(1);
 }
 
 void ARM_DynCom::ClearInstructionCache() {
     state->instruction_cache.clear();
-    // [OHOS 性能优化] 同步清空直接映射缓存
-    for (auto& entry : state->ic_direct) {
-        entry.pc = 0xFFFFFFFF;
-    }
     trans_cache_buf_top = 0;
 }
 

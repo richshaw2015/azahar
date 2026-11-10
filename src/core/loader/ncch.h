@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -10,7 +10,15 @@
 #include "core/file_sys/ncch_container.h"
 #include "core/loader/loader.h"
 
+namespace Service::AM {
+class BundleCIAHandler;
+}
+
 namespace Loader {
+
+// AzaharPlus: program id of the currently loaded NCCH, empty when none is running.
+std::string getProgramId();
+void resetProgramId();
 
 /// Loads an NCCH file (e.g. from a CCI, or the first NCCH in a CXI)
 class AppLoader_NCCH final : public AppLoader {
@@ -22,12 +30,14 @@ public:
         this->file.reset();
     }
 
+    ~AppLoader_NCCH();
+
     /**
      * Returns the type of the file
      * @param file FileUtil::IOFile open file
      * @return FileType found, or FileType::Error if this loader doesn't know it
      */
-    static FileType IdentifyType(FileUtil::IOFile* file);
+    static FileType IdentifyType(FileUtil::IOFileBase* file);
 
     FileType GetFileType() override {
         return filetype;
@@ -56,13 +66,15 @@ public:
 
     ResultStatus ReadCode(std::vector<u8>& buffer) override;
 
-    ResultStatus ReadIcon(std::vector<u8>& buffer) override;
+    ResultStatus ReadIcon(std::vector<u8>& buffer, bool prefer_update_icon) override;
 
     ResultStatus ReadBanner(std::vector<u8>& buffer) override;
 
     ResultStatus ReadLogo(std::vector<u8>& buffer) override;
 
     ResultStatus ReadProgramId(u64& out_program_id) override;
+
+    ResultStatus ReadProductCode(std::string& out_product_code) override;
 
     ResultStatus ReadExtdataId(u64& out_extdata_id) override;
 
@@ -74,15 +86,19 @@ public:
 
     ResultStatus DumpUpdateRomFS(const std::string& target_path) override;
 
-    ResultStatus ReadTitle(std::string& title) override;
+    ResultStatus ReadTitle(std::string& title, bool prefer_update_title) override;
 
-    CompressFileInfo GetCompressFileInfo() override;
+    LoaderFileInfo GetLoaderFileInfo() override;
 
     bool IsFileCompressed() override;
+
+    bool IsFileBundle() override;
 
     std::string GetFilePath() override {
         return filepath;
     }
+
+    void LoadBundle() override;
 
 private:
     /**
@@ -100,9 +116,12 @@ private:
     /// Detects whether the NCCH contains GBA Virtual Console.
     bool IsGbaVirtualConsole(std::span<const u8> code);
 
+    ResultStatus OpenUpdateNCCH();
+
     FileSys::NCCHContainer base_ncch;
     FileSys::NCCHContainer update_ncch;
     FileSys::NCCHContainer* overlay_ncch;
+    std::unique_ptr<Service::AM::BundleCIAHandler> bundle_cia_handler;
 
     std::vector<u32> preferred_regions;
 

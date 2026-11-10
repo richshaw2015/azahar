@@ -2,11 +2,11 @@ option(USE_SYSTEM_LIBS "Use system libraries over bundled ones" OFF)
 
 # System library options
 CMAKE_DEPENDENT_OPTION(USE_SYSTEM_QT "Use the system Qt lib (instead of the bundled one)" OFF "ENABLE_QT;MSVC OR APPLE" ON)
-CMAKE_DEPENDENT_OPTION(USE_SYSTEM_MOLTENVK "Use the system MoltenVK lib (instead of the bundled one)" OFF "APPLE" OFF)
+CMAKE_DEPENDENT_OPTION(USE_SYSTEM_LIBUSB "Use the system libusb (instead of the bundled libusb)" OFF "NOT (BSD MATCHES \"FreeBSD\")" ON)
+option(USE_SYSTEM_MOLTENVK "Use the system MoltenVK lib (instead of the bundled one)" OFF)
 option(USE_SYSTEM_SDL2 "Use the system SDL2 lib (instead of the bundled one)" OFF)
 option(USE_SYSTEM_BOOST "Use the system Boost libs (instead of the bundled ones)" OFF)
 option(USE_SYSTEM_OPENSSL "Use the system OpenSSL libs (instead of the bundled LibreSSL)" OFF)
-option(USE_SYSTEM_LIBUSB "Use the system libusb (instead of the bundled libusb)" OFF)
 option(USE_SYSTEM_CPP_JWT "Use the system cpp-jwt (instead of the bundled one)" OFF)
 option(USE_SYSTEM_SOUNDTOUCH "Use the system SoundTouch (instead of the bundled one)" OFF)
 option(USE_SYSTEM_CPP_HTTPLIB "Use the system cpp-httplib (instead of the bundled one)" OFF)
@@ -14,8 +14,8 @@ option(USE_SYSTEM_JSON "Use the system JSON (nlohmann-json3) package (instead of
 option(USE_SYSTEM_DYNARMIC "Use the system dynarmic (instead of the bundled one)" OFF)
 option(USE_SYSTEM_FMT "Use the system fmt (instead of the bundled one)" OFF)
 option(USE_SYSTEM_XBYAK "Use the system xbyak (instead of the bundled one)" OFF)
+option(USE_SYSTEM_OAKNUT "Use the system oaknut (instead of the bundled one)" OFF)
 option(USE_SYSTEM_INIH "Use the system inih (instead of the bundled one)" OFF)
-option(USE_SYSTEM_FFMPEG_HEADERS "Use the system FFmpeg headers (instead of the bundled one)" OFF)
 option(USE_SYSTEM_GLSLANG "Use the system glslang and SPIR-V libraries (instead of the bundled ones)" OFF)
 option(USE_SYSTEM_ZSTD "Use the system Zstandard library (instead of the bundled one)" OFF)
 option(USE_SYSTEM_ENET "Use the system libenet (instead of the bundled one)" OFF)
@@ -40,6 +40,7 @@ CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_JSON "Disable system JSON" OFF "USE_SYSTEM
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_DYNARMIC "Disable system Dynarmic" OFF "USE_SYSTEM_LIBS" OFF)
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_FMT "Disable system fmt" OFF "USE_SYSTEM_LIBS" OFF)
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_XBYAK "Disable system xbyak" OFF "USE_SYSTEM_LIBS" OFF)
+CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_OAKNUT "Disable system oaknut" OFF "USE_SYSTEM_LIBS" OFF)
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_INIH "Disable system inih" OFF "USE_SYSTEM_LIBS" OFF)
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_FFMPEG_HEADERS "Disable system ffmpeg" OFF "USE_SYSTEM_LIBS" OFF)
 CMAKE_DEPENDENT_OPTION(DISABLE_SYSTEM_GLSLANG "Disable system glslang" OFF "USE_SYSTEM_LIBS" OFF)
@@ -66,6 +67,7 @@ set(LIB_VAR_LIST
     DYNARMIC
     FMT
     XBYAK
+    OAKNUT
     INIH
     FFMPEG_HEADERS
     GLSLANG

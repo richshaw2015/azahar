@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "video_core/shader/generator/pica_fs_config.h"
 
@@ -21,13 +21,13 @@ FramebufferConfig::FramebufferConfig(const Pica::RegsInternal& regs) {
     logic_op.Assign(Pica::FramebufferRegs::LogicOp::Copy);
 
     if (alphablend_enable) {
-        rgb_blend.eq = output_merger.alpha_blending.blend_equation_rgb.Value();
-        rgb_blend.src_factor = output_merger.alpha_blending.factor_source_rgb;
-        rgb_blend.dst_factor = output_merger.alpha_blending.factor_dest_rgb;
+        requested_rgb_blend.eq = output_merger.alpha_blending.blend_equation_rgb.Value();
+        requested_rgb_blend.src_factor = output_merger.alpha_blending.factor_source_rgb;
+        requested_rgb_blend.dst_factor = output_merger.alpha_blending.factor_dest_rgb;
 
-        alpha_blend.eq = output_merger.alpha_blending.blend_equation_a.Value();
-        alpha_blend.src_factor = output_merger.alpha_blending.factor_source_a;
-        alpha_blend.dst_factor = output_merger.alpha_blending.factor_dest_a;
+        requested_alpha_blend.eq = output_merger.alpha_blending.blend_equation_a.Value();
+        requested_alpha_blend.src_factor = output_merger.alpha_blending.factor_source_a;
+        requested_alpha_blend.dst_factor = output_merger.alpha_blending.factor_dest_a;
     }
 }
 
@@ -37,16 +37,21 @@ void FramebufferConfig::ApplyProfile(const Profile& profile) {
         logic_op.Assign(requested_logic_op);
     }
 
-    // Min/max blend emulation
-    if (!profile.has_blend_minmax_factor && alphablend_enable) {
-        if (rgb_blend.eq != Pica::FramebufferRegs::BlendEquation::Min &&
-            rgb_blend.eq != Pica::FramebufferRegs::BlendEquation::Max) {
-            rgb_blend = {};
-        }
+    if (!alphablend_enable) {
+        return;
+    }
 
-        if (alpha_blend.eq != Pica::FramebufferRegs::BlendEquation::Min &&
-            alpha_blend.eq != Pica::FramebufferRegs::BlendEquation::Max) {
-            alpha_blend = {};
+    // Check if we don't need blend min/max emulation.
+    if (profile.has_blend_minmax_factor) {
+        requested_rgb_blend.SetMinMaxEmulationDisabled();
+        requested_alpha_blend.SetMinMaxEmulationDisabled();
+    } else if (profile.is_vulkan) {
+        // VK_BLEND_OP_MIN/MAX ignore the blend factors, unlike the PICA hardware.
+        if (requested_rgb_blend.UsesNoOpFactors()) {
+            requested_rgb_blend.SetMinMaxEmulationDisabled();
+        }
+        if (requested_alpha_blend.UsesNoOpFactors()) {
+            requested_alpha_blend.SetMinMaxEmulationDisabled();
         }
     }
 }

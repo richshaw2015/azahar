@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/vector.hpp>
@@ -29,6 +29,7 @@
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/fs/fs_user.h"
+#include "core/hle/service/pm/pm_app.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/service.h"
 #include "core/hw/aes/ccm.h"
@@ -47,7 +48,6 @@ void Module::serialize(Archive& ar, const unsigned int file_version) {
     ar & shared_font_mem;
     ar & shared_font_loaded;
     ar & shared_font_relocated;
-    ar & cpu_percent;
     ar & screen_capture_post_permission;
     ar & applet_manager;
     ar & wireless_reboot_info;
@@ -343,13 +343,17 @@ void Module::APTInterface::GetSharedFont(Kernel::HLERequestContext& ctx) {
 
 void Module::APTInterface::GetWirelessRebootInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx);
-    const auto size = rp.Pop<u32>();
+    const auto size = std::min(rp.Pop<u32>(), max_wireless_reboot_info_size);
 
     LOG_WARNING(Service_APT, "called size={:08X}", size);
 
+    std::vector<u8> buffer(size, 0);
+    std::memcpy(buffer.data(), apt->wireless_reboot_info.data(),
+                std::min<std::size_t>(size, apt->wireless_reboot_info.size()));
+
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(ResultSuccess);
-    rb.PushStaticBuffer(apt->wireless_reboot_info, 0);
+    rb.PushStaticBuffer(std::move(buffer), 0);
 }
 
 void Module::APTInterface::NotifyToWait(Kernel::HLERequestContext& ctx) {
@@ -574,6 +578,28 @@ void Module::APTInterface::CancelParameter(Kernel::HLERequestContext& ctx) {
                                                  receiver_appid));
 }
 
+void Module::APTInterface::MapProgramIdForDebug(Kernel::HLERequestContext& ctx) {
+    // This function got stubbed at some point and no longer
+    // does anything on real hardware. It is implemented here
+    // so that emulated applications can take advantage of it.
+
+    IPC::RequestParser rp(ctx);
+    const auto app_id = rp.PopEnum<AppletId>();
+    u64 title_id = rp.Pop<u64>();
+
+    // NOTE: Real hardware forces the media type to nand.
+    // To allow better control of this service call,
+    // treat the highest byte of the title ID as the
+    // media type instead.
+    FS::MediaType media_type = static_cast<FS::MediaType>(title_id >> 56);
+    title_id &= ~0xFF00000000000000ULL;
+
+    apt->applet_manager->MapProgramIdForDebug(app_id, title_id, media_type);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(ResultSuccess); // No error
+}
+
 void Module::APTInterface::PrepareToDoApplicationJump(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx);
     auto flags = rp.PopEnum<ApplicationJumpFlags>();
@@ -731,29 +757,39 @@ void Module::APTInterface::SetAppCpuTimeLimit(Kernel::HLERequestContext& ctx) {
     const auto must_be_one = rp.Pop<u32>();
     const auto value = rp.Pop<u32>();
 
-    LOG_WARNING(Service_APT, "(STUBBED) called, must_be_one={}, value={}", must_be_one, value);
     if (must_be_one != 1) {
         LOG_ERROR(Service_APT, "This value should be one, but is actually {}!", must_be_one);
     }
 
-    apt->cpu_percent = value;
-
+    auto pm_app = Service::PM::GetServiceAPP(apt->system);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(ResultSuccess); // No error
+    if (pm_app) {
+        rb.Push(pm_app->UpdateResourceLimit(Kernel::ResourceLimitType::CpuTime, value));
+    } else {
+        LOG_ERROR(Service_APT, "Failed to get PM:APP module");
+        rb.Push(ResultUnknown);
+    }
 }
 
 void Module::APTInterface::GetAppCpuTimeLimit(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx);
     const auto must_be_one = rp.Pop<u32>();
 
-    LOG_WARNING(Service_APT, "(STUBBED) called, must_be_one={}", must_be_one);
     if (must_be_one != 1) {
         LOG_ERROR(Service_APT, "This value should be one, but is actually {}!", must_be_one);
     }
 
+    auto pm_app = Service::PM::GetServiceAPP(apt->system);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(ResultSuccess); // No error
-    rb.Push(apt->cpu_percent);
+    if (pm_app) {
+        auto res = pm_app->GetResourceLimit(Kernel::ResourceLimitType::CpuTime);
+        rb.Push(res.Code());
+        rb.Push(res.ValueOr(u32{}));
+    } else {
+        LOG_ERROR(Service_APT, "Failed to get PM:APP module");
+        rb.Push(ResultUnknown);
+        rb.Push(u32{});
+    }
 }
 
 void Module::APTInterface::PrepareToStartLibraryApplet(Kernel::HLERequestContext& ctx) {
@@ -968,21 +1004,21 @@ void Module::APTInterface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
     const auto from_app_id = rp.PopEnum<AppletId>();
     const auto reply_value = rp.PopEnum<SleepQueryReply>();
 
-    LOG_WARNING(Service_APT, "(STUBBED) called, from_app_id={:08X}, reply_value={:08X}",
-                from_app_id, reply_value);
+    LOG_DEBUG(Service_APT, "called, from_app_id={:08X}, reply_value={:08X}", from_app_id,
+              reply_value);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(ResultSuccess);
+    rb.Push(apt->applet_manager->ReplySleepQuery(from_app_id, reply_value));
 }
 
 void Module::APTInterface::ReplySleepNotificationComplete(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx);
     const auto from_app_id = rp.PopEnum<AppletId>();
 
-    LOG_WARNING(Service_APT, "(STUBBED) called, from_app_id={:08X}", from_app_id);
+    LOG_DEBUG(Service_APT, "called, from_app_id={:08X}", from_app_id);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(ResultSuccess);
+    rb.Push(apt->applet_manager->ReplySleepNotificationComplete(from_app_id));
 }
 
 void Module::APTInterface::PrepareToJumpToHomeMenu(Kernel::HLERequestContext& ctx) {
@@ -1091,7 +1127,7 @@ void Module::APTInterface::GetCaptureInfo(Kernel::HLERequestContext& ctx) {
 
     LOG_DEBUG(Service_APT, "called");
 
-    auto screen_capture_buffer = apt->applet_manager->GetCaptureInfo();
+    auto screen_capture_buffer = apt->applet_manager->GetCaptureInfoSuspendedApp();
     auto real_size = std::min(static_cast<u32>(screen_capture_buffer.size()), size);
     screen_capture_buffer.resize(size);
 
@@ -1400,6 +1436,58 @@ void Module::APTInterface::Reboot(Kernel::HLERequestContext& ctx) {
     rb.Push(ResultSuccess);
 }
 
+void Module::APTInterface::GetAppletProgramInfo(Kernel::HLERequestContext& ctx) {
+    union {
+        u32 raw;
+        BitField<0, 1, u32> mediatype_nand;
+        BitField<1, 1, u32> mediatype_sdmc;
+        BitField<2, 1, u32> mediatype_gamecard;
+        BitField<4, 1, u32> is_appid;
+        BitField<5, 1, u32> not_appid_must_set;
+        BitField<8, 1, u32> is_system_app;
+    } flags;
+
+    IPC::RequestParser rp(ctx);
+    u32 program_id = rp.Pop<u32>();
+    flags.raw = rp.Pop<u32>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+
+    u64 title_id;
+    if (flags.is_appid) {
+        auto cfg = Service::CFG::GetModule(apt->system);
+        title_id =
+            GetTitleIdForApplet(static_cast<AppletId>(program_id), cfg->GetRegionValue(true));
+    } else {
+        if (!flags.not_appid_must_set) {
+            rb.Push(ResultUnknown); // TODO: Find proper error code
+            rb.Push(0);
+            return;
+        } else {
+            u32 tid_high = flags.is_system_app ? 0x00040010 : 0x00040000;
+            title_id = static_cast<u64>(tid_high) << 32 | program_id;
+        }
+    }
+
+    std::vector<Service::AM::TitleInfo> info;
+    Result res = ResultUnknown; // TODO: Find proper error code
+    if (res.IsError() && flags.mediatype_nand) {
+        res = Service::AM::GetTitleInfoFromList(apt->system, std::span<u64>(&title_id, 1),
+                                                FS::MediaType::NAND, info);
+    }
+    if (res.IsError() && flags.mediatype_sdmc) {
+        res = Service::AM::GetTitleInfoFromList(apt->system, std::span<u64>(&title_id, 1),
+                                                FS::MediaType::SDMC, info);
+    }
+    if (res.IsError() && flags.mediatype_gamecard) {
+        res = Service::AM::GetTitleInfoFromList(apt->system, std::span<u64>(&title_id, 1),
+                                                FS::MediaType::GameCard, info);
+    }
+
+    rb.Push(res);
+    rb.Push(res.IsSuccess() ? info[0].version : 0);
+}
+
 void Module::APTInterface::HardwareResetAsync(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx);
 
@@ -1446,7 +1534,7 @@ void Module::APTInterface::IsStandardMemoryLayout(Kernel::HLERequestContext& ctx
     LOG_DEBUG(Service_APT, "called");
 
     bool is_standard;
-    if (Settings::values.is_new_3ds) {
+    if (Settings::values.IsNew3DSEffective()) {
         // Memory layout is standard if it is not NewDev1 (178MB)
         is_standard = apt->system.Kernel().GetMemoryMode() != Kernel::MemoryMode::NewDev1;
     } else {

@@ -1,10 +1,11 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/settings.h"
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
+#include "core/hle/service/hid/hid.h"
 #include "core/tracer/recorder.h"
 #include "video_core/debug_utils/debug_utils.h"
 #include "video_core/renderer_base.h"
@@ -18,7 +19,7 @@ RendererBase::RendererBase(Core::System& system_, Frontend::EmuWindow& window,
 RendererBase::~RendererBase() = default;
 
 u32 RendererBase::GetResolutionScaleFactor() {
-    const auto graphics_api = Settings::values.graphics_api.GetValue();
+    const auto graphics_api = Settings::GetWorkingGraphicsAPI();
     if (graphics_api == Settings::GraphicsAPI::Software) {
         // Software renderer always render at native resolution
         return 1;
@@ -27,6 +28,10 @@ u32 RendererBase::GetResolutionScaleFactor() {
     const u32 scale_factor = Settings::values.resolution_factor.GetValue();
     return scale_factor != 0 ? scale_factor
                              : render_window.GetFramebufferLayout().GetScalingRatio();
+}
+
+u8 RendererBase::GetSampleCount() const {
+    return Settings::GetAntiAliasingSampleCount(Settings::values.antialiasing.GetValue());
 }
 
 void RendererBase::UpdateCurrentFramebufferLayout(bool is_portrait_mode) {
@@ -47,7 +52,27 @@ void RendererBase::EndFrame() {
 
     render_window.PollEvents();
 
+    // Wait for the GPU to finish and to be at most one game frame behind.
+    // Below 60 FPS a guest frame spans several VBlanks, and its GPU work may still run while the
+    // next one is emulated.
+    const u64 game_frames = system.perf_stats->GetGameFrameCount();
+    if (game_frames != limited_game_frames) {
+        limited_game_frames = game_frames;
+        LimitFramesAheadOfGpu();
+    }
+
     system.frame_limiter.DoFrameLimiting(system.CoreTiming().GetGlobalTimeUs());
+
+    // On fast enough devices, the time limiter sleep spans most of the 16ms period
+    // between VBlank events. If an input event lands in that period, then the change
+    // will not reflect in HID until the next HID event. For applications that only
+    // check the input just after VBlank, it will cause them to lose the event until
+    // the next frame. Sacrifice HID timing accuracy for input latency by triggering
+    // the event just after VBlank (frame limiting behaviour is not accurate anyways).
+    if (const auto hid = Service::HID::GetModule(system)) {
+        hid->RestartPadUpdates();
+    }
+
     system.perf_stats->BeginSystemFrame();
 }
 

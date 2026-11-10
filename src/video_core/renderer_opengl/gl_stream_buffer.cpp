@@ -1,9 +1,10 @@
 // Copyright 2022 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "common/alignment.h"
 #include "common/assert.h"
+#include "common/logging/log.h"
 #include "common/microprofile.h"
 #include "video_core/renderer_opengl/gl_driver.h"
 #include "video_core/renderer_opengl/gl_stream_buffer.h"
@@ -14,7 +15,7 @@ MICROPROFILE_DEFINE(OpenGL_StreamBuffer, "OpenGL", "Stream Buffer Orphaning",
 namespace OpenGL {
 
 OGLStreamBuffer::OGLStreamBuffer(Driver& driver, GLenum target, GLsizeiptr size,
-                                 bool prefer_coherent)
+                                 bool prefer_coherent, GLsizeiptr fallback_size)
     : gl_target(target), buffer_size(size) {
     gl_buffer.Create();
     glBindBuffer(gl_target, gl_buffer.handle);
@@ -24,16 +25,45 @@ OGLStreamBuffer::OGLStreamBuffer(Driver& driver, GLenum target, GLsizeiptr size,
         allocate_size *= 2;
     }
 
+    while (glGetError() != GL_NO_ERROR) {
+    }
+
     if (GLAD_GL_ARB_buffer_storage) {
         persistent = true;
         coherent = prefer_coherent;
         GLbitfield flags =
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | (coherent ? GL_MAP_COHERENT_BIT : 0);
         glBufferStorage(gl_target, allocate_size, nullptr, flags);
-        mapped_ptr = static_cast<u8*>(glMapBufferRange(
-            gl_target, 0, buffer_size, flags | (coherent ? 0 : GL_MAP_FLUSH_EXPLICIT_BIT)));
+        if (glGetError() == GL_NO_ERROR) {
+            mapped_ptr = static_cast<u8*>(glMapBufferRange(
+                gl_target, 0, buffer_size, flags | (coherent ? 0 : GL_MAP_FLUSH_EXPLICIT_BIT)));
+        }
+        if (!mapped_ptr) {
+            LOG_WARNING(Render_OpenGL, "Persistent stream buffer allocation of {} bytes failed",
+                        buffer_size);
+            gl_buffer.Release();
+            gl_buffer.Create();
+            glBindBuffer(gl_target, gl_buffer.handle);
+            persistent = false;
+            coherent = false;
+            if (fallback_size > 0 && fallback_size < buffer_size) {
+                buffer_size = fallback_size;
+            }
+            glBufferData(gl_target, buffer_size, nullptr, GL_STREAM_DRAW);
+        }
     } else {
         glBufferData(gl_target, allocate_size, nullptr, GL_STREAM_DRAW);
+        if (glGetError() != GL_NO_ERROR && fallback_size > 0 && fallback_size < size) {
+            buffer_size = fallback_size;
+            allocate_size = fallback_size;
+            if (driver.HasBug(DriverBug::VertexArrayOutOfBound) && target == GL_ARRAY_BUFFER) {
+                allocate_size *= 2;
+            }
+            LOG_WARNING(Render_OpenGL,
+                        "Stream buffer allocation of {} bytes failed, retrying with {} bytes", size,
+                        fallback_size);
+            glBufferData(gl_target, allocate_size, nullptr, GL_STREAM_DRAW);
+        }
     }
 }
 

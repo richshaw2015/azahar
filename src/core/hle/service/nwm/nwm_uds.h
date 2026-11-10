@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -18,6 +18,7 @@
 #include <boost/serialization/export.hpp>
 #include "common/common_types.h"
 #include "common/swap.h"
+#include "common/threadsafe_queue.h"
 #include "core/hle/service/nwm/uds_common.h"
 #include "core/hle/service/service.h"
 #include "network/network.h"
@@ -479,7 +480,23 @@ private:
      */
     void DecryptBeaconData(Kernel::HLERequestContext& ctx);
 
+    // AzaharPlus: probe response parameters for multiplayer compatibility
+    /**
+     * NWM_UDS::SetProbeResponseParam service function.
+     * Sets the probe response parameters for the network.
+     *  Inputs:
+     *      1 : Probe OUI
+     *      2 : Probe data
+     *  Outputs:
+     *      0 : Return header
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void SetProbeResponseParam(Kernel::HLERequestContext& ctx);
+
     void CheckSpoofFriendCodeSeed(Kernel::HLERequestContext& ctx, NodeInfo& node);
+
+    void SignalEventAsync(std::shared_ptr<Kernel::Event> event);
+    void DispatchQueuedAsyncEventSignals();
 
     ResultVal<std::shared_ptr<Kernel::Event>> Initialize(
         u32 sharedmem_size, const NodeInfo& node, u16 version,
@@ -627,6 +644,12 @@ private:
     // Event that will generate and send the 802.11 beacon frames.
     Core::TimingEventType* beacon_broadcast_event;
 
+    // Event for handling async event signals
+    Core::TimingEventType* handle_async_event_signals_event;
+
+    // Queue holding the async event shared pointers
+    Common::MPSCQueue<std::shared_ptr<Kernel::Event>> pending_async_event_signals;
+
     // Callback identifier for the OnWifiPacketReceived event.
     Network::RoomMember::CallbackHandle<Network::WifiPacket> wifi_packet_received;
 
@@ -637,6 +660,10 @@ private:
     std::shared_ptr<Kernel::Event> connection_event;
 
     // Mutex to synchronize access to the list of received beacons between the emulation thread and
+    // AzaharPlus: SetProbeResponseParam state
+    u32 probe_oui = 0;
+    u8 probe_data = 0;
+
     // the network thread.
     std::mutex beacon_mutex;
 

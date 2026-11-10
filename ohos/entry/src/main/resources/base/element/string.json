@@ -1,0 +1,5660 @@
+{
+  "string": [
+    {
+      "name": "about_desc",
+      "value": "版本 / 信息 / 链接"
+    },
+    {
+      "name": "appearance_mode_auto",
+      "value": "系统"
+    },
+    {
+      "name": "appearance_mode_dark",
+      "value": "深色"
+    },
+    {
+      "name": "appearance_mode_light",
+      "value": "浅色"
+    },
+    {
+      "name": "application",
+      "value": "应用"
+    },
+    {
+      "name": "app_icon",
+      "value": "应用图标"
+    },
+    {
+      "name": "app_icon_style_default",
+      "value": "默认"
+    },
+    {
+      "name": "app_icon_style_alt1",
+      "value": "扁平"
+    },
+    {
+      "name": "app_icon_style_alt2",
+      "value": "低多边形"
+    },
+    {
+      "name": "app_icon_style_alt3",
+      "value": "CRT"
+    },
+    {
+      "name": "app_icon_change_failed",
+      "value": "切换应用图标失败"
+    },
+    {
+      "name": "view_options",
+      "value": "显示选项"
+    },
+    {
+      "name": "performance_overlay_hidden",
+      "value": "隐藏"
+    },
+    {
+      "name": "performance_overlay_position_bottom_left",
+      "value": "左下角"
+    },
+    {
+      "name": "performance_overlay_position_bottom_right",
+      "value": "右下角"
+    },
+    {
+      "name": "performance_overlay_position_center_bottom",
+      "value": "底部居中"
+    },
+    {
+      "name": "performance_overlay_position_center_top",
+      "value": "顶部居中"
+    },
+    {
+      "name": "performance_overlay_position_top_left",
+      "value": "左上角"
+    },
+    {
+      "name": "performance_overlay_position_top_right",
+      "value": "右上角"
+    },
+    {
+      "name": "performance_overlay_show_fps",
+      "value": "显示帧率"
+    },
+    {
+      "name": "system",
+      "value": "系统"
+    },
+    {
+      "name": "module_desc",
+      "value": "3DS emulator entry module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "3DS模拟器"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "3DS模拟器"
+    },
+    {
+      "name": "recent_games_card_name",
+      "value": "最近游玩"
+    },
+    {
+      "name": "recent_games_card_desc",
+      "value": "快速启动最近游玩的 3DS 游戏"
+    },
+    {
+      "name": "no_recent_games",
+      "value": "还没有最近游戏"
+    },
+    {
+      "name": "widget_tap_to_open",
+      "value": "点击打开 3DS 模拟器"
+    },
+    {
+      "name": "add",
+      "value": "新增"
+    },
+    {
+      "name": "amiibo",
+      "value": "Amiibo"
+    },
+    {
+      "name": "amiibo_load_failed",
+      "value": "Amiibo 加载失败，请检查文件"
+    },
+    {
+      "name": "amiibo_load_file",
+      "value": "加载 Amiibo 文件"
+    },
+    {
+      "name": "amiibo_load_when_requested",
+      "value": "游戏请求 Amiibo 时加载文件"
+    },
+    {
+      "name": "amiibo_loaded",
+      "value": "Amiibo 已加载"
+    },
+    {
+      "name": "amiibo_none_to_remove",
+      "value": "当前没有可移除的 Amiibo"
+    },
+    {
+      "name": "amiibo_not_requested",
+      "value": "当前游戏尚未请求 Amiibo"
+    },
+    {
+      "name": "amiibo_panel_desc",
+      "value": "Amiibo .bin 文件固定从 Download/amiibo 选择；如果游戏还没有调用 NFC 搜索，核心会拒绝加载。"
+    },
+    {
+      "name": "amiibo_remove",
+      "value": "移除 Amiibo"
+    },
+    {
+      "name": "amiibo_remove_message",
+      "value": "确定从当前游戏会话中移除已加载的 Amiibo？"
+    },
+    {
+      "name": "amiibo_remove_title",
+      "value": "移除 Amiibo"
+    },
+    {
+      "name": "amiibo_removed",
+      "value": "Amiibo 已移除"
+    },
+    {
+      "name": "amiibo_select_failed_fmt",
+      "value": "选择 Amiibo 失败: ${error}"
+    },
+    {
+      "name": "amiibo_waiting",
+      "value": "当前游戏正在等待 Amiibo"
+    },
+    {
+      "name": "azahar_ohos_author",
+      "value": "Azahar OHOS"
+    },
+    {
+      "name": "azahar_user_dirs",
+      "value": "Azahar 用户目录"
+    },
+    {
+      "name": "azahar_user_dirs_desc",
+      "value": "所有可见文件都固定在应用 Download 目录下，native user path 也指向这里。"
+    },
+    {
+      "name": "back",
+      "value": "返回"
+    },
+    {
+      "name": "camera",
+      "value": "相机"
+    },
+    {
+      "name": "camera_any_back",
+      "value": "后置摄像头"
+    },
+    {
+      "name": "camera_any_front",
+      "value": "前置摄像头"
+    },
+    {
+      "name": "camera_device",
+      "value": "摄像头"
+    },
+    {
+      "name": "camera_device_desc",
+      "value": "如果将“图像来源”设置为“实体摄像设备”，将会使用设备的摄像头作为图像来源"
+    },
+    {
+      "name": "camera_facing_back",
+      "value": "后置摄像头"
+    },
+    {
+      "name": "camera_facing_external",
+      "value": "外置摄像头"
+    },
+    {
+      "name": "camera_facing_front",
+      "value": "前置摄像头"
+    },
+    {
+      "name": "camera_flip_button_fmt",
+      "value": "翻转: ${flip}"
+    },
+    {
+      "name": "camera_flip_horizontal",
+      "value": "水平偏移"
+    },
+    {
+      "name": "camera_flip_none",
+      "value": "无"
+    },
+    {
+      "name": "camera_flip_reverse",
+      "value": "颠倒"
+    },
+    {
+      "name": "camera_flip_vertical",
+      "value": "竖直偏移"
+    },
+    {
+      "name": "camera_frontend_desc",
+      "value": "对应 Azahar upstream 的 outer right、inner、outer left 三路摄像头配置。"
+    },
+    {
+      "name": "camera_inner",
+      "value": "内置摄像头"
+    },
+    {
+      "name": "camera_outer_left",
+      "value": "外置左摄像头"
+    },
+    {
+      "name": "camera_outer_right",
+      "value": "外置右摄像头"
+    },
+    {
+      "name": "camera_source_blank",
+      "value": "空白"
+    },
+    {
+      "name": "camera_source_button_fmt",
+      "value": "源: ${source}"
+    },
+    {
+      "name": "camera_source_image",
+      "value": "图片"
+    },
+    {
+      "name": "camera_source_system",
+      "value": "实体摄像头"
+    },
+    {
+      "name": "camera_type_telephoto",
+      "value": "长焦"
+    },
+    {
+      "name": "camera_type_true_depth",
+      "value": "深感"
+    },
+    {
+      "name": "camera_type_ultra_wide",
+      "value": "超广角"
+    },
+    {
+      "name": "camera_type_wide",
+      "value": "广角"
+    },
+    {
+      "name": "cancel",
+      "value": "取消"
+    },
+    {
+      "name": "cheat_code_copied",
+      "value": "代码已复制到剪贴板"
+    },
+    {
+      "name": "cheat_code_copy_failed",
+      "value": "复制代码失败"
+    },
+    {
+      "name": "cheat_code_required",
+      "value": "代码不能为空"
+    },
+    {
+      "name": "cheat_delete_failed",
+      "value": "删除金手指失败"
+    },
+    {
+      "name": "cheat_deleted",
+      "value": "金手指已删除"
+    },
+    {
+      "name": "cheat_detail",
+      "value": "金手指详情"
+    },
+    {
+      "name": "cheat_empty_desc",
+      "value": "新增后会保存到 cheats 目录。"
+    },
+    {
+      "name": "cheat_invalid_line_fmt",
+      "value": "第 ${line} 行格式不正确"
+    },
+    {
+      "name": "cheat_name_required",
+      "value": "名称不能为空"
+    },
+    {
+      "name": "cheat_no_available_title_id",
+      "value": "当前游戏没有可用 Title ID"
+    },
+    {
+      "name": "cheat_no_title_id_cannot_save",
+      "value": "当前游戏没有 Title ID，无法保存金手指"
+    },
+    {
+      "name": "cheat_no_title_id_desc",
+      "value": "此文件没有解析到 3DS Title ID，无法定位 Azahar 金手指文件。"
+    },
+    {
+      "name": "cheat_saved",
+      "value": "金手指已保存"
+    },
+    {
+      "name": "import_cheat_file",
+      "value": "导入 TXT"
+    },
+    {
+      "name": "cheat_imported",
+      "value": "金手指已导入，全部默认为关闭"
+    },
+    {
+      "name": "cheat_import_invalid_file",
+      "value": "文件为空、格式无效或不包含有效金手指"
+    },
+    {
+      "name": "cheat_import_failed_fmt",
+      "value": "导入金手指失败：${error}"
+    },
+    {
+      "name": "cheat_toggle_failed",
+      "value": "切换金手指失败"
+    },
+    {
+      "name": "cheat_warning",
+      "value": "⚠ 开启金手指后，大多数需要重启游戏才能彻底关闭。若游戏出现异常，请先关闭所有金手指再重启游戏。"
+    },
+    {
+      "name": "cheats_enabled_count_fmt",
+      "value": "${enabled}/${total} 已启用"
+    },
+    {
+      "name": "disable_all_cheats",
+      "value": "全部禁用"
+    },
+    {
+      "name": "confirm_disable_all_cheats",
+      "value": "确定禁用所有金手指？"
+    },
+    {
+      "name": "cheats",
+      "value": "金手指"
+    },
+    {
+      "name": "check_dirs",
+      "value": "检查目录"
+    },
+    {
+      "name": "close",
+      "value": "关闭"
+    },
+    {
+      "name": "complete",
+      "value": "完整"
+    },
+    {
+      "name": "config",
+      "value": "配置"
+    },
+    {
+      "name": "confirm",
+      "value": "确定"
+    },
+    {
+      "name": "console_id",
+      "value": "设备 ID"
+    },
+    {
+      "name": "console_linked_desc",
+      "value": "SecureInfo、LFCS 和 OTP 已形成完整主机链接"
+    },
+    {
+      "name": "console_not_linked",
+      "value": "当前未链接完整主机唯一数据"
+    },
+    {
+      "name": "console_not_linked_desc",
+      "value": "当前没有完整主机唯一数据链接"
+    },
+    {
+      "name": "console_unique_data",
+      "value": "主机唯一数据"
+    },
+    {
+      "name": "console_unlink_failed",
+      "value": "解除主机唯一数据链接失败"
+    },
+    {
+      "name": "console_unlink_not_done",
+      "value": "未解除主机唯一数据链接"
+    },
+    {
+      "name": "continue",
+      "value": "继续"
+    },
+    {
+      "name": "covers",
+      "value": "封面"
+    },
+    {
+      "name": "cover_size",
+      "value": "封面大小"
+    },
+    {
+      "name": "cover_corner_radius",
+      "value": "封面圆角"
+    },
+    {
+      "name": "delete",
+      "value": "删除"
+    },
+    {
+      "name": "delete_cheat_message_fmt",
+      "value": "确定删除“${name}”？此操作会移除当前 Title ID 下的这条代码。"
+    },
+    {
+      "name": "delete_cheat_title",
+      "value": "删除金手指"
+    },
+    {
+      "name": "dir_amiibo_desc",
+      "value": "NFC Amiibo .bin 文件目录"
+    },
+    {
+      "name": "dir_camera_images",
+      "value": "相机图片"
+    },
+    {
+      "name": "dir_camera_images_desc",
+      "value": "3DS 摄像头静态图片源"
+    },
+    {
+      "name": "dir_cheats_desc",
+      "value": "Gateway 金手指文件保存目录"
+    },
+    {
+      "name": "dir_config_desc",
+      "value": "Azahar 配置文件目录"
+    },
+    {
+      "name": "dir_covers_desc",
+      "value": "首页卡片封面目录，文件名可使用 Title ID 或 ROM 文件名"
+    },
+    {
+      "name": "dir_custom_textures",
+      "value": "自定义纹理"
+    },
+    {
+      "name": "dir_custom_textures_desc",
+      "value": "load/textures，按 Title ID 放置纹理包"
+    },
+    {
+      "name": "dir_download_root",
+      "value": "应用下载根目录"
+    },
+    {
+      "name": "dir_download_root_desc",
+      "value": "游戏库、用户目录、上传目标，都从这里开始。"
+    },
+    {
+      "name": "dir_mods_desc",
+      "value": "load/mods，按 Title ID 放置 mods"
+    },
+    {
+      "name": "dir_movie_desc",
+      "value": "Azahar TAS Movie .ctm 录制和回放目录"
+    },
+    {
+      "name": "dir_nand_desc",
+      "value": "3DS NAND 用户数据"
+    },
+    {
+      "name": "dir_rom_library",
+      "value": "ROM 库"
+    },
+    {
+      "name": "dir_rom_library_desc",
+      "value": "首页会扫描根目录和 roms 子目录"
+    },
+    {
+      "name": "dir_romfs_dump_desc",
+      "value": "dump/romfs，转储的游戏 RomFS"
+    },
+    {
+      "name": "dir_save_files",
+      "value": "普通存档"
+    },
+    {
+      "name": "dir_save_files_desc",
+      "value": "导入、导出和存档文件管理目录"
+    },
+    {
+      "name": "dir_save_states",
+      "value": "即时存档"
+    },
+    {
+      "name": "dir_save_states_desc",
+      "value": "模拟器快照存档"
+    },
+    {
+      "name": "dir_screenshots_desc",
+      "value": "截图和分享导出目录"
+    },
+    {
+      "name": "dir_sdmc_desc",
+      "value": "3DS 虚拟 SD 卡目录"
+    },
+    {
+      "name": "dir_shader_cache",
+      "value": "着色器缓存"
+    },
+    {
+      "name": "dir_shader_cache_desc",
+      "value": "图形后端 shader cache"
+    },
+    {
+      "name": "dir_status_cache",
+      "value": "缓存"
+    },
+    {
+      "name": "dir_status_cheat",
+      "value": "金手指"
+    },
+    {
+      "name": "dir_status_export",
+      "value": "导出"
+    },
+    {
+      "name": "dir_status_media",
+      "value": "媒体"
+    },
+    {
+      "name": "dir_status_root",
+      "value": "根目录"
+    },
+    {
+      "name": "dir_status_save",
+      "value": "存档"
+    },
+    {
+      "name": "dir_status_scan",
+      "value": "扫描"
+    },
+    {
+      "name": "dir_status_state",
+      "value": "状态"
+    },
+    {
+      "name": "dir_status_system",
+      "value": "系统"
+    },
+    {
+      "name": "dir_sysdata_desc",
+      "value": "系统共享数据目录"
+    },
+    {
+      "name": "dir_texture_dump",
+      "value": "纹理转储"
+    },
+    {
+      "name": "dir_texture_dump_desc",
+      "value": "dump/textures，转储的游戏纹理"
+    },
+    {
+      "name": "dir_wallpapers_desc",
+      "value": "全局自定义壁纸处理结果"
+    },
+    {
+      "name": "directory",
+      "value": "目录"
+    },
+    {
+      "name": "dirs_checked",
+      "value": "目录已检查"
+    },
+    {
+      "name": "download_dir_initialized",
+      "value": "下载目录已初始化"
+    },
+    {
+      "name": "download_dir_not_set",
+      "value": "下载目录未设置"
+    },
+    {
+      "name": "download_dir_not_set_short",
+      "value": "未设置下载目录"
+    },
+    {
+      "name": "edit",
+      "value": "编辑"
+    },
+    {
+      "name": "edit_cheat",
+      "value": "编辑金手指"
+    },
+    {
+      "name": "add_cheat",
+      "value": "新增金手指"
+    },
+    {
+      "name": "name",
+      "value": "名称"
+    },
+    {
+      "name": "notes",
+      "value": "备注"
+    },
+    {
+      "name": "code",
+      "value": "代码"
+    },
+    {
+      "name": "enabled",
+      "value": "启用"
+    },
+    {
+      "name": "save",
+      "value": "保存"
+    },
+    {
+      "name": "exit",
+      "value": "退出"
+    },
+    {
+      "name": "exit_game",
+      "value": "退出游戏"
+    },
+    {
+      "name": "fast_forward_enable_failed",
+      "value": "快进开启失败"
+    },
+    {
+      "name": "fast_forward_enabled_fmt",
+      "value": "快进 ${limit}"
+    },
+    {
+      "name": "game_no_program_selected",
+      "value": "未选择程序"
+    },
+    {
+      "name": "game_start_failed_fmt",
+      "value": "启动失败：${status}"
+    },
+    {
+      "name": "game_status_paused",
+      "value": "已暂停"
+    },
+    {
+      "name": "game_status_prepare_start",
+      "value": "准备启动"
+    },
+    {
+      "name": "game_status_reset",
+      "value": "已重置"
+    },
+    {
+      "name": "game_status_running",
+      "value": "运行中"
+    },
+    {
+      "name": "game_waiting_surface",
+      "value": "等待渲染表面"
+    },
+    {
+      "name": "incomplete",
+      "value": "未完整"
+    },
+    {
+      "name": "linked",
+      "value": "已链接"
+    },
+    {
+      "name": "load_current_slot",
+      "value": "读取当前槽位"
+    },
+    {
+      "name": "load_error_empty_path",
+      "value": "ROM 路径为空"
+    },
+    {
+      "name": "load_error_failed",
+      "value": "加载失败"
+    },
+    {
+      "name": "load_error_file_not_found",
+      "value": "文件不存在或无访问权限"
+    },
+    {
+      "name": "load_error_unsupported_format",
+      "value": "不支持的 3DS 程序格式"
+    },
+    {
+      "name": "load_state_requested_fmt",
+      "value": "已请求读取${slot}"
+    },
+    {
+      "name": "load_state_unavailable",
+      "value": "当前无法读取状态"
+    },
+    {
+      "name": "load_this_slot",
+      "value": "读取此槽位"
+    },
+    {
+      "name": "menu",
+      "value": "菜单"
+    },
+    {
+      "name": "features",
+      "value": "功能"
+    },
+    {
+      "name": "more",
+      "value": "更多"
+    },
+    {
+      "name": "movie",
+      "value": "Movie"
+    },
+    {
+      "name": "movie_close",
+      "value": "关闭 Movie"
+    },
+    {
+      "name": "movie_close_message",
+      "value": "确定关闭当前 Movie？录制中的内容会先保存到 .ctm 文件。"
+    },
+    {
+      "name": "movie_close_title",
+      "value": "关闭 Movie"
+    },
+    {
+      "name": "movie_closed",
+      "value": "Movie 已关闭"
+    },
+    {
+      "name": "movie_finished",
+      "value": "Movie 已结束"
+    },
+    {
+      "name": "movie_no_active",
+      "value": "当前没有活动 Movie"
+    },
+    {
+      "name": "movie_no_recording",
+      "value": "当前没有正在录制的 Movie"
+    },
+    {
+      "name": "movie_playing",
+      "value": "Movie 回放中"
+    },
+    {
+      "name": "movie_prepare_playback",
+      "value": "准备回放 Movie"
+    },
+    {
+      "name": "movie_prepare_record",
+      "value": "准备录制 Movie"
+    },
+    {
+      "name": "movie_recording",
+      "value": "Movie 录制中"
+    },
+    {
+      "name": "movie_save",
+      "value": "保存 Movie"
+    },
+    {
+      "name": "movie_saved",
+      "value": "Movie 已保存"
+    },
+    {
+      "name": "native_init_failed",
+      "value": "native 初始化失败"
+    },
+    {
+      "name": "new3ds_system_files",
+      "value": "New 3DS 系统文件"
+    },
+    {
+      "name": "new3ds_system_files_desc",
+      "value": "New 3DS 专属系统模块和固件标题完整性"
+    },
+    {
+      "name": "nfc_searching",
+      "value": "NFC 搜索中"
+    },
+    {
+      "name": "no_cheats",
+      "value": "暂无金手指"
+    },
+    {
+      "name": "no_save_states",
+      "value": "暂无即时存档"
+    },
+    {
+      "name": "not_linked",
+      "value": "未链接"
+    },
+    {
+      "name": "old3ds_system_files",
+      "value": "Old 3DS 系统文件"
+    },
+    {
+      "name": "old3ds_system_files_desc",
+      "value": "主菜单、系统小程序和 Old 3DS 固件标题完整性"
+    },
+    {
+      "name": "open",
+      "value": "打开"
+    },
+    {
+      "name": "open_settings",
+      "value": "打开设置"
+    },
+    {
+      "name": "pause",
+      "value": "暂停"
+    },
+    {
+      "name": "pause_action_amiibo_desc",
+      "value": "加载或移除 Amiibo .bin 文件"
+    },
+    {
+      "name": "pause_action_cheats_desc",
+      "value": "查看、启用和编辑 Gateway 代码"
+    },
+    {
+      "name": "pause_action_close_playback_movie_desc",
+      "value": "退出当前 Movie 回放"
+    },
+    {
+      "name": "pause_action_close_recording_movie_desc",
+      "value": "结束当前 Movie 录制"
+    },
+    {
+      "name": "pause_action_exit_desc",
+      "value": "停止模拟并返回游戏库"
+    },
+    {
+      "name": "pause_action_reset_desc",
+      "value": "重启当前游戏"
+    },
+    {
+      "name": "pause_action_resume",
+      "value": "继续游戏"
+    },
+    {
+      "name": "pause_action_resume_desc",
+      "value": "恢复模拟并关闭菜单"
+    },
+    {
+      "name": "pause_action_save_movie_desc",
+      "value": "立即写入当前 .ctm 录制文件"
+    },
+    {
+      "name": "pause_action_screenshot_desc",
+      "value": "保存当前画面到 Download/screenshots"
+    },
+    {
+      "name": "pause_action_settings_desc",
+      "value": "打开图形、音频、系统设置"
+    },
+    {
+      "name": "pause_menu_title",
+      "value": "暂停菜单"
+    },
+    {
+      "name": "rebuild_dirs",
+      "value": "重建目录"
+    },
+    {
+      "name": "refresh",
+      "value": "刷新"
+    },
+    {
+      "name": "refreshing",
+      "value": "刷新中"
+    },
+    {
+      "name": "remove",
+      "value": "移除"
+    },
+    {
+      "name": "quick_load",
+      "value": "快速加载"
+    },
+    {
+      "name": "quick_save",
+      "value": "快速保存"
+    },
+    {
+      "name": "fast_forward",
+      "value": "快进"
+    },
+    {
+      "name": "reset",
+      "value": "重置"
+    },
+    {
+      "name": "reset_game_message",
+      "value": "确定重启当前游戏？未保存的游戏内进度会丢失。"
+    },
+    {
+      "name": "reset_game_title",
+      "value": "重置游戏"
+    },
+    {
+      "name": "reset_failed",
+      "value": "重置失败"
+    },
+    {
+      "name": "save_failed",
+      "value": "保存失败"
+    },
+    {
+      "name": "save_state_empty_desc",
+      "value": "该槽位为空，可以保存当前状态。"
+    },
+    {
+      "name": "save_state_empty_slot",
+      "value": "空槽位"
+    },
+    {
+      "name": "save_state_exists_desc",
+      "value": "可以覆盖保存，或读取该槽位回到记录状态。"
+    },
+    {
+      "name": "save_state_quick_slot",
+      "value": "快速槽位"
+    },
+    {
+      "name": "save_state_readable",
+      "value": "可读取"
+    },
+    {
+      "name": "save_state_delete_failed_fmt",
+      "value": "${slot} 存档删除失败"
+    },
+    {
+      "name": "save_state_deleted_fmt",
+      "value": "${slot} 存档已删除"
+    },
+    {
+      "name": "undo_overwrite",
+      "value": "撤销覆盖"
+    },
+    {
+      "name": "undo_overwrite_done_fmt",
+      "value": "${slot} 已恢复为上一版存档"
+    },
+    {
+      "name": "undo_overwrite_failed_fmt",
+      "value": "${slot} 撤销失败"
+    },
+    {
+      "name": "undo_overwrite_slot_fmt",
+      "value": "撤销${slot}覆盖"
+    },
+    {
+      "name": "save_state_completed_fmt",
+      "value": "已保存到${slot}"
+    },
+    {
+      "name": "save_state_requested_fmt",
+      "value": "已请求保存到${slot}"
+    },
+    {
+      "name": "save_state_revision_mismatch",
+      "value": "版本不匹配"
+    },
+    {
+      "name": "save_state_load_version_mismatch",
+      "value": "即时存档由其他版本创建，无法读取"
+    },
+    {
+      "name": "save_state_op_failed",
+      "value": "即时存档保存/读取失败"
+    },
+    {
+      "name": "core_runtime_error_fmt",
+      "value": "游戏运行发生错误（${status}）"
+    },
+    {
+      "name": "save_state_slot_empty_fmt",
+      "value": "${slot} 暂无存档"
+    },
+    {
+      "name": "save_state_slot_fmt",
+      "value": "槽位 ${slot}"
+    },
+    {
+      "name": "save_state_no_preview",
+      "value": "无预览"
+    },
+    {
+      "name": "delete_state",
+      "value": "删除存档"
+    },
+    {
+      "name": "save_state_unavailable",
+      "value": "当前无法保存状态"
+    },
+    {
+      "name": "save_states",
+      "value": "即时存档"
+    },
+    {
+      "name": "save_to_current_slot",
+      "value": "保存到当前槽位"
+    },
+    {
+      "name": "save_to_this_slot",
+      "value": "保存到此槽位"
+    },
+    {
+      "name": "restore_screens",
+      "value": "恢复屏幕"
+    },
+    {
+      "name": "swap_screens",
+      "value": "交换上下屏"
+    },
+    {
+      "name": "disable_upright_screen",
+      "value": "关闭竖直屏幕"
+    },
+    {
+      "name": "upright_screen",
+      "value": "竖直屏幕"
+    },
+    {
+      "name": "switch_to_slot_fmt",
+      "value": "切到槽位 ${slot}"
+    },
+    {
+      "name": "screenshot",
+      "value": "截图"
+    },
+    {
+      "name": "screenshot_requested",
+      "value": "已请求截图"
+    },
+    {
+      "name": "screenshot_save_to_fmt",
+      "value": "截图将保存到 ${path}"
+    },
+    {
+      "name": "screenshot_unavailable",
+      "value": "当前无法截图"
+    },
+    {
+      "name": "screenshots",
+      "value": "截图"
+    },
+    {
+      "name": "set_dir",
+      "value": "设置目录"
+    },
+    {
+      "name": "settings",
+      "value": "设置"
+    },
+    {
+      "name": "about",
+      "value": "关于"
+    },
+    {
+      "name": "all_games",
+      "value": "全部游戏"
+    },
+    {
+      "name": "all_screens",
+      "value": "开启（所有屏幕）"
+    },
+    {
+      "name": "audio_lle_multithreaded",
+      "value": "LLE 多线程"
+    },
+    {
+      "name": "audio_mono",
+      "value": "单声道"
+    },
+    {
+      "name": "audio_stereo",
+      "value": "立体声"
+    },
+    {
+      "name": "audio_surround",
+      "value": "环绕声"
+    },
+    {
+      "name": "auto",
+      "value": "自动"
+    },
+    {
+      "name": "background_music",
+      "value": "背景音乐"
+    },
+    {
+      "name": "birthday",
+      "value": "生日"
+    },
+    {
+      "name": "clear",
+      "value": "清除"
+    },
+    {
+      "name": "custom",
+      "value": "自定义"
+    },
+    {
+      "name": "date_month_day_fmt",
+      "value": "${month} 月 ${day} 日"
+    },
+    {
+      "name": "default",
+      "value": "默认"
+    },
+    {
+      "name": "device_time",
+      "value": "设备时间"
+    },
+    {
+      "name": "display_bottom_only",
+      "value": "仅下屏"
+    },
+    {
+      "name": "display_hybrid",
+      "value": "混合"
+    },
+    {
+      "name": "display_large",
+      "value": "大屏"
+    },
+    {
+      "name": "display_opposite",
+      "value": "相反屏幕"
+    },
+    {
+      "name": "display_original",
+      "value": "原始"
+    },
+    {
+      "name": "display_side_by_side",
+      "value": "并排"
+    },
+    {
+      "name": "display_top_only",
+      "value": "仅上屏"
+    },
+    {
+      "name": "feedback",
+      "value": "反馈"
+    },
+    {
+      "name": "fixed_time",
+      "value": "固定时间"
+    },
+    {
+      "name": "home",
+      "value": "首页"
+    },
+    {
+      "name": "language",
+      "value": "语言"
+    },
+    {
+      "name": "settings_app_language",
+      "value": "应用语言"
+    },
+    {
+      "name": "language_follow_system",
+      "value": "跟随系统"
+    },
+    {
+      "name": "language_option_zh",
+      "value": "简体中文"
+    },
+    {
+      "name": "language_option_en",
+      "value": "English"
+    },
+    {
+      "name": "settings_language_changed",
+      "value": "语言已切换"
+    },
+    {
+      "name": "language_dutch",
+      "value": "荷兰语"
+    },
+    {
+      "name": "language_english",
+      "value": "英语"
+    },
+    {
+      "name": "language_french",
+      "value": "法语"
+    },
+    {
+      "name": "language_german",
+      "value": "德语"
+    },
+    {
+      "name": "language_italian",
+      "value": "意大利语"
+    },
+    {
+      "name": "language_japanese",
+      "value": "日语"
+    },
+    {
+      "name": "language_korean",
+      "value": "韩语"
+    },
+    {
+      "name": "language_portuguese",
+      "value": "葡萄牙语"
+    },
+    {
+      "name": "language_russian",
+      "value": "俄语"
+    },
+    {
+      "name": "language_simplified_chinese",
+      "value": "简体中文"
+    },
+    {
+      "name": "language_spanish",
+      "value": "西班牙语"
+    },
+    {
+      "name": "language_traditional_chinese",
+      "value": "繁体中文"
+    },
+    {
+      "name": "layout",
+      "value": "布局"
+    },
+    {
+      "name": "layout_large_screen",
+      "value": "大屏优先"
+    },
+    {
+      "name": "layout_original_top_bottom",
+      "value": "原始上下屏"
+    },
+    {
+      "name": "layout_side_by_side",
+      "value": "左右屏"
+    },
+    {
+      "name": "layout_single_screen",
+      "value": "单屏"
+    },
+    {
+      "name": "layout_top_bottom",
+      "value": "上下屏"
+    },
+    {
+      "name": "layout_top_full_width",
+      "value": "顶部全宽"
+    },
+    {
+      "name": "left_eye",
+      "value": "左眼"
+    },
+    {
+      "name": "mac_address",
+      "value": "MAC 地址"
+    },
+    {
+      "name": "main_screen_only",
+      "value": "开启（仅主屏）"
+    },
+    {
+      "name": "none",
+      "value": "无"
+    },
+    {
+      "name": "not_ready",
+      "value": "未就绪"
+    },
+    {
+      "name": "off",
+      "value": "关闭"
+    },
+    {
+      "name": "open_about_failed_fmt",
+      "value": "打开关于页面失败: ${error}"
+    },
+    {
+      "name": "open_system_files_failed_fmt",
+      "value": "打开系统文件失败: ${error}"
+    },
+    {
+      "name": "open_system_info_failed_fmt",
+      "value": "打开系统信息失败: ${error}"
+    },
+    {
+      "name": "overlay_theme_clear",
+      "value": "透明"
+    },
+    {
+      "name": "overlay_theme_default",
+      "value": "经典"
+    },
+    {
+      "name": "position_above",
+      "value": "上方"
+    },
+    {
+      "name": "position_below",
+      "value": "下方"
+    },
+    {
+      "name": "position_bottom_left",
+      "value": "左下"
+    },
+    {
+      "name": "position_bottom_right",
+      "value": "右下"
+    },
+    {
+      "name": "position_center_left",
+      "value": "左中"
+    },
+    {
+      "name": "position_center_right",
+      "value": "右中"
+    },
+    {
+      "name": "position_top_left",
+      "value": "左上"
+    },
+    {
+      "name": "position_top_right",
+      "value": "右上"
+    },
+    {
+      "name": "random_generate",
+      "value": "随机生成"
+    },
+    {
+      "name": "readonly",
+      "value": "只读"
+    },
+    {
+      "name": "recent_games",
+      "value": "最近游戏"
+    },
+    {
+      "name": "region_australia",
+      "value": "澳洲"
+    },
+    {
+      "name": "region_china",
+      "value": "中国"
+    },
+    {
+      "name": "region_europe",
+      "value": "欧洲"
+    },
+    {
+      "name": "region_japan",
+      "value": "日本"
+    },
+    {
+      "name": "region_korea",
+      "value": "韩国"
+    },
+    {
+      "name": "region_taiwan",
+      "value": "台湾"
+    },
+    {
+      "name": "region_usa",
+      "value": "美国"
+    },
+    {
+      "name": "render3d_anaglyph",
+      "value": "红蓝"
+    },
+    {
+      "name": "render3d_interlaced",
+      "value": "交错"
+    },
+    {
+      "name": "render3d_reverse_interlaced",
+      "value": "逆向交错"
+    },
+    {
+      "name": "render3d_side_by_side_full",
+      "value": "并排屏幕（全宽）"
+    },
+    {
+      "name": "render3d_side_by_side_half",
+      "value": "并排屏幕"
+    },
+    {
+      "name": "renderer_software",
+      "value": "软件"
+    },
+    {
+      "name": "right_eye",
+      "value": "右眼"
+    },
+    {
+      "name": "secondary_screen_only",
+      "value": "开启（仅副屏）"
+    },
+    {
+      "name": "settings_3d_depth",
+      "value": "画面深度"
+    },
+    {
+      "name": "settings_3d_depth_desc",
+      "value": "指定 3D 滑块的值。启用立体 3D 时，应将其设置为高于 0% 的值。\n注意：实机硬件上不可能出现超过 100% 的深度值，并且可能会导致图形问题"
+    },
+    {
+      "name": "settings_3d_display_target",
+      "value": "渲染立体 3D"
+    },
+    {
+      "name": "settings_3d_display_target_desc",
+      "value": "是否启用立体 3D，以及在哪些屏幕上启用。单屏选项仅在连接多块屏幕时才有意义。"
+    },
+    {
+      "name": "settings_cardboard_screen_size",
+      "value": "纸板屏幕大小"
+    },
+    {
+      "name": "settings_cardboard_screen_size_desc",
+      "value": "将屏幕缩放至其原始大小的指定百分比。"
+    },
+    {
+      "name": "settings_cardboard_x_shift",
+      "value": "水平偏移"
+    },
+    {
+      "name": "settings_cardboard_x_shift_desc",
+      "value": "指定用于水平移动屏幕的百分比。正值会将左右两个视野移向中间，而负值会将左右两个视野向外侧移动。"
+    },
+    {
+      "name": "settings_cardboard_y_shift",
+      "value": "竖直偏移"
+    },
+    {
+      "name": "settings_cardboard_y_shift_desc",
+      "value": "指定用于竖直移动屏幕的百分比。正值会将左右两个视野向底部移动，而负值会将左右两个视野向顶部移动。"
+    },
+    {
+      "name": "settings_3ds_clock",
+      "value": "3DS 时钟"
+    },
+    {
+      "name": "settings_3ds_clock_desc",
+      "value": "将模拟 3DS 时钟设为跟随设备实际时间，或使用固定的日期和时间"
+    },
+    {
+      "name": "settings_3gx_plugin_loader",
+      "value": "3GX 插件加载器"
+    },
+    {
+      "name": "settings_3gx_plugin_loader_desc",
+      "value": "从模拟 SD 卡加载可用的 3GX 插件"
+    },
+    {
+      "name": "settings_accurate_mul",
+      "value": "精确乘法运算"
+    },
+    {
+      "name": "settings_accurate_mul_desc",
+      "value": "在硬件着色器中使用更加精确的乘法运算，这可能会修复一些图形错误。启用后，性能将有所降低。"
+    },
+    {
+      "name": "settings_allow_plugin_loader",
+      "value": "允许应用更改插件加载器状态"
+    },
+    {
+      "name": "settings_allow_plugin_loader_desc",
+      "value": "允许自制程序启用插件加载器（即使其已被禁用）"
+    },
+    {
+      "name": "settings_appearance",
+      "value": "外观"
+    },
+    {
+      "name": "settings_appearance_desc",
+      "value": "主题 / 壁纸"
+    },
+    {
+      "name": "settings_appearance_mode",
+      "value": "外观模式"
+    },
+    {
+      "name": "settings_aspect_ratio",
+      "value": "宽高比"
+    },
+    {
+      "name": "settings_async_custom_loading",
+      "value": "异步加载自定义纹理"
+    },
+    {
+      "name": "settings_async_custom_loading_desc",
+      "value": "在后台异步加载自定义纹理，以减少卡顿。"
+    },
+    {
+      "name": "settings_async_fs_operations",
+      "value": "异步文件操作"
+    },
+    {
+      "name": "settings_async_fs_operations_desc",
+      "value": "使模拟文件系统访问异步化，大幅减少文件相关卡顿，但可能略微增加加载时间"
+    },
+    {
+      "name": "settings_async_presentation",
+      "value": "异步显示提交"
+    },
+    {
+      "name": "settings_async_presentation_desc",
+      "value": "Vulkan 下使用异步画面呈现，可能增加一帧输入延迟"
+    },
+    {
+      "name": "settings_async_shader_compilation",
+      "value": "启用异步着色器编译"
+    },
+    {
+      "name": "settings_async_shader_compilation_desc",
+      "value": "在后台编译着色器以减少卡顿。可能出现短暂的图形故障"
+    },
+    {
+      "name": "settings_audio",
+      "value": "声音"
+    },
+    {
+      "name": "settings_audio_desc",
+      "value": "模拟 / 音量 / 反馈"
+    },
+    {
+      "name": "settings_audio_emulation",
+      "value": "音频模拟"
+    },
+    {
+      "name": "settings_audio_stretching",
+      "value": "音频拉伸"
+    },
+    {
+      "name": "settings_audio_stretching_desc",
+      "value": "拉伸音频以减少卡顿；会增加音频延迟并略微降低性能"
+    },
+    {
+      "name": "settings_azahar_modules",
+      "value": "Azahar 模块"
+    },
+    {
+      "name": "settings_azahar_modules_desc",
+      "value": "原生能力"
+    },
+    {
+      "name": "settings_bgm_desc",
+      "value": "进入游戏时自动暂停"
+    },
+    {
+      "name": "settings_bgm_volume",
+      "value": "背景音乐音量"
+    },
+    {
+      "name": "settings_bottom_screen_horizontal_padding",
+      "value": "下屏左右边距"
+    },
+    {
+      "name": "settings_bottom_screen_stretch",
+      "value": "下屏拉伸"
+    },
+    {
+      "name": "settings_bottom_screen_vertical_padding",
+      "value": "下屏上下边距"
+    },
+    {
+      "name": "settings_button_theme",
+      "value": "按键主题"
+    },
+    {
+      "name": "settings_button_theme_desc",
+      "value": "切换虚拟按键图片风格，包含经典、透明、Drastic、PS 和 SNES"
+    },
+    {
+      "name": "settings_cfg_ptm_desc",
+      "value": "核心初始化后可编辑用户名、生日、语言、声音输出、地区、游戏币和 MAC 地址"
+    },
+    {
+      "name": "settings_compress_cia_installs",
+      "value": "压缩已安装的 CIA 内容"
+    },
+    {
+      "name": "settings_compress_cia_installs_desc",
+      "value": "安装到模拟 SD 卡时压缩 CIA 文件内容；仅影响启用后新安装的内容"
+    },
+    {
+      "name": "settings_core",
+      "value": "核心"
+    },
+    {
+      "name": "settings_core_desc",
+      "value": "CPU / LLE / 补丁"
+    },
+    {
+      "name": "settings_country_code",
+      "value": "国家/地区"
+    },
+    {
+      "name": "settings_cpu_clock",
+      "value": "CPU 频率"
+    },
+    {
+      "name": "settings_cpu_clock_desc",
+      "value": "模拟 CPU 超频或降频，100% 为原生频率；调高可缓解掉帧，个别游戏可能异常。"
+    },
+    {
+      "name": "settings_cpu_core_mode",
+      "value": "CPU 核心模式"
+    },
+    {
+      "name": "cpu_mode_jit",
+      "value": "动态重编译"
+    },
+    {
+      "name": "cpu_mode_fastinterp",
+      "value": "快速解释器"
+    },
+    {
+      "name": "cpu_mode_interpreter",
+      "value": "解释器"
+    },
+    {
+      "name": "cpu_mode_ir",
+      "value": "IR 解释器"
+    },
+    {
+      "name": "cpu_core_mode_desc",
+      "value": "解释器模式速度较慢，仅用于排查问题"
+    },
+    {
+      "name": "cpu_core_mode_no_jit",
+      "value": "当前设备不支持动态重编译"
+    },
+    {
+      "name": "settings_custom_textures",
+      "value": "自定义纹理"
+    },
+    {
+      "name": "settings_custom_textures_desc",
+      "value": "加载 load/textures/[Title ID] 目录下的自定义纹理。"
+    },
+    {
+      "name": "settings_custom_wallpaper_set",
+      "value": "已设置自定义壁纸"
+    },
+    {
+      "name": "settings_clear_wallpaper",
+      "value": "清除壁纸"
+    },
+    {
+      "name": "settings_default_tab",
+      "value": "默认标签页"
+    },
+    {
+      "name": "settings_disable_right_eye_render",
+      "value": "禁用右眼渲染"
+    },
+    {
+      "name": "settings_disable_right_eye_render_desc",
+      "value": "极大地提高某些应用的性能，但可能会导致其他应用出现闪烁。"
+    },
+    {
+      "name": "settings_disk_shader_cache",
+      "value": "磁盘着色器缓存"
+    },
+    {
+      "name": "settings_disk_shader_cache_desc",
+      "value": "通过将生成的着色器缓存到磁盘并加载，以减少卡顿。使用此功能需要启用硬件着色器。"
+    },
+    {
+      "name": "settings_display",
+      "value": "触屏按键"
+    },
+    {
+      "name": "settings_display_desc",
+      "value": "按键布局 / 触屏输入"
+    },
+    {
+      "name": "settings_dpad_uses_joystick",
+      "value": "方向键使用摇杆"
+    },
+    {
+      "name": "settings_dpad_uses_joystick_desc",
+      "value": "用虚拟摇杆替代十字方向键，适合需要平滑方向输入的游戏"
+    },
+    {
+      "name": "settings_dump_textures",
+      "value": "转储纹理文件"
+    },
+    {
+      "name": "settings_dump_textures_desc",
+      "value": "纹理文件将转储到 dump/textures/[Title ID] 目录中。"
+    },
+    {
+      "name": "settings_feedback_desc",
+      "value": "首页、设置、暂停菜单和虚拟按键共用同一组声音与触感偏好"
+    },
+    {
+      "name": "settings_files_dirs_desc",
+      "value": "查看并打开 Download 下的 ROM、存档、纹理、壁纸、NAND、SDMC 等目录"
+    },
+    {
+      "name": "settings_fixed_timestamp",
+      "value": "固定时间戳"
+    },
+    {
+      "name": "settings_fixed_timestamp_desc",
+      "value": "时钟选择「固定时间」时生效，单位为 Unix 秒"
+    },
+    {
+      "name": "settings_game_list_layout",
+      "value": "游戏列表布局"
+    },
+    {
+      "name": "graphics_section_renderer",
+      "value": "渲染器"
+    },
+    {
+      "name": "graphics_section_stereoscopy",
+      "value": "画面立体"
+    },
+    {
+      "name": "graphics_section_cardboard_vr",
+      "value": "Cardboard VR"
+    },
+    {
+      "name": "graphics_section_utility",
+      "value": "工具"
+    },
+    {
+      "name": "graphics_section_advanced",
+      "value": "高级选项"
+    },
+    {
+      "name": "internal_resolution_native_fmt",
+      "value": "1 倍（原生）"
+    },
+    {
+      "name": "internal_resolution_multiple_fmt",
+      "value": "${factor} 倍"
+    },
+    {
+      "name": "grid_scale",
+      "value": "网格缩放"
+    },
+    {
+      "name": "grid_scale_desc",
+      "value": "调整首页网格模式下游戏封面的显示大小"
+    },
+    {
+      "name": "game_name_source",
+      "value": "游戏名称来源"
+    },
+    {
+      "name": "game_name_source_metadata",
+      "value": "元数据"
+    },
+    {
+      "name": "game_name_source_filename",
+      "value": "文件名"
+    },
+    {
+      "name": "settings_game_sort_order",
+      "value": "游戏排序"
+    },
+    {
+      "name": "sort_ascending",
+      "value": "A → Z"
+    },
+    {
+      "name": "sort_descending",
+      "value": "Z → A"
+    },
+    {
+      "name": "settings_graphics",
+      "value": "图形"
+    },
+    {
+      "name": "settings_graphics_desc",
+      "value": "渲染 / 着色器"
+    },
+    {
+      "name": "settings_haptic_feedback",
+      "value": "触感反馈"
+    },
+    {
+      "name": "settings_haptic_strength",
+      "value": "触感强度"
+    },
+    {
+      "name": "settings_home_desc",
+      "value": "决定启动后默认游戏页和显示方式"
+    },
+    {
+      "name": "settings_home_wallpaper",
+      "value": "首页壁纸"
+    },
+    {
+      "name": "settings_hw_shader",
+      "value": "硬件着色器"
+    },
+    {
+      "name": "settings_gamepad",
+      "value": "手柄"
+    },
+    {
+      "name": "settings_gamepad_desc",
+      "value": "实体手柄 / 按键映射"
+    },
+    {
+      "name": "settings_camera",
+      "value": "摄像头"
+    },
+    {
+      "name": "settings_camera_desc",
+      "value": "图像来源 / 翻转"
+    },
+    {
+      "name": "physical_controller",
+      "value": "实体手柄"
+    },
+    {
+      "name": "use_artic_base_controller",
+      "value": "连接到 Artic Base 服务器时使用 Artic 控制器"
+    },
+    {
+      "name": "use_artic_base_controller_desc",
+      "value": "连接到 Artic Base 服务器时使用其提供的控制器，而不是配置的输入设备。"
+    },
+    {
+      "name": "settings_integer_scaling",
+      "value": "整数缩放"
+    },
+    {
+      "name": "settings_integer_scaling_desc",
+      "value": "以 3DS 原始分辨率的整数倍缩放画面；双屏尺寸不同的布局中以最大屏为准"
+    },
+    {
+      "name": "settings_internal_resolution",
+      "value": "内部分辨率"
+    },
+    {
+      "name": "settings_internal_resolution_desc",
+      "value": "指定渲染分辨率，越高越清晰但对性能影响越大"
+    },
+    {
+      "name": "settings_joystick_dead_zone",
+      "value": "摇杆死区"
+    },
+    {
+      "name": "settings_large_screen_ratio",
+      "value": "大屏比例"
+    },
+    {
+      "name": "settings_lle_applets_desc",
+      "value": "用真实系统小程序（软键盘、Mii 选择器等）替代内置模拟"
+    },
+    {
+      "name": "settings_lle_module_delay_start",
+      "value": "LLE 模块延迟启动"
+    },
+    {
+      "name": "settings_lle_module_delay_start_desc",
+      "value": "启用 LLE 模块时延迟启动应用，保持 Azahar 原始行为"
+    },
+    {
+      "name": "settings_module_about_desc",
+      "value": "查看前端版本、native 状态和 Download 目录状态"
+    },
+    {
+      "name": "settings_module_amiibo_desc",
+      "value": "已接 NFC Amiibo 加载/移除，文件固定放在 Download/amiibo"
+    },
+    {
+      "name": "settings_module_camera_desc",
+      "value": "已接 3DS 三路摄像头配置，可选择空白、静态图或系统相机源"
+    },
+    {
+      "name": "settings_module_cheats_desc",
+      "value": "已接 core cheat engine，游戏内暂停菜单可管理 Gateway 代码"
+    },
+    {
+      "name": "settings_module_cia_installs",
+      "value": "CIA / 安装内容"
+    },
+    {
+      "name": "settings_module_cia_installs_desc",
+      "value": "Azahar Android 和 Qt 均有安装 CIA 相关入口"
+    },
+    {
+      "name": "settings_module_cover_icon",
+      "value": "封面 / 图标"
+    },
+    {
+      "name": "settings_module_cover_icon_desc",
+      "value": "已接 SMDH 程序图标和元数据提取"
+    },
+    {
+      "name": "settings_module_movie_desc",
+      "value": "已接 Azahar TAS Movie .ctm 录制、回放、保存和关闭入口"
+    },
+    {
+      "name": "settings_module_multiplayer_desc",
+      "value": "citra_room、lobby、chat room 属于 upstream 3DS 能力"
+    },
+    {
+      "name": "settings_module_system_files_desc",
+      "value": "管理 Azahar NAND、Sysdata、SDMC 和主机唯一数据链接"
+    },
+    {
+      "name": "settings_module_system_info_desc",
+      "value": "查看设备、显示、应用版本和 Azahar runtime 状态"
+    },
+    {
+      "name": "settings_module_textures_saves_wallpaper_sysdata",
+      "value": "纹理 / 存档 / 壁纸 / 系统数据"
+    },
+    {
+      "name": "settings_module_textures_saves_wallpaper_sysdata_desc",
+      "value": "已接 Download 目录管理页，可打开用户目录和各子目录"
+    },
+    {
+      "name": "settings_module_widgets_desc",
+      "value": "已接最近游戏 FormAbility，封面图标等桥接后可继续增强"
+    },
+    {
+      "name": "settings_mono_render",
+      "value": "单眼渲染"
+    },
+    {
+      "name": "settings_new_3ds_mode",
+      "value": "New 3DS 模式"
+    },
+    {
+      "name": "settings_new_3ds_mode_desc",
+      "value": "模拟 New 3DS 主机：部分游戏必须开启，支持的游戏运行更流畅。"
+    },
+    {
+      "name": "settings_game_perf_hacks",
+      "value": "游戏性能补丁"
+    },
+    {
+      "name": "settings_game_perf_hacks_desc",
+      "value": "对已适配的游戏自动应用提速补丁，可能降低模拟精度。"
+    },
+    {
+      "name": "settings_online_lle_modules",
+      "value": "启用联机功能所需的 LLE 模块（如已安装）"
+    },
+    {
+      "name": "settings_online_lle_modules_desc",
+      "value": "加载真实服务模块替代内置模拟，用于多人联机、eShop 等网络功能"
+    },
+    {
+      "name": "settings_play_coins",
+      "value": "游戏币"
+    },
+    {
+      "name": "settings_save_state_slot_count",
+      "value": "存档槽位数量"
+    },
+    {
+      "name": "settings_save_state_slot_count_desc",
+      "value": "每个游戏可用的存档槽位数"
+    },
+    {
+      "name": "settings_portrait_layout",
+      "value": "竖屏布局"
+    },
+    {
+      "name": "settings_preload_textures",
+      "value": "预加载自定义纹理"
+    },
+    {
+      "name": "settings_preload_textures_desc",
+      "value": "启动游戏前将所有自定义纹理载入内存，可能占用大量内存"
+    },
+    {
+      "name": "settings_realtime_audio",
+      "value": "实时音频"
+    },
+    {
+      "name": "settings_realtime_audio_desc",
+      "value": "帧率下降时音频仍全速播放，可能导致音画不同步"
+    },
+    {
+      "name": "settings_region_free_patch",
+      "value": "免区域限制补丁"
+    },
+    {
+      "name": "settings_region_free_patch_desc",
+      "value": "让已安装的应用在主菜单中显示为无区域限制"
+    },
+    {
+      "name": "settings_render_api",
+      "value": "图形 API"
+    },
+    {
+      "name": "settings_render_thread_delay",
+      "value": "延迟游戏渲染线程"
+    },
+    {
+      "name": "settings_render_thread_delay_desc",
+      "value": "在游戏渲染线程向 GPU 提交数据时延迟线程。有助于解决（极少数）具有动态帧率应用的性能问题。"
+    },
+    {
+      "name": "settings_renderer_debug",
+      "value": "调试渲染器"
+    },
+    {
+      "name": "settings_renderer_debug_desc",
+      "value": "记录更多图形相关的调试信息；启用后性能将显著降低"
+    },
+    {
+      "name": "settings_screen_gap",
+      "value": "屏幕间隔"
+    },
+    {
+      "name": "settings_screen_layout",
+      "value": "屏幕布局"
+    },
+    {
+      "name": "settings_secondary_display_layout",
+      "value": "附加屏布局"
+    },
+    {
+      "name": "settings_shader_jit_desc",
+      "value": "使用 JIT 引擎而不是解释器进行软件着色器模拟"
+    },
+    {
+      "name": "settings_simulate_3ds_gpu_timings",
+      "value": "模拟 3DS GPU 时序"
+    },
+    {
+      "name": "settings_simulate_3ds_gpu_timings_desc",
+      "value": "按实机测量延迟 GPU 完成事件，稳定动态帧率游戏；极少数情况关闭可提升性能但牺牲稳定性"
+    },
+    {
+      "name": "settings_small_screen_position",
+      "value": "小屏位置"
+    },
+    {
+      "name": "settings_smooth_filtering",
+      "value": "线性过滤"
+    },
+    {
+      "name": "settings_smooth_filtering_desc",
+      "value": "画面缩放到屏幕时使用平滑采样，画面更柔和；关闭则保持锐利像素"
+    },
+    {
+      "name": "settings_sound_output",
+      "value": "声音输出模式"
+    },
+    {
+      "name": "settings_speed_limit",
+      "value": "运行速度"
+    },
+    {
+      "name": "settings_spirv_shader_gen",
+      "value": "启用 SPIR-V 着色器"
+    },
+    {
+      "name": "settings_spirv_shader_gen_desc",
+      "value": "使用 SPIR-V 而不是 GLSL 来模拟 PICA 的着色器"
+    },
+    {
+      "name": "settings_status_basic_available",
+      "value": "基础可用"
+    },
+    {
+      "name": "settings_status_kept",
+      "value": "保留"
+    },
+    {
+      "name": "settings_steps_per_hour",
+      "value": "计步器每小时步数"
+    },
+    {
+      "name": "settings_steps_per_hour_desc",
+      "value": "计步器报告的每小时步数，范围 0–65535"
+    },
+    {
+      "name": "settings_stereo_3d_mode",
+      "value": "立体 3D 模式"
+    },
+    {
+      "name": "settings_stereo_3d_mode_desc",
+      "value": "选择用于 3D 渲染的立体 3D 模式。并排模式在现代使用中最常见。红蓝和交错模式将始终应用于所有连接的屏幕。"
+    },
+    {
+      "name": "settings_storage",
+      "value": "存储"
+    },
+    {
+      "name": "settings_storage_desc",
+      "value": "SD / 文件"
+    },
+    {
+      "name": "settings_swap_eyes",
+      "value": "交换左右眼"
+    },
+    {
+      "name": "settings_swap_eyes_desc",
+      "value": "交换左右眼各自显示的画面。配合并排模式，可以通过对眼看到 3D 效果！"
+    },
+    {
+      "name": "settings_swap_screens",
+      "value": "交换上下屏"
+    },
+    {
+      "name": "settings_system_profile",
+      "value": "系统资料"
+    },
+    {
+      "name": "settings_system_profile_desc",
+      "value": "区域、时钟、用户名、生日等主机资料"
+    },
+    {
+      "name": "settings_system_region",
+      "value": "区域"
+    },
+    {
+      "name": "settings_texture_filter",
+      "value": "纹理滤镜"
+    },
+    {
+      "name": "settings_texture_sampling",
+      "value": "纹理采样"
+    },
+    {
+      "name": "settings_texture_sampling_desc",
+      "value": "覆盖游戏所使用的采样过滤器。这在某些情况下提升表现不佳的游戏画质时可能很有用。如果不确定，请将其设置为“由游戏控制”"
+    },
+    {
+      "name": "settings_theme_desc",
+      "value": "3DS 主机配色，改变选中态和控件强调色"
+    },
+    {
+      "name": "settings_top_screen_horizontal_padding",
+      "value": "上屏左右边距"
+    },
+    {
+      "name": "settings_top_screen_stretch",
+      "value": "上屏拉伸"
+    },
+    {
+      "name": "settings_top_screen_vertical_padding",
+      "value": "上屏上下边距"
+    },
+    {
+      "name": "settings_ui_sfx",
+      "value": "按键音效"
+    },
+    {
+      "name": "settings_ui_sfx_volume",
+      "value": "音效音量"
+    },
+    {
+      "name": "settings_username_desc",
+      "value": "最多 10 个字符"
+    },
+    {
+      "name": "settings_virtual_button_scale",
+      "value": "虚拟按键整体大小"
+    },
+    {
+      "name": "settings_virtual_buttons_desc",
+      "value": "使用图片化按键资源，作用于 GameView 触控层"
+    },
+    {
+      "name": "settings_virtual_sd",
+      "value": "虚拟 SD 卡"
+    },
+    {
+      "name": "settings_virtual_sd_desc",
+      "value": "模拟 SD 卡插拔状态，关闭后游戏将检测不到 SD 卡；仅供测试使用，需重启生效。"
+    },
+    {
+      "name": "settings_vsync_desc",
+      "value": "将游戏帧率与设备屏幕刷新率同步；可能增加输入延迟，但可减少画面撕裂"
+    },
+    {
+      "name": "settings_wallpaper_failed",
+      "value": "壁纸设置失败"
+    },
+    {
+      "name": "settings_wallpaper_failed_fmt",
+      "value": "壁纸设置失败: ${error}"
+    },
+    {
+      "name": "settings_wallpaper_uses_theme",
+      "value": "未设置时使用主题动态方块背景"
+    },
+    {
+      "name": "stretch",
+      "value": "拉伸"
+    },
+    {
+      "name": "system_info",
+      "value": "系统信息"
+    },
+    {
+      "name": "system_profile_save_failed",
+      "value": "系统资料保存失败"
+    },
+    {
+      "name": "system_profile_saved",
+      "value": "系统资料已保存"
+    },
+    {
+      "name": "system_profile_unavailable",
+      "value": "系统资料不可用"
+    },
+    {
+      "name": "texture_sampling_game_controlled",
+      "value": "由游戏控制"
+    },
+    {
+      "name": "texture_sampling_linear",
+      "value": "线性过滤"
+    },
+    {
+      "name": "texture_sampling_nearest",
+      "value": "最近邻"
+    },
+    {
+      "name": "theme",
+      "value": "配色"
+    },
+    {
+      "name": "theme_aqua_blue",
+      "value": "海蓝"
+    },
+    {
+      "name": "theme_violet",
+      "value": "紫罗兰"
+    },
+    {
+      "name": "theme_flame_red",
+      "value": "赤红"
+    },
+    {
+      "name": "theme_cobalt_blue",
+      "value": "钴蓝"
+    },
+    {
+      "name": "theme_lime_green",
+      "value": "青柠绿"
+    },
+    {
+      "name": "theme_orange",
+      "value": "蜜橙"
+    },
+    {
+      "name": "theme_sky_blue",
+      "value": "天蓝"
+    },
+    {
+      "name": "theme_graphite_black",
+      "value": "墨黑"
+    },
+    {
+      "name": "theme_platinum_silver",
+      "value": "铂银"
+    },
+    {
+      "name": "username",
+      "value": "用户名"
+    },
+    {
+      "name": "username_invalid",
+      "value": "用户名无效：须为 4-20 个字母、数字或 ._- 字符"
+    },
+    {
+      "name": "username_uses_system",
+      "value": "用户名取自 3DS 系统用户名，请在「系统资料」设置中修改"
+    },
+    {
+      "name": "view",
+      "value": "查看"
+    },
+    {
+      "name": "virtual_buttons",
+      "value": "虚拟按键"
+    },
+    {
+      "name": "volume",
+      "value": "音量"
+    },
+    {
+      "name": "surface_ready_suffix",
+      "value": " · Surface 就绪"
+    },
+    {
+      "name": "sys_dir_camera_desc",
+      "value": "3DS 摄像头静态图片源目录"
+    },
+    {
+      "name": "sys_dir_config_desc",
+      "value": "Azahar 配置文件和前端同步的 native 配置"
+    },
+    {
+      "name": "sys_dir_nand_desc",
+      "value": "3DS NAND 用户数据、系统保存数据和已安装系统内容"
+    },
+    {
+      "name": "sys_dir_sdmc_desc",
+      "value": "3DS 虚拟 SD 卡根目录，CIA 内容和游戏数据会写入这里"
+    },
+    {
+      "name": "sys_dir_sysdata_desc",
+      "value": "共享系统数据目录，包含 Azahar 运行时需要的系统数据"
+    },
+    {
+      "name": "system_dirs",
+      "value": "系统目录"
+    },
+    {
+      "name": "system_dirs_checked",
+      "value": "系统目录已检查"
+    },
+    {
+      "name": "system_dirs_desc",
+      "value": "这些目录对应 Azahar 原生系统数据、虚拟 SD、Amiibo、Movie 和相机输入，统一固定在应用 Download 目录下。"
+    },
+    {
+      "name": "system_files",
+      "value": "系统文件"
+    },
+    {
+      "name": "system_files_not_complete_fmt",
+      "value": "${label} 系统文件未完整安装"
+    },
+    {
+      "name": "system_files_uninstall_failed_fmt",
+      "value": "${label} 系统文件卸载失败"
+    },
+    {
+      "name": "system_files_uninstalled_fmt",
+      "value": "${label} 系统文件已卸载"
+    },
+    {
+      "name": "system_firmware_desc",
+      "value": "状态来自 Azahar NAND 中已安装的系统标题。卸载操作只移除系统固件标题，不会删除普通存档目录。"
+    },
+    {
+      "name": "system_firmware_files",
+      "value": "系统固件文件"
+    },
+    {
+      "name": "texture",
+      "value": "纹理"
+    },
+    {
+      "name": "uninstall",
+      "value": "卸载"
+    },
+    {
+      "name": "uninstall_system_files_message_fmt",
+      "value": "这会从 Azahar NAND 中移除已安装的 ${label} 系统固件标题。相关系统功能和 Home Menu 需要重新通过系统文件安装流程恢复。"
+    },
+    {
+      "name": "uninstall_system_files_title_fmt",
+      "value": "卸载 ${label} 系统文件"
+    },
+    {
+      "name": "unknown_time",
+      "value": "未知时间"
+    },
+    {
+      "name": "unlink",
+      "value": "解除"
+    },
+    {
+      "name": "unlink_console_message",
+      "value": "这会移除已链接的主机唯一数据，并删除 act、nim、frd 相关系统保存数据。解除后需要重新导入对应系统文件才能恢复完整主机链接状态。"
+    },
+    {
+      "name": "unlink_console_title",
+      "value": "解除主机唯一数据链接"
+    },
+    {
+      "name": "unnamed_cheat",
+      "value": "未命名金手指"
+    },
+    {
+      "name": "waiting_game_request",
+      "value": "等待游戏请求"
+    },
+    {
+      "name": "wallpapers",
+      "value": "壁纸"
+    },
+    {
+      "name": "dir_not_set",
+      "value": "目录未设置"
+    },
+    {
+      "name": "dir_opened",
+      "value": "已打开目录"
+    },
+    {
+      "name": "file_selected",
+      "value": "已选择文件"
+    },
+    {
+      "name": "not_set",
+      "value": "未设置"
+    },
+    {
+      "name": "open_dir_failed_fmt",
+      "value": "打开目录失败: ${error}"
+    },
+    {
+      "name": "all",
+      "value": "全部"
+    },
+    {
+      "name": "all_categories",
+      "value": "全部分类"
+    },
+    {
+      "name": "available",
+      "value": "可用"
+    },
+    {
+      "name": "basic_available",
+      "value": "基础可用"
+    },
+    {
+      "name": "can_open_dir",
+      "value": "可打开目录"
+    },
+    {
+      "name": "category",
+      "value": "分类"
+    },
+    {
+      "name": "cia_install_aborted",
+      "value": "CIA 安装已中止"
+    },
+    {
+      "name": "cia_install_desc",
+      "value": "安装 3DS CIA 内容、更新和 DLC 到 Azahar 用户目录。"
+    },
+    {
+      "name": "cia_install_encrypted",
+      "value": "CIA 已加密，无法安装"
+    },
+    {
+      "name": "cia_install_failed",
+      "value": "CIA 安装失败"
+    },
+    {
+      "name": "cia_install_failed_fmt",
+      "value": "CIA 安装失败: ${error}"
+    },
+    {
+      "name": "cia_install_file_not_found",
+      "value": "CIA 文件不存在或无权限"
+    },
+    {
+      "name": "cia_install_invalid",
+      "value": "不是有效的 CIA 文件"
+    },
+    {
+      "name": "cia_install_open_failed",
+      "value": "CIA 文件打开失败"
+    },
+    {
+      "name": "cia_install_success",
+      "value": "CIA 安装完成"
+    },
+    {
+      "name": "cia_install_title",
+      "value": "CIA 安装"
+    },
+    {
+      "name": "cia_installing",
+      "value": "正在安装 CIA"
+    },
+    {
+      "name": "cia_installing_desc",
+      "value": "正在安装 CIA 内容。"
+    },
+    {
+      "name": "configurable",
+      "value": "可配置"
+    },
+    {
+      "name": "covers_icons",
+      "value": "封面 / 图标"
+    },
+    {
+      "name": "create_dir_failed_fmt",
+      "value": "创建目录失败: ${error}"
+    },
+    {
+      "name": "dir_available",
+      "value": "目录可用"
+    },
+    {
+      "name": "dirs_created",
+      "value": "目录已创建"
+    },
+    {
+      "name": "download_dir_not_set_cannot_scan",
+      "value": "未设置下载目录，无法扫描游戏库"
+    },
+    {
+      "name": "download_dir_not_set_yet",
+      "value": "尚未设置 Download 目录"
+    },
+    {
+      "name": "empty_all_desc",
+      "value": "把 .3ds/.cci/.cxi 游戏或 .cia 安装包放到下载目录或 roms 子目录后刷新。"
+    },
+    {
+      "name": "empty_all_title",
+      "value": "下载目录里还没有 3DS 游戏"
+    },
+    {
+      "name": "empty_favorites_desc",
+      "value": "在游戏详情里点“收藏”后会显示在这里。"
+    },
+    {
+      "name": "empty_favorites_title",
+      "value": "还没有收藏游戏"
+    },
+    {
+      "name": "empty_recent_desc",
+      "value": "从“全部游戏”或 Download 目录启动后会显示在这里。"
+    },
+    {
+      "name": "empty_recent_title",
+      "value": "还没有最近启动的游戏"
+    },
+    {
+      "name": "favorites",
+      "value": "收藏"
+    },
+    {
+      "name": "feature_amiibo_desc",
+      "value": "Amiibo .bin 文件固定放在 Download/amiibo，游戏内暂停菜单加载。"
+    },
+    {
+      "name": "feature_cheats_desc",
+      "value": "游戏内暂停菜单可查看、启用和编辑 Gateway 格式金手指。"
+    },
+    {
+      "name": "feature_covers_desc",
+      "value": "首页优先读取 Download/covers 下按 Title ID 或 ROM 文件名命名的封面，未匹配时使用 SMDH 图标。"
+    },
+    {
+      "name": "feature_save_states_desc",
+      "value": "GameView 已支持槽位保存/读取，状态文件放在 Download/states。"
+    },
+    {
+      "name": "feature_sysdata_desc",
+      "value": "nand/sdmc/sysdata 需要和 Azahar user 目录打通。"
+    },
+    {
+      "name": "feature_textures_desc",
+      "value": "自定义纹理目录已纳入 Download 管理。"
+    },
+    {
+      "name": "feature_widgets_desc",
+      "value": "复用最近游戏数据提供 Harmony 2x2/2x4 快速启动卡片。"
+    },
+    {
+      "name": "game_count_fmt",
+      "value": "${count} 个游戏"
+    },
+    {
+      "name": "duration_hours_fmt",
+      "value": "${hours} 小时"
+    },
+    {
+      "name": "duration_hours_minutes_fmt",
+      "value": "${hours} 小时 ${minutes} 分钟"
+    },
+    {
+      "name": "duration_minutes_fmt",
+      "value": "${minutes} 分钟"
+    },
+    {
+      "name": "game_config_cover_clear_failed_fmt",
+      "value": "清除封面失败: ${error}"
+    },
+    {
+      "name": "game_config_cover_cleared",
+      "value": "自定义封面已清除"
+    },
+    {
+      "name": "game_config_cover_import_failed_fmt",
+      "value": "导入封面失败: ${error}"
+    },
+    {
+      "name": "game_config_cover_not_found",
+      "value": "无法定位封面文件"
+    },
+    {
+      "name": "game_config_cover_read_failed",
+      "value": "封面图片读取失败"
+    },
+    {
+      "name": "game_config_cover_saved_fmt",
+      "value": "封面已保存到 ${path}"
+    },
+    {
+      "name": "game_config_global_restored",
+      "value": "已恢复全局配置"
+    },
+    {
+      "name": "game_config_reset_message_fmt",
+      "value": "确定清除“${name}”的单游戏覆盖配置？之后会重新使用全局设置。"
+    },
+    {
+      "name": "game_config_reset_title",
+      "value": "恢复全局配置"
+    },
+    {
+      "name": "cartridge_ejected_next_launch",
+      "value": "卡带已弹出，下次启动生效"
+    },
+    {
+      "name": "cartridge_insertable",
+      "value": "可插入"
+    },
+    {
+      "name": "cartridge_inserted",
+      "value": "已插入"
+    },
+    {
+      "name": "cartridge_inserted_next_launch",
+      "value": "已设置为插入卡带，下次启动生效"
+    },
+    {
+      "name": "cartridge_not_insertable",
+      "value": "当前文件不能作为游戏卡带插入"
+    },
+    {
+      "name": "cheat_name_code_required",
+      "value": "名称和代码不能为空"
+    },
+    {
+      "name": "clear_play_record",
+      "value": "清除游玩记录"
+    },
+    {
+      "name": "clear_play_record_message_fmt",
+      "value": "确定清除“${name}”的核心游玩时长、最近游玩时间和启动次数？游戏文件不会被删除。"
+    },
+    {
+      "name": "added_to_favorites",
+      "value": "已加入收藏"
+    },
+    {
+      "name": "content_encrypted",
+      "value": "内容已加密"
+    },
+    {
+      "name": "delete_cheat_simple_message_fmt",
+      "value": "确定删除“${name}”？"
+    },
+    {
+      "name": "delete_failed",
+      "value": "删除失败"
+    },
+    {
+      "name": "delete_game",
+      "value": "删除游戏"
+    },
+    {
+      "name": "delete_game_confirm_fmt",
+      "value": "确定删除“${name}”？此操作不可撤销，存档与配置数据会保留。"
+    },
+    {
+      "name": "dir_extdata",
+      "value": "额外数据目录"
+    },
+    {
+      "name": "error_code_fmt",
+      "value": "错误 ${code}"
+    },
+    {
+      "name": "favorite_no_title_id",
+      "value": "当前游戏没有 Title ID，无法收藏"
+    },
+    {
+      "name": "favorite_update_failed",
+      "value": "收藏状态更新失败"
+    },
+    {
+      "name": "file_not_found",
+      "value": "文件不存在"
+    },
+    {
+      "name": "format_not_supported",
+      "value": "当前格式不支持"
+    },
+    {
+      "name": "game_config_delete_shader_cache_message_fmt",
+      "value": "确定删除当前 Title ID (${titleId}) 的 ${count} 个 Shader 缓存文件？下次启动游戏会重新生成缓存。"
+    },
+    {
+      "name": "game_config_delete_shader_cache_title_fmt",
+      "value": "删除 ${backend} Shader 缓存"
+    },
+    {
+      "name": "game_config_game_file_not_found",
+      "value": "无法定位游戏文件"
+    },
+    {
+      "name": "game_config_label_not_exists_fmt",
+      "value": "${label}不存在"
+    },
+    {
+      "name": "game_config_label_not_installed_fmt",
+      "value": "${label}未安装"
+    },
+    {
+      "name": "game_config_no_extdata_id",
+      "value": "当前游戏没有 ExtraData ID"
+    },
+    {
+      "name": "game_config_no_installed_content",
+      "value": "当前游戏没有已安装内容"
+    },
+    {
+      "name": "game_config_no_valid_title_id",
+      "value": "当前游戏没有有效 Title ID"
+    },
+    {
+      "name": "game_config_rom_dir_not_found",
+      "value": "无法定位 ROM 目录"
+    },
+    {
+      "name": "game_config_shader_cache_deleted_fmt",
+      "value": "已删除 ${count} 个 Shader 缓存文件"
+    },
+    {
+      "name": "game_config_shader_cache_none_deleted_fmt",
+      "value": "没有删除 Shader 缓存"
+    },
+    {
+      "name": "game_config_shader_cache_not_found_fmt",
+      "value": "没有找到 Shader 缓存"
+    },
+    {
+      "name": "game_config_uninstall_all_message_fmt",
+      "value": "确定卸载“${name}”的应用、更新和 DLC？这只删除已安装内容，不会删除普通存档目录。"
+    },
+    {
+      "name": "game_config_uninstall_all_title",
+      "value": "卸载全部内容"
+    },
+    {
+      "name": "game_config_uninstall_count_fmt",
+      "value": "已卸载 ${count} 项内容"
+    },
+    {
+      "name": "game_config_uninstall_failed_fmt",
+      "value": "${label}卸载失败"
+    },
+    {
+      "name": "game_config_uninstall_message_fmt",
+      "value": "确定卸载“${name}”的${label}？这只删除已安装内容，不会删除普通存档目录。"
+    },
+    {
+      "name": "game_config_uninstall_partial_fmt",
+      "value": "已卸载 ${success} 项，${fail} 项失败"
+    },
+    {
+      "name": "game_config_uninstall_title_fmt",
+      "value": "卸载${label}"
+    },
+    {
+      "name": "game_config_uninstalled_fmt",
+      "value": "${label}已卸载"
+    },
+    {
+      "name": "game_deleted",
+      "value": "游戏已删除"
+    },
+    {
+      "name": "game_cleanup_failed",
+      "value": "部分游戏文件清理失败"
+    },
+    {
+      "name": "invalid_format",
+      "value": "格式无效"
+    },
+    {
+      "name": "movie_invalid_or_unreadable",
+      "value": "Movie 文件无效或无法读取"
+    },
+    {
+      "name": "movie_playback_start_failed_fmt",
+      "value": "启动回放失败: ${error}"
+    },
+    {
+      "name": "movie_record_start_failed_fmt",
+      "value": "启动录制失败: ${error}"
+    },
+    {
+      "name": "movie_title_id_mismatch",
+      "value": "Movie 的 Title ID 与当前游戏不一致"
+    },
+    {
+      "name": "no_cover_available",
+      "value": "无可用封面"
+    },
+    {
+      "name": "no_play_record",
+      "value": "没有游玩记录"
+    },
+    {
+      "name": "not_loaded",
+      "value": "未加载"
+    },
+    {
+      "name": "play_record_cleared",
+      "value": "游玩记录已清除"
+    },
+    {
+      "name": "remove_external_game_toast",
+      "value": "已从最近记录移除（外部文件保留）"
+    },
+    {
+      "name": "remove_from_recent",
+      "value": "从最近记录移除"
+    },
+    {
+      "name": "remove_from_recent_message_fmt",
+      "value": "确定将“${name}”从最近游戏中移除？游戏文件不会被删除。"
+    },
+    {
+      "name": "removed_from_favorites",
+      "value": "已取消收藏"
+    },
+    {
+      "name": "removed_from_recent",
+      "value": "已移出最近游戏"
+    },
+    {
+      "name": "romfs_dump_failed_fmt",
+      "value": "RomFS 转储失败: ${status}"
+    },
+    {
+      "name": "romfs_dumped",
+      "value": "RomFS 已转储"
+    },
+    {
+      "name": "romfs_dumped_with_update",
+      "value": "RomFS 已转储，更新 RomFS 也已转储"
+    },
+    {
+      "name": "romfs_none_to_dump",
+      "value": "没有可转储的 RomFS"
+    },
+    {
+      "name": "set_as_wallpaper",
+      "value": "设置为壁纸"
+    },
+    {
+      "name": "success",
+      "value": "成功"
+    },
+    {
+      "name": "toggle_failed",
+      "value": "切换失败"
+    },
+    {
+      "name": "uninstall_all",
+      "value": "卸载全部"
+    },
+    {
+      "name": "unsupported",
+      "value": "不支持"
+    },
+    {
+      "name": "update",
+      "value": "更新"
+    },
+    {
+      "name": "cartridge",
+      "value": "卡带"
+    },
+    {
+      "name": "clear_play_record_short",
+      "value": "清游玩记录"
+    },
+    {
+      "name": "core_play_time",
+      "value": "累计游玩时间"
+    },
+    {
+      "name": "display_name",
+      "value": "显示名称"
+    },
+    {
+      "name": "eject_cartridge",
+      "value": "弹出卡带"
+    },
+    {
+      "name": "encrypted",
+      "value": "加密"
+    },
+    {
+      "name": "favorite",
+      "value": "收藏"
+    },
+    {
+      "name": "file_location",
+      "value": "文件位置"
+    },
+    {
+      "name": "game_config_3d_depth_desc",
+      "value": "立体 3D 滑块百分比"
+    },
+    {
+      "name": "game_config_3d_display_target_desc",
+      "value": "按游戏覆盖 stereoscopic 3D 的显示屏幕"
+    },
+    {
+      "name": "game_config_accurate_mul_desc",
+      "value": "提升硬件着色器准确性"
+    },
+    {
+      "name": "game_config_aspect_ratio_desc",
+      "value": "单屏布局的画面比例"
+    },
+    {
+      "name": "game_config_async_custom_loading_desc",
+      "value": "后台线程加载自定义纹理"
+    },
+    {
+      "name": "game_config_async_fs_desc",
+      "value": "启用异步文件系统操作"
+    },
+    {
+      "name": "game_config_async_presentation_desc",
+      "value": "Vulkan 下异步 present"
+    },
+    {
+      "name": "game_config_async_shader_desc",
+      "value": "后台编译着色器以减少卡顿"
+    },
+    {
+      "name": "game_config_audio_emulation_desc",
+      "value": "HLE / LLE 音频模式"
+    },
+    {
+      "name": "game_config_bottom_screen_stretch_desc",
+      "value": "按游戏拉伸下屏"
+    },
+    {
+      "name": "game_config_cpu_clock_desc",
+      "value": "覆盖该游戏的 3DS CPU 时钟百分比"
+    },
+    {
+      "name": "game_config_custom_textures_desc",
+      "value": "从 load/textures 替换游戏纹理"
+    },
+    {
+      "name": "game_config_disable_right_eye_desc",
+      "value": "部分游戏可提升性能"
+    },
+    {
+      "name": "game_config_disk_shader_cache_desc",
+      "value": "缓存着色器降低后续卡顿"
+    },
+    {
+      "name": "game_config_display_name_desc",
+      "value": "仅影响前端游戏库显示，不修改 ROM 文件"
+    },
+    {
+      "name": "game_config_dump_textures_desc",
+      "value": "导出游戏纹理到 dump/textures"
+    },
+    {
+      "name": "game_config_gpu_timings_desc",
+      "value": "按实机延迟 GPU 完成事件"
+    },
+    {
+      "name": "game_config_hw_shader_desc",
+      "value": "GPU 着色器加速"
+    },
+    {
+      "name": "game_config_integer_scaling_desc",
+      "value": "按 3DS 原始分辨率整数倍缩放"
+    },
+    {
+      "name": "game_config_internal_resolution_desc",
+      "value": "硬件渲染时的分辨率倍率"
+    },
+    {
+      "name": "game_config_landscape_layout",
+      "value": "横屏布局"
+    },
+    {
+      "name": "game_config_landscape_layout_desc",
+      "value": "3DS 上下屏布局"
+    },
+    {
+      "name": "game_config_large_screen_ratio_desc",
+      "value": "Large Screen 布局中的大小屏比例"
+    },
+    {
+      "name": "game_config_lle_applets_desc",
+      "value": "使用已安装系统小程序"
+    },
+    {
+      "name": "game_config_mono_render_desc",
+      "value": "3D 关闭时选择左眼或右眼画面"
+    },
+    {
+      "name": "game_config_new_3ds_mode_desc",
+      "value": "影响 CPU、内存和部分游戏能力"
+    },
+    {
+      "name": "game_config_online_lle_modules_desc",
+      "value": "启用联机所需 LLE 模块"
+    },
+    {
+      "name": "game_config_per_game_config",
+      "value": "单游戏配置"
+    },
+    {
+      "name": "game_config_portrait_layout_desc",
+      "value": "手机竖屏布局"
+    },
+    {
+      "name": "game_config_preload_textures_desc",
+      "value": "启动前载入自定义纹理"
+    },
+    {
+      "name": "game_config_render_api_desc",
+      "value": "默认跟随全局；可按游戏覆盖 OpenGL/Vulkan/软件渲染"
+    },
+    {
+      "name": "game_config_render_thread_delay_desc",
+      "value": "按游戏覆盖 GSP 渲染线程延迟"
+    },
+    {
+      "name": "game_config_screen_gap_desc",
+      "value": "上下屏之间的间距"
+    },
+    {
+      "name": "game_config_secondary_display_layout_desc",
+      "value": "多窗口或附加显示时的屏幕布局"
+    },
+    {
+      "name": "game_config_shader_jit_desc",
+      "value": "着色器 JIT 开关"
+    },
+    {
+      "name": "game_config_small_screen_position_desc",
+      "value": "Large Screen 布局中的小屏位置"
+    },
+    {
+      "name": "game_config_smooth_filtering_desc",
+      "value": "原始 Azahar 的线性过滤开关"
+    },
+    {
+      "name": "game_config_speed_limit_desc",
+      "value": "百分比帧率限制"
+    },
+    {
+      "name": "game_config_spirv_shader_desc",
+      "value": "Vulkan 下生成 SPIR-V 着色器"
+    },
+    {
+      "name": "game_config_stereo_3d_desc",
+      "value": "按游戏覆盖 3DS 立体显示模式"
+    },
+    {
+      "name": "game_config_swap_eyes_desc",
+      "value": "对调立体 3D 输出左右眼"
+    },
+    {
+      "name": "game_config_swap_screens_desc",
+      "value": "按游戏互换上屏和下屏"
+    },
+    {
+      "name": "game_config_system_region_desc",
+      "value": "覆盖该游戏启动区域"
+    },
+    {
+      "name": "game_config_texture_filter_desc",
+      "value": "Anime4K、xBRZ、MMPX 等过滤器"
+    },
+    {
+      "name": "game_config_texture_sampling_desc",
+      "value": "游戏控制、最近邻或线性"
+    },
+    {
+      "name": "game_config_top_screen_stretch_desc",
+      "value": "按游戏拉伸上屏"
+    },
+    {
+      "name": "game_config_turbo_limit_desc",
+      "value": "快进时的模拟速度上限百分比"
+    },
+    {
+      "name": "game_config_upright_screen_desc",
+      "value": "按游戏保持屏幕竖直方向"
+    },
+    {
+      "name": "game_config_virtual_sd_desc",
+      "value": "使用 Azahar SDMC 目录"
+    },
+    {
+      "name": "game_config_volume_desc",
+      "value": "该游戏启动时的音量"
+    },
+    {
+      "name": "game_config_vsync_desc",
+      "value": "减少撕裂，可能增加延迟"
+    },
+    {
+      "name": "insert_cartridge",
+      "value": "插入卡带"
+    },
+    {
+      "name": "last_played",
+      "value": "最近游玩"
+    },
+    {
+      "name": "launch_count",
+      "value": "启动次数"
+    },
+    {
+      "name": "movie_dir",
+      "value": "Movie 目录"
+    },
+    {
+      "name": "movie_playback",
+      "value": "回放 Movie"
+    },
+    {
+      "name": "movie_record",
+      "value": "录制 Movie"
+    },
+    {
+      "name": "not_provided",
+      "value": "未提供"
+    },
+    {
+      "name": "open_folder",
+      "value": "打开文件夹"
+    },
+    {
+      "name": "publisher",
+      "value": "发行商"
+    },
+    {
+      "name": "restore_global",
+      "value": "恢复全局"
+    },
+    {
+      "name": "rom_size",
+      "value": "ROM 大小"
+    },
+    {
+      "name": "system_title",
+      "value": "系统标题"
+    },
+    {
+      "name": "unfavorite",
+      "value": "取消收藏"
+    },
+    {
+      "name": "unknown_region",
+      "value": "未知区域"
+    },
+    {
+      "name": "application_dir",
+      "value": "应用目录"
+    },
+    {
+      "name": "cheats_dir",
+      "value": "金手指目录"
+    },
+    {
+      "name": "clear_cover",
+      "value": "清除封面"
+    },
+    {
+      "name": "clear_opengl_shader",
+      "value": "清除 OpenGL 着色器缓存"
+    },
+    {
+      "name": "clear_shader_cache",
+      "value": "清除着色器缓存"
+    },
+    {
+      "name": "clear_shader_cache_pick_backend",
+      "value": "选择要清除着色器缓存的图形后端"
+    },
+    {
+      "name": "clear_vulkan_shader",
+      "value": "清除 Vulkan 着色器缓存"
+    },
+    {
+      "name": "cover_dir",
+      "value": "封面目录"
+    },
+    {
+      "name": "cover_saved_path_desc_fmt",
+      "value": "封面保存为 Download/covers/${name}.jpg，首页和桌面卡片会优先使用它。"
+    },
+    {
+      "name": "details",
+      "value": "详情"
+    },
+    {
+      "name": "dlc_dir",
+      "value": "DLC 目录"
+    },
+    {
+      "name": "exporting",
+      "value": "导出中"
+    },
+    {
+      "name": "files",
+      "value": "文件"
+    },
+    {
+      "name": "import_cover",
+      "value": "导入封面"
+    },
+    {
+      "name": "installed",
+      "value": "已安装"
+    },
+    {
+      "name": "installed_content",
+      "value": "已安装内容"
+    },
+    {
+      "name": "mods_dir",
+      "value": "Mods 目录"
+    },
+    {
+      "name": "nand_dir",
+      "value": "NAND 目录"
+    },
+    {
+      "name": "normal_save",
+      "value": "普通存档"
+    },
+    {
+      "name": "normal_save_dir",
+      "value": "普通存档目录"
+    },
+    {
+      "name": "not_installed",
+      "value": "未安装"
+    },
+    {
+      "name": "refresh_content",
+      "value": "刷新内容"
+    },
+    {
+      "name": "romfs_dir",
+      "value": "RomFS 目录"
+    },
+    {
+      "name": "romfs_dump_dir",
+      "value": "RomFS 转储目录"
+    },
+    {
+      "name": "save_states_dir",
+      "value": "即时存档目录"
+    },
+    {
+      "name": "sdmc_dir",
+      "value": "SDMC 目录"
+    },
+    {
+      "name": "shader_dir",
+      "value": "着色器目录"
+    },
+    {
+      "name": "system_data_dir",
+      "value": "系统数据目录"
+    },
+    {
+      "name": "texture_dump",
+      "value": "纹理 Dump"
+    },
+    {
+      "name": "texture_dump_dir",
+      "value": "纹理 Dump 目录"
+    },
+    {
+      "name": "texture_pack_dir",
+      "value": "纹理包目录"
+    },
+    {
+      "name": "uninstall_application",
+      "value": "卸载应用"
+    },
+    {
+      "name": "uninstall_dlc",
+      "value": "卸载 DLC"
+    },
+    {
+      "name": "uninstall_game",
+      "value": "卸载游戏"
+    },
+    {
+      "name": "uninstall_game_confirm_fmt",
+      "value": "确定卸载“${name}”？此操作不可撤销，存档与配置数据会保留。"
+    },
+    {
+      "name": "uninstall_update",
+      "value": "卸载更新"
+    },
+    {
+      "name": "unnamed",
+      "value": "未命名"
+    },
+    {
+      "name": "update_dir",
+      "value": "更新目录"
+    },
+    {
+      "name": "not_recorded",
+      "value": "未记录"
+    },
+    {
+      "name": "on",
+      "value": "开启"
+    },
+    {
+      "name": "restore",
+      "value": "恢复"
+    },
+    {
+      "name": "grid",
+      "value": "网格"
+    },
+    {
+      "name": "help",
+      "value": "帮助"
+    },
+    {
+      "name": "home_widgets",
+      "value": "桌面卡片"
+    },
+    {
+      "name": "how_to_import_3ds_games",
+      "value": "如何导入 3DS 游戏"
+    },
+    {
+      "name": "import_guide",
+      "value": "导入说明"
+    },
+    {
+      "name": "init_download_dir_failed_fmt",
+      "value": "初始化下载目录失败: ${error}"
+    },
+    {
+      "name": "init_failed_fmt",
+      "value": "初始化失败: ${error}"
+    },
+    {
+      "name": "initializing_game_library",
+      "value": "初始化游戏库"
+    },
+    {
+      "name": "installing",
+      "value": "安装中"
+    },
+    {
+      "name": "jit_phone_unavailable",
+      "value": "CPU JIT: 手机端不可用"
+    },
+    {
+      "name": "jit_secure_shield_unavailable",
+      "value": "CPU JIT: 坚盾守护模式已开启，暂不可用"
+    },
+    {
+      "name": "jit_tablet_allowed",
+      "value": "CPU JIT: 平板 / PC / 2in1 已允许"
+    },
+    {
+      "name": "jit_tablet_needs_setting",
+      "value": "CPU JIT: 平板 / PC / 2in1 需在设置中手动允许"
+    },
+    {
+      "name": "list",
+      "value": "列表"
+    },
+    {
+      "name": "manage",
+      "value": "管理"
+    },
+    {
+      "name": "module_entry_updated",
+      "value": "模块入口已更新，请从设置页打开对应配置"
+    },
+    {
+      "name": "multiplayer_rooms",
+      "value": "联机房间"
+    },
+    {
+      "name": "address",
+      "value": "地址"
+    },
+    {
+      "name": "anonymous",
+      "value": "匿名"
+    },
+    {
+      "name": "filter_text",
+      "value": "筛选文本"
+    },
+    {
+      "name": "multiplayer_account_service",
+      "value": "账号与服务"
+    },
+    {
+      "name": "multiplayer_direct_connect",
+      "value": "直连参数"
+    },
+    {
+      "name": "multiplayer_direct_room_not_set",
+      "value": "未设置直连房间"
+    },
+    {
+      "name": "multiplayer_fill_address",
+      "value": "填入地址"
+    },
+    {
+      "name": "multiplayer_fill_address_password",
+      "value": "填入地址 · 有密码"
+    },
+    {
+      "name": "multiplayer_filter_placeholder",
+      "value": "房间、游戏、房主"
+    },
+    {
+      "name": "multiplayer_hide_empty_rooms",
+      "value": "隐藏空房间"
+    },
+    {
+      "name": "multiplayer_hide_full_rooms",
+      "value": "隐藏满员房间"
+    },
+    {
+      "name": "multiplayer_lobby_filter",
+      "value": "大厅过滤"
+    },
+    {
+      "name": "multiplayer_lobby_refresh_failed_fmt",
+      "value": "刷新大厅失败: ${error}"
+    },
+    {
+      "name": "multiplayer_lobby_refreshed_fmt",
+      "value": "大厅刷新完成: ${count} 个房间"
+    },
+    {
+      "name": "multiplayer_no_filtered_rooms",
+      "value": "没有符合过滤条件的房间。"
+    },
+    {
+      "name": "multiplayer_no_public_rooms",
+      "value": "暂无公开房间，点击刷新大厅获取列表。"
+    },
+    {
+      "name": "multiplayer_open_room_optional",
+      "value": "开放房间可留空"
+    },
+    {
+      "name": "multiplayer_preferred_game",
+      "value": "偏好游戏"
+    },
+    {
+      "name": "multiplayer_max_players",
+      "value": "最大玩家数"
+    },
+    {
+      "name": "no_preference",
+      "value": "无偏好"
+    },
+    {
+      "name": "multiplayer_page_desc",
+      "value": "保存 Azahar WebService 账号、直连地址，并读取 public lobby 房间列表。"
+    },
+    {
+      "name": "multiplayer_unnamed_room",
+      "value": "未命名房间"
+    },
+    {
+      "name": "nickname",
+      "value": "昵称"
+    },
+    {
+      "name": "optional_empty",
+      "value": "可留空"
+    },
+    {
+      "name": "password",
+      "value": "密码"
+    },
+    {
+      "name": "port",
+      "value": "端口"
+    },
+    {
+      "name": "multiplayer_port_invalid",
+      "value": "端口必须是 1 到 65535 之间的整数"
+    },
+    {
+      "name": "refresh_lobby",
+      "value": "刷新大厅"
+    },
+    {
+      "name": "multiplayer_rooms_desc",
+      "value": "配置 Citra WebService、直连参数并刷新 public lobby。"
+    },
+    {
+      "name": "need_set_dir",
+      "value": "需先设置目录"
+    },
+    {
+      "name": "open_details_failed_fmt",
+      "value": "打开详情失败: ${error}"
+    },
+    {
+      "name": "open_dir",
+      "value": "打开目录"
+    },
+    {
+      "name": "open_failed_fmt",
+      "value": "打开失败: ${error}"
+    },
+    {
+      "name": "open_multiplayer_failed_fmt",
+      "value": "打开联机设置失败: ${error}"
+    },
+    {
+      "name": "play_hours_fmt",
+      "value": "游玩 ${hours} 小时"
+    },
+    {
+      "name": "play_hours_minutes_fmt",
+      "value": "游玩 ${hours} 小时 ${minutes} 分钟"
+    },
+    {
+      "name": "play_minutes_fmt",
+      "value": "游玩 ${minutes} 分钟"
+    },
+    {
+      "name": "play_time_less_than_minute",
+      "value": "少于 1 分钟"
+    },
+    {
+      "name": "never_played",
+      "value": "从未游玩"
+    },
+    {
+      "name": "recent",
+      "value": "最近"
+    },
+    {
+      "name": "load_game",
+      "value": "加载游戏"
+    },
+    {
+      "name": "clear_history",
+      "value": "清除历史"
+    },
+    {
+      "name": "clear_history_confirm",
+      "value": "清除所有最近游玩记录？"
+    },
+    {
+      "name": "clear_history_ok",
+      "value": "清除"
+    },
+    {
+      "name": "running",
+      "value": "运行中"
+    },
+    {
+      "name": "scan_failed_fmt",
+      "value": "扫描失败: ${error}"
+    },
+    {
+      "name": "scanning",
+      "value": "正在扫描"
+    },
+    {
+      "name": "scanning_games_fmt",
+      "value": "扫描游戏 ${progress}"
+    },
+    {
+      "name": "scanning_progress_fmt",
+      "value": "正在扫描 ${progress}"
+    },
+    {
+      "name": "search_games_files_categories",
+      "value": "搜索游戏、文件名或分类"
+    },
+    {
+      "name": "search",
+      "value": "搜索"
+    },
+    {
+      "name": "select_3ds_app",
+      "value": "请选择 3DS 程序"
+    },
+    {
+      "name": "select_3ds_app_in_download",
+      "value": "请选择 Download 目录内的 3DS 程序"
+    },
+    {
+      "name": "select_file_in_download",
+      "value": "请选择 Download 目录内的文件"
+    },
+    {
+      "name": "select_game",
+      "value": "选择游戏"
+    },
+    {
+      "name": "start",
+      "value": "启动"
+    },
+    {
+      "name": "start_game",
+      "value": "开始游戏"
+    },
+    {
+      "name": "startable",
+      "value": "可启动"
+    },
+    {
+      "name": "system_data",
+      "value": "系统数据"
+    },
+    {
+      "name": "texture_packs",
+      "value": "纹理包"
+    },
+    {
+      "name": "uncategorized",
+      "value": "未分类"
+    },
+    {
+      "name": "unsupported_format_fmt",
+      "value": "不支持的格式: ${format}"
+    },
+    {
+      "name": "upload",
+      "value": "上传"
+    },
+    {
+      "name": "uploading",
+      "value": "上传中"
+    },
+    {
+      "name": "web_upload",
+      "value": "Web 上传"
+    },
+    {
+      "name": "web_upload_choose_file",
+      "value": "选择文件"
+    },
+    {
+      "name": "web_upload_choose_folder",
+      "value": "选择文件夹"
+    },
+    {
+      "name": "web_upload_complete",
+      "value": "上传完成"
+    },
+    {
+      "name": "web_upload_connection_failed",
+      "value": "连接失败"
+    },
+    {
+      "name": "web_upload_drop_hint",
+      "value": "拖放 .3ds/.cia/.cci 等文件到这里"
+    },
+    {
+      "name": "web_upload_failed_status_prefix",
+      "value": "上传失败，状态码 "
+    },
+    {
+      "name": "web_upload_page_heading_fmt",
+      "value": "上传文件到 ${device}"
+    },
+    {
+      "name": "web_upload_page_title",
+      "value": "Azahar Web 上传"
+    },
+    {
+      "name": "web_upload_selected_files_fmt",
+      "value": "已选择 ${count} 个文件，共 ${size}"
+    },
+    {
+      "name": "web_upload_start_upload",
+      "value": "开始上传"
+    },
+    {
+      "name": "web_upload_target_dir",
+      "value": "目标目录："
+    },
+    {
+      "name": "web_upload_uploading_prefix",
+      "value": "正在上传 "
+    },
+    {
+      "name": "web_upload_browser_visit_fmt",
+      "value": "浏览器访问 ${url}"
+    },
+    {
+      "name": "web_upload_desc",
+      "value": "从浏览器上传文件到下载目录 roms 子目录。"
+    },
+    {
+      "name": "widget_launch_failed_fmt",
+      "value": "卡片启动失败: ${error}"
+    },
+    {
+      "name": "widgets_ready_toast",
+      "value": "桌面卡片已接入，可在系统桌面添加“最近游玩”卡片"
+    },
+    {
+      "name": "got_it",
+      "value": "知道了"
+    },
+    {
+      "name": "help_download_dir_desc_fmt",
+      "value": "将游戏文件放入以下目录：${path}"
+    },
+    {
+      "name": "help_download_dir_title",
+      "value": "放到 Download 目录"
+    },
+    {
+      "name": "help_select_file_desc",
+      "value": "点击“选择游戏”，再从设备存储中选择要启动的游戏文件。"
+    },
+    {
+      "name": "help_select_file_title",
+      "value": "从设备选择文件"
+    },
+    {
+      "name": "help_supported_files_desc",
+      "value": ".3ds / .cci / .cxi / .3dsx / .elf / .axf / .app / .cia"
+    },
+    {
+      "name": "help_supported_files_title",
+      "value": "支持的 3DS 文件"
+    },
+    {
+      "name": "help_web_upload_desc",
+      "value": "启动 Web 上传后，在同一局域网内用电脑或其他设备的浏览器上传游戏文件。"
+    },
+    {
+      "name": "help_web_upload_title",
+      "value": "通过浏览器上传"
+    },
+    {
+      "name": "how_to_import_games",
+      "value": "如何导入游戏"
+    },
+    {
+      "name": "how_to_import_games_desc",
+      "value": "3DS / CIA / Homebrew 文件放置与导入方式"
+    },
+    {
+      "name": "legal_import_notice",
+      "value": "请仅导入自己拥有并合法备份的游戏文件。"
+    },
+    {
+      "name": "notice",
+      "value": "注意"
+    },
+    {
+      "name": "starting",
+      "value": "启动中"
+    },
+    {
+      "name": "stop",
+      "value": "停止"
+    },
+    {
+      "name": "stopped",
+      "value": "已停止"
+    },
+    {
+      "name": "stopping",
+      "value": "停止中"
+    },
+    {
+      "name": "upload_dir_not_set",
+      "value": "未设置上传目录"
+    },
+    {
+      "name": "uploaded_file_fmt",
+      "value": "已上传 ${name} (${size})"
+    },
+    {
+      "name": "web_upload_error_bad_request",
+      "value": "请求无效"
+    },
+    {
+      "name": "web_upload_error_invalid_upload",
+      "value": "上传无效"
+    },
+    {
+      "name": "web_upload_error_method_not_allowed",
+      "value": "不支持的请求方式"
+    },
+    {
+      "name": "web_upload_error_missing_file",
+      "value": "缺少文件"
+    },
+    {
+      "name": "web_upload_error_not_found",
+      "value": "页面不存在"
+    },
+    {
+      "name": "web_upload_error_open_file_failed",
+      "value": "打开文件失败"
+    },
+    {
+      "name": "web_upload_error_write_failed",
+      "value": "写入失败"
+    },
+    {
+      "name": "web_upload_html_lang",
+      "value": "zh-CN"
+    },
+    {
+      "name": "web_upload_idle_desc",
+      "value": "点击启动后会在下方目录开启临时上传服务。"
+    },
+    {
+      "name": "web_upload_panel_desc",
+      "value": "在同一网络的浏览器中上传 3DS 文件到 Download/roms"
+    },
+    {
+      "name": "web_upload_running_desc",
+      "value": "浏览器打开上面的地址，选择文件或文件夹上传。上传完成后首页会刷新游戏库。"
+    },
+    {
+      "name": "web_upload_start_failed",
+      "value": "Web 上传启动失败，请检查网络权限或端口占用"
+    },
+    {
+      "name": "audio_hle",
+      "value": "HLE"
+    },
+    {
+      "name": "audio_lle",
+      "value": "LLE"
+    },
+    {
+      "name": "aspect_ratio_16_10",
+      "value": "16:10"
+    },
+    {
+      "name": "aspect_ratio_16_9",
+      "value": "16:9"
+    },
+    {
+      "name": "aspect_ratio_21_9",
+      "value": "21:9"
+    },
+    {
+      "name": "aspect_ratio_4_3",
+      "value": "4:3"
+    },
+    {
+      "name": "version_build_fmt",
+      "value": "版本 ${version}（${build}）"
+    },
+    {
+      "name": "version_fmt",
+      "value": "版本 ${version}"
+    },
+    {
+      "name": "based_on_azahar",
+      "value": "基于 Azahar 的 Nintendo 3DS 模拟器"
+    },
+    {
+      "name": "adapted_harmonyos",
+      "value": "适配 HarmonyOS"
+    },
+    {
+      "name": "sysinfo_section_title",
+      "value": "信息"
+    },
+    {
+      "name": "sysinfo_section_device",
+      "value": "设备信息"
+    },
+    {
+      "name": "sysinfo_section_software",
+      "value": "系统与软件"
+    },
+    {
+      "name": "sysinfo_section_display",
+      "value": "显示信息"
+    },
+    {
+      "name": "sysinfo_brand",
+      "value": "品牌"
+    },
+    {
+      "name": "sysinfo_model",
+      "value": "型号"
+    },
+    {
+      "name": "sysinfo_device_type",
+      "value": "设备类型"
+    },
+    {
+      "name": "sysinfo_abi",
+      "value": "ABI"
+    },
+    {
+      "name": "sysinfo_os_name",
+      "value": "系统版本"
+    },
+    {
+      "name": "sysinfo_sdk_api",
+      "value": "SDK API 版本"
+    },
+    {
+      "name": "sysinfo_resolution",
+      "value": "分辨率"
+    },
+    {
+      "name": "sysinfo_resolution_vp",
+      "value": "渲染分辨率（vp）"
+    },
+    {
+      "name": "sysinfo_density",
+      "value": "像素密度"
+    },
+    {
+      "name": "sysinfo_refresh_rate",
+      "value": "刷新率"
+    },
+    {
+      "name": "sysinfo_gpu_api",
+      "value": "Vulkan"
+    },
+    {
+      "name": "sysinfo_gles",
+      "value": "OpenGL ES"
+    },
+    {
+      "name": "sysinfo_gpu",
+      "value": "GPU"
+    },
+    {
+      "name": "sysinfo_app_clone",
+      "value": "应用分身"
+    },
+    {
+      "name": "links_services",
+      "value": "链接与服务"
+    },
+    {
+      "name": "privacy_policy",
+      "value": "隐私政策"
+    },
+    {
+      "name": "user_agreement",
+      "value": "用户协议"
+    },
+    {
+      "name": "view_source",
+      "value": "查看源码"
+    },
+    {
+      "name": "contact_email",
+      "value": "联系邮箱"
+    },
+    {
+      "name": "share_app",
+      "value": "分享给好友"
+    },
+    {
+      "name": "share_text",
+      "value": "推荐一款 3DS 模拟器，快来试试！"
+    },
+    {
+      "name": "gpl_notice",
+      "value": "本软件基于 GPL-3.0 协议开源"
+    },
+    {
+      "name": "about_link_coming_soon",
+      "value": "暂未开放"
+    },
+    {
+      "name": "contact_email_copied",
+      "value": "未找到邮件应用，邮箱地址已复制"
+    },
+    {
+      "name": "contact_email_copy_failed",
+      "value": "邮箱地址复制失败"
+    },
+    {
+      "name": "badge_nfc",
+      "value": "NFC"
+    },
+    {
+      "name": "badge_tas",
+      "value": "TAS"
+    },
+    {
+      "name": "brand_3ds",
+      "value": "3DS"
+    },
+    {
+      "name": "brand_azahar",
+      "value": "AZAHAR"
+    },
+    {
+      "name": "camera_frontend",
+      "value": "Camera Frontend"
+    },
+    {
+      "name": "cartridge_card_label",
+      "value": "3DS CARD"
+    },
+    {
+      "name": "cartridge_short",
+      "value": "CARD"
+    },
+    {
+      "name": "citra_room_lobby",
+      "value": "Citra Room / Lobby"
+    },
+    {
+      "name": "citra_token",
+      "value": "Citra Token"
+    },
+    {
+      "name": "cfg_ptm",
+      "value": "CFG / PTM"
+    },
+    {
+      "name": "dlc",
+      "value": "DLC"
+    },
+    {
+      "name": "default_roms_path",
+      "value": "Download/roms"
+    },
+    {
+      "name": "dump_romfs",
+      "value": "转储 RomFS"
+    },
+    {
+      "name": "extradata",
+      "value": "额外数据"
+    },
+    {
+      "name": "extradata_id",
+      "value": "ExtraData ID"
+    },
+    {
+      "name": "favorite_short",
+      "value": "FAV"
+    },
+    {
+      "name": "input_button_l",
+      "value": "L"
+    },
+    {
+      "name": "input_button_r",
+      "value": "R"
+    },
+    {
+      "name": "input_button_select",
+      "value": "Select"
+    },
+    {
+      "name": "input_button_start",
+      "value": "Start"
+    },
+    {
+      "name": "input_button_zl",
+      "value": "ZL"
+    },
+    {
+      "name": "input_button_zr",
+      "value": "ZR"
+    },
+    {
+      "name": "input_c_stick",
+      "value": "C-Stick"
+    },
+    {
+      "name": "input_circle_pad",
+      "value": "Circle Pad"
+    },
+    {
+      "name": "mods",
+      "value": "模组"
+    },
+    {
+      "name": "nand",
+      "value": "NAND"
+    },
+    {
+      "name": "net_version_fmt",
+      "value": "网络 v${version}"
+    },
+    {
+      "name": "placeholder_cheat_code",
+      "value": "00123456 00000001\nD2000000 00000000"
+    },
+    {
+      "name": "placeholder_fixed_timestamp",
+      "value": "946681277"
+    },
+    {
+      "name": "placeholder_username",
+      "value": "CITRA"
+    },
+    {
+      "name": "public_lobby",
+      "value": "Public Lobby"
+    },
+    {
+      "name": "renderer_opengl",
+      "value": "OpenGL"
+    },
+    {
+      "name": "render3d_cardboard_vr",
+      "value": "Cardboard VR"
+    },
+    {
+      "name": "renderer_opengl_es",
+      "value": "OpenGL ES"
+    },
+    {
+      "name": "renderer_vulkan",
+      "value": "Vulkan"
+    },
+    {
+      "name": "romfs_dump",
+      "value": "RomFS 转储"
+    },
+    {
+      "name": "sd",
+      "value": "SD"
+    },
+    {
+      "name": "sdmc",
+      "value": "SD 卡"
+    },
+    {
+      "name": "settings_lle_applets",
+      "value": "使用 LLE 小程序（如已安装）"
+    },
+    {
+      "name": "settings_shader_jit",
+      "value": "着色器 JIT"
+    },
+    {
+      "name": "settings_vsync",
+      "value": "垂直同步"
+    },
+    {
+      "name": "shader",
+      "value": "着色器"
+    },
+    {
+      "name": "overlay_theme_drastic",
+      "value": "Drastic"
+    },
+    {
+      "name": "overlay_theme_ps",
+      "value": "PS"
+    },
+    {
+      "name": "overlay_theme_snes",
+      "value": "SNES"
+    },
+    {
+      "name": "sysdata",
+      "value": "Sysdata"
+    },
+    {
+      "name": "title_id",
+      "value": "Title ID"
+    },
+    {
+      "name": "game_id_region",
+      "value": "游戏 ID / 区域"
+    },
+    {
+      "name": "texture_filter_anime4k",
+      "value": "Anime4K (OpenGL only)"
+    },
+    {
+      "name": "texture_filter_bicubic",
+      "value": "Bicubic"
+    },
+    {
+      "name": "texture_filter_mmpx",
+      "value": "MMPX"
+    },
+    {
+      "name": "texture_filter_scaleforce",
+      "value": "ScaleForce"
+    },
+    {
+      "name": "texture_filter_xbrz",
+      "value": "xBRZ"
+    },
+    {
+      "name": "web_api",
+      "value": "Web API"
+    },
+    {
+      "name": "settings_network",
+      "value": "网络"
+    },
+    {
+      "name": "settings_network_desc",
+      "value": "联机大厅 / 身份凭据"
+    },
+    {
+      "name": "web_api_url",
+      "value": "联机大厅地址"
+    },
+    {
+      "name": "web_api_url_desc",
+      "value": "公共房间列表与开房登记使用的服务器地址"
+    },
+    {
+      "name": "network_token",
+      "value": "网络令牌"
+    },
+    {
+      "name": "network_token_desc",
+      "value": "公共房间功能的身份令牌，可留空匿名使用"
+    },
+    {
+      "name": "multiplayer",
+      "value": "多人联机"
+    },
+    {
+      "name": "multiplayer_description",
+      "value": "房间大厅、直连加入与创建房间"
+    },
+    {
+      "name": "connect",
+      "value": "连接"
+    },
+    {
+      "name": "artic_base_addr",
+      "value": "Artic Base 地址"
+    },
+    {
+      "name": "artic_base_addr_desc",
+      "value": "真实 3DS 主机的局域网地址，可带端口（默认 5543）"
+    },
+    {
+      "name": "artic_base_connect",
+      "value": "连接到 Artic Base"
+    },
+    {
+      "name": "artic_base_connect_desc",
+      "value": "以 Artic Base 服务器为游戏源启动会话"
+    },
+    {
+      "name": "artic_base_addr_required",
+      "value": "请先填写 Artic Base 地址"
+    },
+    {
+      "name": "multiplayer_join",
+      "value": "加入"
+    },
+    {
+      "name": "multiplayer_create_room",
+      "value": "创建房间"
+    },
+    {
+      "name": "multiplayer_leave_room",
+      "value": "离开房间"
+    },
+    {
+      "name": "multiplayer_current_room",
+      "value": "当前房间"
+    },
+    {
+      "name": "multiplayer_moderator",
+      "value": "房主"
+    },
+    {
+      "name": "multiplayer_kick",
+      "value": "踢出"
+    },
+    {
+      "name": "multiplayer_ban",
+      "value": "封禁"
+    },
+    {
+      "name": "multiplayer_unban",
+      "value": "解封"
+    },
+    {
+      "name": "multiplayer_banned_prefix",
+      "value": "已封禁: "
+    },
+    {
+      "name": "multiplayer_chat_placeholder",
+      "value": "输入聊天内容"
+    },
+    {
+      "name": "send",
+      "value": "发送"
+    },
+    {
+      "name": "multiplayer_join_success",
+      "value": "已加入房间"
+    },
+    {
+      "name": "multiplayer_create_success",
+      "value": "房间已创建"
+    },
+    {
+      "name": "multiplayer_nickname_too_short",
+      "value": "用户名至少 5 个字符"
+    },
+    {
+      "name": "multiplayer_address_invalid",
+      "value": "请输入有效的房间地址"
+    },
+    {
+      "name": "multiplayer_room_name_invalid",
+      "value": "房间名需 3-20 个字符"
+    },
+    {
+      "name": "multiplayer_room_name",
+      "value": "房间名"
+    },
+    {
+      "name": "multiplayer_room_name_placeholder",
+      "value": "创建房间时使用"
+    },
+    {
+      "name": "multiplayer_password_required",
+      "value": "该房间需要密码，已回填地址，请输入密码后加入"
+    },
+    {
+      "name": "multiplayer_host_kicked",
+      "value": "已被房主移出房间"
+    },
+    {
+      "name": "multiplayer_lost_connection",
+      "value": "与房间的连接已断开"
+    },
+    {
+      "name": "netplay_error_wrong_password",
+      "value": "房间密码错误"
+    },
+    {
+      "name": "netplay_error_could_not_connect",
+      "value": "无法连接到房间"
+    },
+    {
+      "name": "netplay_error_room_full",
+      "value": "房间已满"
+    },
+    {
+      "name": "netplay_error_already",
+      "value": "已在房间中"
+    },
+    {
+      "name": "netplay_error_create",
+      "value": "创建房间失败"
+    },
+    {
+      "name": "netplay_error_name_collision",
+      "value": "昵称已被占用"
+    },
+    {
+      "name": "netplay_error_generic_fmt",
+      "value": "联机失败（错误码 {code}）"
+    },
+    {
+      "name": "artic_base_enter_address",
+      "value": "输入 Artic Base 地址"
+    },
+    {
+      "name": "multiplayer_join_room",
+      "value": "加入房间"
+    },
+    {
+      "name": "multiplayer_browse_lobby",
+      "value": "浏览公共房间"
+    },
+    {
+      "name": "settings_frame_limit_enable",
+      "value": "限制运行速度"
+    },
+    {
+      "name": "settings_frame_limit_enable_desc",
+      "value": "开启后按设定百分比限速；关闭则全速运行，加速热键不可用。"
+    },
+    {
+      "name": "settings_skip_duplicate_frames",
+      "value": "跳过重复帧呈现"
+    },
+    {
+      "name": "settings_skip_duplicate_frames_desc",
+      "value": "跳过不唯一的帧的呈现。也可以让外部插帧工具正确处理 30fps 游戏"
+    },
+    {
+      "name": "settings_disable_spirv_optimizer",
+      "value": "禁用 SPIR-V 优化器"
+    },
+    {
+      "name": "settings_disable_spirv_optimizer_desc",
+      "value": "禁用 SPIR-V 优化过程，可显著减少卡顿，同时几乎不影响性能。"
+    },
+    {
+      "name": "settings_simulate_headphones",
+      "value": "模拟插入耳机"
+    },
+    {
+      "name": "settings_simulate_headphones_desc",
+      "value": "向模拟的 3DS 系统报告耳机已插入"
+    },
+    {
+      "name": "settings_debug_log",
+      "value": "调试日志"
+    },
+    {
+      "name": "settings_debug_log_desc",
+      "value": "将日志逐条即时写入下载目录，可能影响性能，下一次启动游戏生效"
+    },
+    {
+      "name": "settings_deterministic_async",
+      "value": "确定性异步操作"
+    },
+    {
+      "name": "settings_deterministic_async_desc",
+      "value": "调试用途：使异步操作可复现，开启后可能导致冻结"
+    },
+    {
+      "name": "settings_unique_data_console",
+      "value": "切换固件数据类型"
+    },
+    {
+      "name": "settings_unique_data_console_desc",
+      "value": "在 Old/New 3DS 固件数据类型间切换，用于下载对应的系统固件"
+    },
+    {
+      "name": "camera_source",
+      "value": "摄像头图像来源"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "用于 3DS 模拟摄像头功能，将设备相机作为游戏内图像来源"
+    },
+    {
+      "name": "mic_permission_reason",
+      "value": "用于 3DS 麦克风功能，将设备麦克风作为游戏内声音输入"
+    },
+    {
+      "name": "camera_source_desc",
+      "value": "设置虚拟摄像头的图像来源。您可以选择一张图片或一个支持的摄像头设备"
+    },
+    {
+      "name": "camera_flip",
+      "value": "图像翻转"
+    },
+    {
+      "name": "settings_debug",
+      "value": "调试"
+    },
+    {
+      "name": "settings_debug_desc",
+      "value": "实验功能 / 渲染 / 日志"
+    },
+    {
+      "name": "debug_warning",
+      "value": "警告：修改这些选项可能降低模拟速度或导致不稳定"
+    },
+    {
+      "name": "settings_hw_shader_desc",
+      "value": "使用硬件模拟 3DS 着色器；启用后游戏性能将显著提高"
+    },
+    {
+      "name": "settings_rpc_server",
+      "value": "启用 RPC 服务器"
+    },
+    {
+      "name": "settings_rpc_server_desc",
+      "value": "在端口 45987 上启用 RPC 服务器，允许远程读/写客户机内存"
+    },
+    {
+      "name": "settings_texture_filter_desc",
+      "value": "对纹理应用放大滤镜增强贴图观感，需内部分辨率 ≥2x 才生效"
+    },
+    {
+      "name": "settings_screen_filter",
+      "value": "屏幕滤镜"
+    },
+    {
+      "name": "settings_screen_filter_desc",
+      "value": "红蓝/交错/逆向交错 3D 模式下不生效"
+    },
+    {
+      "name": "filter_natural",
+      "value": "自然色彩"
+    },
+    {
+      "name": "filter_fsr_rcas",
+      "value": "FSR 锐化"
+    },
+    {
+      "name": "filter_scanlines",
+      "value": "扫描线"
+    },
+    {
+      "name": "filter_pl_2x",
+      "value": "PL2x 荧光线"
+    },
+    {
+      "name": "filter_pl_mask",
+      "value": "荧光罩"
+    },
+    {
+      "name": "filter_pl_hard",
+      "value": "PLH 硬扫描线"
+    },
+    {
+      "name": "filter_filmgrain",
+      "value": "胶片颗粒"
+    },
+    {
+      "name": "settings_speed_limit_desc",
+      "value": "模拟整体运行速度：100% 为正常，越高越快、越低越慢。"
+    },
+    {
+      "name": "settings_screen_gap_desc",
+      "value": "所有双屏布局中两屏之间的间隔；以像素为单位，相对于上屏 240px 高度"
+    },
+    {
+      "name": "emulation_settings",
+      "value": "模拟设置"
+    },
+    {
+      "name": "regenerate",
+      "value": "重新生成"
+    },
+    {
+      "name": "regenerate_console_id",
+      "value": "重新生成设备 ID"
+    },
+    {
+      "name": "regenerate_console_id_desc",
+      "value": "这将用新 ID 替换当前虚拟 3DS 主机 ID，旧 ID 无法恢复，可能导致应用行为异常；配置存档过旧时也可能失败。是否继续？"
+    },
+    {
+      "name": "regenerate_mac_address",
+      "value": "重新生成 MAC 地址"
+    },
+    {
+      "name": "regenerate_mac_address_desc",
+      "value": "这将用随机地址替换当前 MAC 地址。如果当前 MAC 来自真实主机（通过安装工具导入），不建议重新生成。是否继续？"
+    },
+    {
+      "name": "simulated_clock",
+      "value": "模拟时钟"
+    },
+    {
+      "name": "clock",
+      "value": "时钟"
+    },
+    {
+      "name": "run_system_setup",
+      "value": "启动 HOME 菜单时运行系统初始化设置"
+    },
+    {
+      "name": "region_mismatch",
+      "value": "区域不匹配警告"
+    },
+    {
+      "name": "region_mismatch_emulated",
+      "value": "所选模拟区域不支持当前的国家/地区设置"
+    },
+    {
+      "name": "region_mismatch_console",
+      "value": "已关联主机不支持当前的国家/地区设置"
+    },
+    {
+      "name": "reset_to_default",
+      "value": "恢复默认设置"
+    },
+    {
+      "name": "reset_all_settings",
+      "value": "重置所有设置项？"
+    },
+    {
+      "name": "reset_all_settings_description",
+      "value": "所有设置项都将恢复为默认值。此操作不可撤销。"
+    },
+    {
+      "name": "settings_reset_done",
+      "value": "已恢复默认设置"
+    },
+    {
+      "name": "direction_up",
+      "value": "上"
+    },
+    {
+      "name": "direction_down",
+      "value": "下"
+    },
+    {
+      "name": "direction_left",
+      "value": "左"
+    },
+    {
+      "name": "direction_right",
+      "value": "右"
+    },
+    {
+      "name": "button_home",
+      "value": "HOME"
+    },
+    {
+      "name": "physkey_dpad_up",
+      "value": "十字键上"
+    },
+    {
+      "name": "physkey_dpad_down",
+      "value": "十字键下"
+    },
+    {
+      "name": "physkey_dpad_left",
+      "value": "十字键左"
+    },
+    {
+      "name": "physkey_dpad_right",
+      "value": "十字键右"
+    },
+    {
+      "name": "physkey_select",
+      "value": "视图键"
+    },
+    {
+      "name": "physkey_start",
+      "value": "菜单键"
+    },
+    {
+      "name": "physkey_menu",
+      "value": "菜单"
+    },
+    {
+      "name": "physkey_home",
+      "value": "Home"
+    },
+    {
+      "name": "physkey_unknown_fmt",
+      "value": "按键 ${code}"
+    },
+    {
+      "name": "gamepad_unbound",
+      "value": "未绑定"
+    },
+    {
+      "name": "gamepad_binding_listening",
+      "value": "按下要绑定的按键…"
+    },
+    {
+      "name": "gamepad_clear_binding",
+      "value": "清除绑定"
+    },
+    {
+      "name": "gamepad_section_mapping",
+      "value": "映射"
+    },
+    {
+      "name": "gamepad_section_buttons",
+      "value": "按键"
+    },
+    {
+      "name": "gamepad_section_triggers",
+      "value": "双肩按键"
+    },
+    {
+      "name": "gamepad_section_dpad_axis",
+      "value": "十字方向键（轴）"
+    },
+    {
+      "name": "gamepad_section_dpad_axis_desc",
+      "value": "部分手柄可能无法将十字方向键映射为轴。如遇此情况，请使用下方的“十字方向键（按键）”进行映射。"
+    },
+    {
+      "name": "gamepad_section_dpad_button",
+      "value": "十字方向键（按键）"
+    },
+    {
+      "name": "gamepad_section_dpad_button_desc",
+      "value": "仅当“十字方向键（轴）”映射存在问题时才使用本节进行映射。"
+    },
+    {
+      "name": "gamepad_section_sticks",
+      "value": "摇杆"
+    },
+    {
+      "name": "gamepad_section_hotkeys",
+      "value": "热键"
+    },
+    {
+      "name": "gamepad_section_combo",
+      "value": "组合按键"
+    },
+    {
+      "name": "gamepad_section_misc",
+      "value": "杂项"
+    },
+    {
+      "name": "gamepad_section_test",
+      "value": "测试"
+    },
+    {
+      "name": "gamepad_test_legend_tested",
+      "value": "已测试"
+    },
+    {
+      "name": "gamepad_test_device_generic",
+      "value": "游戏手柄"
+    },
+    {
+      "name": "gamepad_test_progress_fmt",
+      "value": "已连接 · 已测试 ${done}/${total} 个按键"
+    },
+    {
+      "name": "gamepad_test_connect_hint",
+      "value": "连接手柄后按任意键开始测试"
+    },
+    {
+      "name": "gamepad_test_reset",
+      "value": "重置测试记录"
+    },
+    {
+      "name": "gamepad_test_reset_desc",
+      "value": "清除已测试按键、摇杆轨迹、圆度记录和输入日志"
+    },
+    {
+      "name": "gamepad_test_section_sticks",
+      "value": "摇杆与扳机"
+    },
+    {
+      "name": "gamepad_test_circularity_fmt",
+      "value": "圆度误差 ${err}%"
+    },
+    {
+      "name": "gamepad_test_circularity_hint_fmt",
+      "value": "推到底转一圈测圆度 · ${pct}%"
+    },
+    {
+      "name": "gamepad_test_left_stick",
+      "value": "左摇杆"
+    },
+    {
+      "name": "gamepad_test_right_stick",
+      "value": "右摇杆"
+    },
+    {
+      "name": "gamepad_test_section_log",
+      "value": "输入日志"
+    },
+    {
+      "name": "gamepad_test_log_empty",
+      "value": "暂无输入"
+    },
+    {
+      "name": "gamepad_test_down",
+      "value": "按下"
+    },
+    {
+      "name": "gamepad_test_up",
+      "value": "松开"
+    },
+    {
+      "name": "gamepad_test_just_now",
+      "value": "刚刚"
+    },
+    {
+      "name": "gamepad_test_seconds_ago_fmt",
+      "value": "${sec} 秒前"
+    },
+    {
+      "name": "gamepad_test_offline",
+      "value": "未连接手柄"
+    },
+    {
+      "name": "gamepad_test_legend_pressed",
+      "value": "按键按下"
+    },
+    {
+      "name": "gamepad_test_legend_idle",
+      "value": "未测试"
+    },
+    {
+      "name": "gamepad_auto_map_desc",
+      "value": "将所有按键恢复为出厂映射"
+    },
+    {
+      "name": "gamepad_stick_circlepad",
+      "value": "方向摇杆"
+    },
+    {
+      "name": "gamepad_stick_cstick",
+      "value": "C 摇杆"
+    },
+    {
+      "name": "gamepad_stick_left",
+      "value": "左摇杆"
+    },
+    {
+      "name": "gamepad_stick_right",
+      "value": "右摇杆"
+    },
+    {
+      "name": "gamepad_stick_dpad",
+      "value": "十字键"
+    },
+    {
+      "name": "gamepad_deadzone_desc",
+      "value": "低于该幅度的摇杆输入将被忽略"
+    },
+    {
+      "name": "gamepad_combo_button",
+      "value": "触发键"
+    },
+    {
+      "name": "gamepad_combo_button_desc",
+      "value": "绑定一个手柄按键；游戏中按下它，会同时触发组合按键集中的所有按键"
+    },
+    {
+      "name": "gamepad_combo_configure",
+      "value": "组合按键集"
+    },
+    {
+      "name": "gamepad_combo_configure_desc",
+      "value": "选择触发键按下时同时触发的按键集"
+    },
+    {
+      "name": "hotkey_toggle_pause",
+      "value": "暂停/继续"
+    },
+    {
+      "name": "apply",
+      "value": "应用"
+    },
+    {
+      "name": "input_button_a",
+      "value": "A"
+    },
+    {
+      "name": "input_button_b",
+      "value": "B"
+    },
+    {
+      "name": "input_button_x",
+      "value": "X"
+    },
+    {
+      "name": "input_button_y",
+      "value": "Y"
+    },
+    {
+      "name": "hotkey_cycle_layouts",
+      "value": "环形布局"
+    },
+    {
+      "name": "hotkey_close_game",
+      "value": "关闭游戏"
+    },
+    {
+      "name": "hotkey_enable",
+      "value": "快捷键启用"
+    },
+    {
+      "name": "hotkey_enable_desc",
+      "value": "绑定后，需按住此键才能触发其他快捷键"
+    },
+    {
+      "name": "gamepad_bind_title_fmt",
+      "value": "绑定${type} ${name}"
+    },
+    {
+      "name": "gamepad_type_button",
+      "value": "按键"
+    },
+    {
+      "name": "gamepad_type_trigger",
+      "value": "肩键"
+    },
+    {
+      "name": "gamepad_type_dpad",
+      "value": "方向键"
+    },
+    {
+      "name": "gamepad_type_hotkey",
+      "value": "快捷键"
+    },
+    {
+      "name": "gamepad_bind_combo_title",
+      "value": "绑定触发键"
+    },
+    {
+      "name": "gamepad_capture_desc",
+      "value": "按下或移动以进行输入。"
+    },
+    {
+      "name": "gamepad_restore_default",
+      "value": "恢复默认映射"
+    },
+    {
+      "name": "gamepad_restore_default_confirm",
+      "value": "确定恢复默认映射？当前的自定义绑定将全部重置。"
+    },
+    {
+      "name": "gamepad_axis_vertical",
+      "value": "垂直轴"
+    },
+    {
+      "name": "gamepad_axis_horizontal",
+      "value": "水平轴"
+    },
+    {
+      "name": "gamepad_capture_axis_v",
+      "value": "向上推摇杆。"
+    },
+    {
+      "name": "gamepad_capture_axis_h",
+      "value": "向右推摇杆。"
+    },
+    {
+      "name": "touch_button_layout",
+      "value": "触屏按键布局"
+    },
+    {
+      "name": "touch_layout",
+      "value": "按键布局"
+    },
+    {
+      "name": "layout_manager_desc",
+      "value": "自定义屏幕按钮的位置和大小"
+    },
+    {
+      "name": "haptic_feedback",
+      "value": "按键震动"
+    },
+    {
+      "name": "haptic_feedback_desc",
+      "value": "触摸屏幕按键时提供触觉反馈"
+    },
+    {
+      "name": "haptic_strength",
+      "value": "振动强度"
+    },
+    {
+      "name": "disable_gesture_back_in_game",
+      "value": "游戏中禁用返回手势"
+    },
+    {
+      "name": "disable_gesture_back_in_game_desc",
+      "value": "游戏运行时关闭系统边缘返回手势"
+    },
+    {
+      "name": "privacy_mode_in_game",
+      "value": "游戏中禁用双指识屏"
+    },
+    {
+      "name": "privacy_mode_in_game_desc",
+      "value": "游戏运行时关闭双指识屏，并同时禁用截屏、录屏和投屏"
+    },
+    {
+      "name": "add_component",
+      "value": "添加组件"
+    },
+    {
+      "name": "background",
+      "value": "背景"
+    },
+    {
+      "name": "bg_image",
+      "value": "背景图片"
+    },
+    {
+      "name": "bg_manager",
+      "value": "背景管理"
+    },
+    {
+      "name": "bg_name",
+      "value": "背景名称"
+    },
+    {
+      "name": "bg_none",
+      "value": "无"
+    },
+    {
+      "name": "bg_theme_color",
+      "value": "系统主题色"
+    },
+    {
+      "name": "button_opacity",
+      "value": "按键透明度"
+    },
+    {
+      "name": "custom_layout",
+      "value": "自定义布局"
+    },
+    {
+      "name": "default_layout",
+      "value": "默认"
+    },
+    {
+      "name": "delete_layout",
+      "value": "删除布局"
+    },
+    {
+      "name": "display_mode",
+      "value": "显示模式"
+    },
+    {
+      "name": "exit_no_save",
+      "value": "退出不保存"
+    },
+    {
+      "name": "layout_bg_none",
+      "value": "无"
+    },
+    {
+      "name": "layout_bg_selected",
+      "value": "已选择"
+    },
+    {
+      "name": "layout_bg_theme_color",
+      "value": "系统主题色"
+    },
+    {
+      "name": "layout_editor_grid_size",
+      "value": "网格大小"
+    },
+    {
+      "name": "layout_editor_grid_size_desc",
+      "value": "调节网格吸附间距"
+    },
+    {
+      "name": "layout_manager_title",
+      "value": "布局管理"
+    },
+    {
+      "name": "layout_name",
+      "value": "布局名称"
+    },
+    {
+      "name": "layout_name_placeholder",
+      "value": "输入布局名称"
+    },
+    {
+      "name": "layout_preview",
+      "value": "预览"
+    },
+    {
+      "name": "loading",
+      "value": "加载中..."
+    },
+    {
+      "name": "no_more_components",
+      "value": "没有更多组件可添加"
+    },
+    {
+      "name": "properties",
+      "value": "属性"
+    },
+    {
+      "name": "reset_default",
+      "value": "重置默认"
+    },
+    {
+      "name": "save_and_exit",
+      "value": "保存并退出"
+    },
+    {
+      "name": "secondary_screen_opacity",
+      "value": "副屏透明度"
+    },
+    {
+      "name": "select_component",
+      "value": "选择组件"
+    },
+    {
+      "name": "size",
+      "value": "大小"
+    },
+    {
+      "name": "undo_changes",
+      "value": "撤销更改"
+    },
+    {
+      "name": "unnamed_layout",
+      "value": "未命名布局"
+    },
+    {
+      "name": "use_default_button_opacity",
+      "value": "使用默认按键透明度"
+    },
+    {
+      "name": "use_global_layout",
+      "value": "使用全局布局"
+    },
+    {
+      "name": "follow_global",
+      "value": "跟随全局"
+    },
+    {
+      "name": "layout_delete_confirm_fmt",
+      "value": "确定要删除布局\"${name}\"吗？"
+    },
+    {
+      "name": "comp_top_screen",
+      "value": "上屏"
+    },
+    {
+      "name": "comp_bottom_screen",
+      "value": "下屏"
+    },
+    {
+      "name": "comp_dpad",
+      "value": "方向键"
+    },
+    {
+      "name": "comp_fast_forward",
+      "value": "快进"
+    },
+    {
+      "name": "comp_more",
+      "value": "更多"
+    },
+    {
+      "name": "touch_controls",
+      "value": "触屏按键"
+    },
+    {
+      "name": "add_to_favorites",
+      "value": "加入收藏"
+    },
+    {
+      "name": "remove_from_favorites",
+      "value": "取消收藏"
+    },
+    {
+      "name": "back_to_main_menu",
+      "value": "返回主菜单"
+    },
+    {
+      "name": "manage_cheats",
+      "value": "管理金手指"
+    },
+    {
+      "name": "comp_pause",
+      "value": "暂停"
+    },
+    {
+      "name": "comp_quick_load",
+      "value": "快速读档"
+    },
+    {
+      "name": "comp_quick_save",
+      "value": "快速存档"
+    },
+    {
+      "name": "comp_reset",
+      "value": "重置"
+    },
+    {
+      "name": "comp_screen_rotation",
+      "value": "切换横竖屏"
+    },
+    {
+      "name": "comp_slow_motion",
+      "value": "慢速"
+    },
+    {
+      "name": "comp_swap_screens",
+      "value": "交换屏幕"
+    },
+    {
+      "name": "comp_toggle_soft_input",
+      "value": "触控开关"
+    },
+    {
+      "name": "bg_mode_stretch",
+      "value": "拉伸填充"
+    },
+    {
+      "name": "bg_mode_fit_center",
+      "value": "适应居中"
+    },
+    {
+      "name": "bg_mode_fit_top",
+      "value": "适应顶部"
+    },
+    {
+      "name": "bg_mode_fit_left",
+      "value": "适应左侧"
+    },
+    {
+      "name": "bg_mode_fit_bottom",
+      "value": "适应底部"
+    },
+    {
+      "name": "bg_mode_fit_right",
+      "value": "适应右侧"
+    },
+    {
+      "name": "screen_top",
+      "value": "上"
+    },
+    {
+      "name": "screen_bottom",
+      "value": "下"
+    },
+    {
+      "name": "preview_landscape",
+      "value": "横屏"
+    },
+    {
+      "name": "preview_portrait",
+      "value": "竖屏"
+    },
+    {
+      "name": "input_opacity",
+      "value": "触屏按键透明度"
+    },
+    {
+      "name": "soft_input_behaviour",
+      "value": "触屏按键行为"
+    },
+    {
+      "name": "opt_always_visible",
+      "value": "始终显示"
+    },
+    {
+      "name": "opt_hide_sys_btn",
+      "value": "连接手柄时隐藏"
+    },
+    {
+      "name": "opt_always_hidden",
+      "value": "始终隐藏"
+    },
+    {
+      "name": "privacy_mode_in_game_confirm",
+      "value": "启用后，游戏运行期间将无法截屏、录屏或投屏，离开游戏后恢复。确定启用吗？"
+    },
+    {
+      "name": "touch_section_display",
+      "value": "按键显示"
+    },
+    {
+      "name": "touch_section_feedback",
+      "value": "按键反馈"
+    },
+    {
+      "name": "touch_section_system_gestures",
+      "value": "系统手势"
+    },
+    {
+      "name": "graphics_section_shader",
+      "value": "着色器"
+    },
+    {
+      "name": "settings_graphics_advanced_desc",
+      "value": "着色器、立体显示与纹理工具等选项"
+    },
+    {
+      "name": "graphics_section_display",
+      "value": "显示"
+    },
+    {
+      "name": "settings_ignore_safe_area",
+      "value": "忽略安全区域"
+    },
+    {
+      "name": "settings_ignore_safe_area_desc",
+      "value": "游戏界面和布局编辑器将不避开挖孔/状态栏区域，充分利用屏幕空间"
+    },
+    {
+      "name": "settings_screen_orientation",
+      "value": "屏幕方向"
+    },
+    {
+      "name": "settings_screen_orientation_desc",
+      "value": "设置游戏画面的屏幕方向，退出游戏后自动恢复"
+    },
+    {
+      "name": "screen_orientation_auto",
+      "value": "自动"
+    },
+    {
+      "name": "screen_orientation_portrait",
+      "value": "竖屏"
+    },
+    {
+      "name": "screen_orientation_landscape",
+      "value": "横屏"
+    },
+    {
+      "name": "quick_actions",
+      "value": "快捷操作"
+    },
+    {
+      "name": "comp_hinge",
+      "value": "翻盖"
+    },
+    {
+      "name": "comp_microphone",
+      "value": "麦克风"
+    },
+    {
+      "name": "slow_motion_enable_failed",
+      "value": "无法开启慢速"
+    },
+    {
+      "name": "slow_motion_enabled_fmt",
+      "value": "慢速 ${limit}"
+    },
+    {
+      "name": "lid_closed",
+      "value": "已合盖"
+    },
+    {
+      "name": "lid_toggle_failed",
+      "value": "无法切换翻盖状态"
+    },
+    {
+      "name": "lid_closed_overlay_hint",
+      "value": "已合盖 · 翻盖键开盖"
+    },
+    {
+      "name": "lid_sleep_rejected",
+      "value": "游戏拒绝了睡眠，继续运行中"
+    },
+    {
+      "name": "mic_enabled",
+      "value": "麦克风已开启"
+    },
+    {
+      "name": "mic_disabled",
+      "value": "麦克风已静音"
+    },
+    {
+      "name": "mic_permission_denied",
+      "value": "麦克风权限被拒绝，未开启麦克风"
+    },
+    {
+      "name": "mic_no_source",
+      "value": "麦克风源为“无”，请先在设置中配置"
+    },
+    {
+      "name": "settings_lock_brightness",
+      "value": "锁定亮度"
+    },
+    {
+      "name": "settings_lock_brightness_desc",
+      "value": "进入游戏时将屏幕亮度固定为当前值，退出后恢复"
+    },
+    {
+      "name": "section_framerate_control",
+      "value": "帧率控制"
+    },
+    {
+      "name": "audio_section_sound",
+      "value": "声音"
+    },
+    {
+      "name": "section_mic",
+      "value": "麦克风"
+    },
+    {
+      "name": "mic_source",
+      "value": "麦克风源"
+    },
+    {
+      "name": "opt_noise",
+      "value": "静态噪声"
+    },
+    {
+      "name": "opt_device_mic",
+      "value": "设备麦克风"
+    },
+    {
+      "name": "opt_blow",
+      "value": "吹气模拟"
+    },
+    {
+      "name": "fast_forward_speed",
+      "value": "快进速度"
+    },
+    {
+      "name": "fast_forward_speed_desc",
+      "value": "实际速度取决于设备性能"
+    },
+    {
+      "name": "fps_counter",
+      "value": "FPS 计数器位置"
+    },
+    {
+      "name": "opt_unlimited",
+      "value": "无限制"
+    },
+    {
+      "name": "opt_hidden",
+      "value": "隐藏"
+    },
+    {
+      "name": "opt_top_left",
+      "value": "左上"
+    },
+    {
+      "name": "opt_top_center",
+      "value": "上中"
+    },
+    {
+      "name": "opt_top_right",
+      "value": "右上"
+    },
+    {
+      "name": "opt_bottom_left",
+      "value": "左下"
+    },
+    {
+      "name": "opt_bottom_center",
+      "value": "下中"
+    },
+    {
+      "name": "opt_bottom_right",
+      "value": "右下"
+    },
+    {
+      "name": "comp_stick",
+      "value": "摇杆"
+    },
+    {
+      "name": "comp_cstick",
+      "value": "C 摇杆"
+    },
+    {
+      "name": "layout_exit_title",
+      "value": "退出布局编辑"
+    },
+    {
+      "name": "layout_exit_message",
+      "value": "当前布局有未保存的更改，是否保存后退出？"
+    },
+    {
+      "name": "web_upload_browser_hint",
+      "value": "在同一网络的浏览器中访问："
+    },
+    {
+      "name": "web_upload_url_copied",
+      "value": "上传地址已复制"
+    },
+    {
+      "name": "web_upload_tap_to_copy",
+      "value": "点击复制"
+    },
+    {
+      "name": "retry",
+      "value": "重试"
+    },
+    {
+      "name": "web_upload_dir_title",
+      "value": "上传目录"
+    },
+    {
+      "name": "screenshot_saved_gallery",
+      "value": "截图已保存到相册"
+    },
+    {
+      "name": "dir_load",
+      "value": "自定义内容"
+    },
+    {
+      "name": "dir_load_desc",
+      "value": "自定义纹理和 MOD"
+    },
+    {
+      "name": "dir_dump",
+      "value": "导出数据"
+    },
+    {
+      "name": "dir_dump_desc",
+      "value": "RomFS 解包与纹理导出"
+    },
+    {
+      "name": "zippass_export",
+      "value": "导出 ZipPass"
+    },
+    {
+      "name": "zippass_export_desc",
+      "value": "将本机所有游戏的擦肩数据打包为 .pass.zip"
+    },
+    {
+      "name": "zippass_import",
+      "value": "导入 ZipPass"
+    },
+    {
+      "name": "zippass_import_desc",
+      "value": "导入他人分享的 .pass.zip，模拟擦肩"
+    },
+    {
+      "name": "zippass_clear",
+      "value": "清除擦肩数据"
+    },
+    {
+      "name": "zippass_clear_done",
+      "value": "已清除全部擦肩数据"
+    },
+    {
+      "name": "zippass_export_done_fmt",
+      "value": "已导出 ${count} 条擦肩数据到 ${path}"
+    },
+    {
+      "name": "zippass_export_empty",
+      "value": "没有可导出的擦肩数据"
+    },
+    {
+      "name": "zippass_import_done_fmt",
+      "value": "已导入 ${count} 条擦肩数据"
+    },
+    {
+      "name": "zippass_import_no_system_files",
+      "value": "需要先安装系统文件才能导入"
+    },
+    {
+      "name": "zippass_import_no_lle",
+      "value": "需要在设置中启用在线 LLE 模块才能导入"
+    },
+    {
+      "name": "zippass_failed_fmt",
+      "value": "ZipPass 操作失败（${code}）"
+    },
+    {
+      "name": "amiibo_generate",
+      "value": "生成 Amiibo"
+    },
+    {
+      "name": "amiibo_generate_desc",
+      "value": "输入 16 位十六进制 figure ID 生成 amiibo .bin"
+    },
+    {
+      "name": "amiibo_generate_done",
+      "value": "已生成并加载 amiibo"
+    },
+    {
+      "name": "amiibo_generate_bad_id",
+      "value": "ID 格式错误：需要 16 位十六进制字符"
+    },
+    {
+      "name": "amiibo_generate_failed",
+      "value": "生成失败，可能缺少 amiibo 密钥"
+    },
+    {
+      "name": "kb_add_binding",
+      "value": "添加绑定"
+    },
+    {
+      "name": "kb_capture_reserved",
+      "value": "该键已被系统功能占用，请选择其他键"
+    },
+    {
+      "name": "gamepad_kb_not_bindable",
+      "value": "该按键不支持键盘绑定"
+    },
+    {
+      "name": "gamepad_capture_kb_desc",
+      "value": "按下手柄按键或键盘按键进行绑定，Esc 取消"
+    },
+    {
+      "name": "comp_macro",
+      "value": "宏按键"
+    }
+  ]
+}

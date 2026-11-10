@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <vector>
@@ -19,7 +19,7 @@ SERIALIZE_EXPORT_IMPL(FileSys::DirectRomFSReader)
 namespace FileSys {
 
 std::size_t DirectRomFSReader::ReadFile(std::size_t offset, std::size_t length, u8* buffer) {
-    length = std::min(length, static_cast<std::size_t>(data_size) - offset);
+    length = std::min(length, GetSize() - offset);
     if (length == 0)
         return 0; // Crypto++ does not like zero size buffer
 
@@ -28,7 +28,12 @@ std::size_t DirectRomFSReader::ReadFile(std::size_t offset, std::size_t length, 
 
     // Skip cache if the read is too big
     if (segments.size() == 1 && segments[0].second > cache_line_size) {
-        length = file->ReadAtBytes(buffer, length, file_offset + offset);
+        length = file->ReadAtBytes(buffer, length, offset);
+        if (is_encrypted) { // AzaharPlus: CTR-decrypt reads on the fly
+            CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption d(key.data(), key.size(), ctr.data());
+            d.Seek(crypto_offset + offset);
+            d.ProcessData(buffer, buffer, length);
+        }
         LOG_TRACE(Service_FS, "RomFS Cache SKIP: offset={}, length={}", offset, length);
         return length;
     }
@@ -42,7 +47,12 @@ std::size_t DirectRomFSReader::ReadFile(std::size_t offset, std::size_t length, 
         auto cache_entry = cache.request(page);
         if (!cache_entry.first) {
             // If not found, read from disk and cache the data
-            read_size = file->ReadAtBytes(cache_entry.second.data(), read_size, file_offset + page);
+            read_size = file->ReadAtBytes(cache_entry.second.data(), read_size, page);
+            if (is_encrypted && read_size) {
+                CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption d(key.data(), key.size(), ctr.data());
+                d.Seek(crypto_offset + page);
+                d.ProcessData(cache_entry.second.data(), cache_entry.second.data(), read_size);
+            }
             LOG_TRACE(Service_FS, "RomFS Cache MISS: page={}, length={}, into={}", page, seg.second,
                       (seg.first - page));
         } else {

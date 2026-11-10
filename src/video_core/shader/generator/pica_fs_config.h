@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -43,6 +43,22 @@ struct BlendConfig {
                                    // fields
                                    FIELD_HASH(eq), FIELD_HASH(src_factor), FIELD_HASH(dst_factor));
     }
+
+    void SetMinMaxEmulationDisabled() {
+        // If we don't need min/max emulation, set the blend equation
+        // to "-1" as a clear marker that this config is disabled.
+        eq = static_cast<Pica::FramebufferRegs::BlendEquation>(UINT32_MAX);
+    }
+
+    bool RequiresMinMaxEmulation() const {
+        return eq == Pica::FramebufferRegs::BlendEquation::Min ||
+               eq == Pica::FramebufferRegs::BlendEquation::Max;
+    }
+
+    bool UsesNoOpFactors() const {
+        return src_factor == Pica::FramebufferRegs::BlendFactor::One &&
+               dst_factor == Pica::FramebufferRegs::BlendFactor::One;
+    }
 };
 static_assert(std::has_unique_object_representations_v<BlendConfig>);
 
@@ -58,8 +74,8 @@ struct FramebufferConfig {
         BitField<10, 1, u32> shadow_rendering;
         BitField<11, 1, u32> alphablend_enable;
     };
-    BlendConfig rgb_blend{};
-    BlendConfig alpha_blend{};
+    BlendConfig requested_rgb_blend{};
+    BlendConfig requested_alpha_blend{};
 
     Pica::FramebufferRegs::LogicOp requested_logic_op{};
 
@@ -78,7 +94,8 @@ struct FramebufferConfig {
             // fields
             FIELD_HASH(alpha_test_func), FIELD_HASH(scissor_test_mode), FIELD_HASH(depthmap_enable),
             FIELD_HASH(logic_op), FIELD_HASH(shadow_rendering), FIELD_HASH(alphablend_enable),
-            FIELD_HASH(rgb_blend), FIELD_HASH(alpha_blend), FIELD_HASH(requested_logic_op),
+            FIELD_HASH(requested_rgb_blend), FIELD_HASH(requested_alpha_blend),
+            FIELD_HASH(requested_logic_op),
 
             // nested layout
             BlendConfig::StructHash());
@@ -387,15 +404,13 @@ struct FSConfig {
         return (stage_index < 4) && ((texture.combiner_buffer_input >> 4) & (1 << stage_index));
     }
 
-    [[nodiscard]] bool EmulateBlend() const {
-        return framebuffer.rgb_blend.eq != Pica::FramebufferRegs::BlendEquation::Add ||
-               framebuffer.alpha_blend.eq != Pica::FramebufferRegs::BlendEquation::Add;
-    }
-
     [[nodiscard]] bool UsesSpirvIncompatibleConfig() const {
         const auto texture0_type = texture.texture0_type.Value();
         return texture0_type == Pica::TexturingRegs::TextureConfig::ShadowCube ||
-               framebuffer.shadow_rendering.Value();
+               framebuffer.shadow_rendering.Value() ||
+               // Min/max blend emulation is only implemented in the GLSL generator.
+               framebuffer.requested_rgb_blend.RequiresMinMaxEmulation() ||
+               framebuffer.requested_alpha_blend.RequiresMinMaxEmulation();
     }
 
     void ApplyProfile(const Profile& profile) {

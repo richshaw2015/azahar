@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2023-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "common/string_util.h"
 #include "core/hle/service/cfg/cfg.h"
@@ -38,7 +38,7 @@ constexpr u8 DEFAULT_SOUND_OUTPUT_MODE = SOUND_STEREO;
 // constants.
 constexpr u64_le DEFAULT_CONSOLE_ID = 0;
 constexpr u32_le DEFAULT_CONSOLE_RANDOM_NUMBER = 0;
-constexpr UsernameBlock DEFAULT_USERNAME{{u"AZAHAR"}, 0, 0};
+constexpr UsernameBlock DEFAULT_USERNAME{{u"CITRA"}, 0, 0};
 constexpr BirthdayBlock DEFAULT_BIRTHDAY{11, 7}; // November 7th, 2024
 constexpr u8 DEFAULT_LANGUAGE = LANGUAGE_EN;
 constexpr ConsoleCountryInfo DEFAULT_COUNTRY_INFO{
@@ -121,6 +121,14 @@ static const std::unordered_map<ConfigBlockID, ConfigBlockDefaults> DEFAULT_CONF
 
 const EULAVersion& GetDefaultEULAVersion() {
     return DEFAULT_EULA_VERSION;
+}
+
+std::u16string GetDefaultUsername() {
+    std::u16string username(DEFAULT_USERNAME.username.data(), DEFAULT_USERNAME.username.size());
+    const std::size_t pos = username.find(u'\0');
+    if (pos != std::u16string::npos)
+        username.erase(pos);
+    return username;
 }
 
 const std::unordered_map<ConfigBlockID, ConfigBlockDefaults>& GetDefaultConfigBlocks() {

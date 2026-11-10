@@ -1,0 +1,272 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "bg_gradient_top",
+      "value": "#F0F0F2"
+    },
+    {
+      "name": "bg_gradient_bottom",
+      "value": "#D9DADE"
+    },
+    {
+      "name": "wallpaper_fade_clear",
+      "value": "#00F1F1F4"
+    },
+    {
+      "name": "wallpaper_fade_soft",
+      "value": "#D8F1F1F4"
+    },
+    {
+      "name": "wallpaper_fade_strong",
+      "value": "#E0F1F1F4"
+    },
+    {
+      "name": "tile_badge_bg",
+      "value": "#D9E8E8EC"
+    },
+    {
+      "name": "tile_badge_bg_active",
+      "value": "#EBFFFFFF"
+    },
+    {
+      "name": "sheet_bg",
+      "value": "#BFFFFFFF"
+    },
+    {
+      "name": "sheet_bg_grouped",
+      "value": "#BFF1F3F5"
+    },
+    {
+      "name": "pause_menu_bg",
+      "value": "#EBF1F3F5"
+    },
+    {
+      "name": "sheet_card_bg",
+      "value": "#A6FFFFFF"
+    },
+    {
+      "name": "overlay_mask",
+      "value": "#5C1E1E24"
+    },
+    {
+      "name": "wallpaper_scrim",
+      "value": "#52FFFFFF"
+    },
+    {
+      "name": "dpad_dim",
+      "value": "#99FFFFFF"
+    },
+    {
+      "name": "tip_warn_bg",
+      "value": "#29FFD166"
+    },
+    {
+      "name": "toast_success_bg",
+      "value": "#FF008B00"
+    },
+    {
+      "name": "toast_warning_bg",
+      "value": "#FFD99E00"
+    },
+    {
+      "name": "toast_error_bg",
+      "value": "#FFD53035"
+    },
+    {
+      "name": "ds_brand_blue",
+      "value": "#0369A1"
+    },
+    {
+      "name": "theme_swatch_dark",
+      "value": "#14141A"
+    },
+    {
+      "name": "theme_swatch_dot",
+      "value": "#383C3C43"
+    },
+    {
+      "name": "cartridge_placeholder",
+      "value": "#80FFFFFF"
+    },
+    {
+      "name": "cartridge_art_bg",
+      "value": "#99E9E9ED"
+    },
+    {
+      "name": "cartridge_pin_gold",
+      "value": "#FFB8860B"
+    },
+    {
+      "name": "slot_outer",
+      "value": "#DAD9D6"
+    },
+    {
+      "name": "slot_outer_border",
+      "value": "#C2C1BD"
+    },
+    {
+      "name": "slot_inner",
+      "value": "#F4F3F1"
+    },
+    {
+      "name": "slot_inner_edge_top",
+      "value": "#C6C5C2"
+    },
+    {
+      "name": "slot_inner_edge_bottom",
+      "value": "#FCFCFB"
+    },
+    {
+      "name": "render_surface",
+      "value": "#FF000000"
+    },
+    {
+      "name": "layout_preview_device",
+      "value": "#FF1C1C1E"
+    },
+    {
+      "name": "text_on_accent",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "text_outline",
+      "value": "#000000"
+    },
+    {
+      "name": "drawer_shadow",
+      "value": "#6B000000"
+    },
+    {
+      "name": "perf_overlay_text",
+      "value": "#00FF00"
+    },
+    {
+      "name": "widget_text_shadow",
+      "value": "#C7000000"
+    },
+    {
+      "name": "widget_fade_clear",
+      "value": "#00000000"
+    },
+    {
+      "name": "widget_fade_dark",
+      "value": "#B8000000"
+    },
+    {
+      "name": "widget_subtitle",
+      "value": "#C2FFFFFF"
+    },
+    {
+      "name": "widget_stage_start",
+      "value": "#1B1B22"
+    },
+    {
+      "name": "widget_stage_end",
+      "value": "#060608"
+    },
+    {
+      "name": "widget_cell_shadow",
+      "value": "#73000000"
+    },
+    {
+      "name": "widget_card_shadow",
+      "value": "#99000000"
+    },
+    {
+      "name": "editor_divider_dark",
+      "value": "#1FFFFFFF"
+    },
+    {
+      "name": "editor_bar_scrim",
+      "value": "#A6000000"
+    },
+    {
+      "name": "grid_guide_on_light",
+      "value": "#66000000"
+    },
+    {
+      "name": "grid_guide_on_dark",
+      "value": "#FFFFFF44"
+    },
+    {
+      "name": "guide_center",
+      "value": "#FFFF00"
+    },
+    {
+      "name": "guide_element",
+      "value": "#00FF88"
+    },
+    {
+      "name": "screen_zone_top_tint",
+      "value": "#772299FF"
+    },
+    {
+      "name": "screen_zone_bottom_tint",
+      "value": "#77FF4444"
+    },
+    {
+      "name": "screen_zone_top",
+      "value": "#2288FF"
+    },
+    {
+      "name": "screen_zone_bottom",
+      "value": "#FF4444"
+    },
+    {
+      "name": "drag_indicator_active",
+      "value": "#FF88AAFF"
+    },
+    {
+      "name": "drag_indicator",
+      "value": "#7788AAFF"
+    },
+    {
+      "name": "fab_shadow",
+      "value": "#4D000000"
+    },
+    {
+      "name": "cartridge_highlight",
+      "value": "#99FFFFFF"
+    },
+    {
+      "name": "cartridge_edge",
+      "value": "#1F000000"
+    },
+    {
+      "name": "cartridge_edge_border",
+      "value": "#14000000"
+    },
+    {
+      "name": "shadow_card",
+      "value": "#14000000"
+    },
+    {
+      "name": "shadow_tile",
+      "value": "#1F000000"
+    },
+    {
+      "name": "shadow_dialog",
+      "value": "#2E000000"
+    },
+    {
+      "name": "shadow_subtle",
+      "value": "#0F000000"
+    },
+    {
+      "name": "shadow_shell",
+      "value": "#59000000"
+    },
+    {
+      "name": "shadow_button",
+      "value": "#1F000000"
+    },
+    {
+      "name": "shadow_button_pressed",
+      "value": "#0F000000"
+    }
+  ]
+}

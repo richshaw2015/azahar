@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <memory>
@@ -42,7 +42,7 @@ static const u32 memory_region_sizes[8][3] = {
 };
 
 void KernelSystem::MemoryInit(MemoryMode memory_mode, u64 override_init_time) {
-    const bool is_new_3ds = Settings::values.is_new_3ds.GetValue();
+    const bool is_new_3ds = Settings::values.IsNew3DSEffective();
     const u32 mem_type_index = static_cast<u32>(memory_mode);
 
     // The kernel allocation regions (APPLICATION, SYSTEM and BASE) are laid out in sequence, with

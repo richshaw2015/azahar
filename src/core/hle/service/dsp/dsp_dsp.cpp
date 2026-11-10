@@ -1,6 +1,6 @@
-// Copyright 2014 Citra Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "audio_core/audio_types.h"
 #include "common/archives.h"
@@ -290,9 +290,8 @@ void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(ResultSuccess);
-    rb.Push(false); /// u8, 0 = not inserted, 1 = inserted
-
-    LOG_DEBUG(Service_DSP, "called");
+    rb.Push(Settings::values.simulate_headphones_plugged
+                .GetValue()); /// u8, 0 = not inserted, 1 = inserted
 }
 
 void DSP_DSP::ForceHeadphoneOut(Kernel::HLERequestContext& ctx) {

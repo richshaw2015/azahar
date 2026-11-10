@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -35,6 +35,11 @@ enum class InitTicks : u32 {
     Fixed = 1,
 };
 
+enum class BatteryLevelSource : u32 {
+    System = 0,
+    Fixed = 1,
+};
+
 /** Defines the layout option for desktop and mobile landscape */
 enum class LayoutOption : u32 { // Shouldn't these have set numbers to prevent last two from
                                 // shifting? -OS
@@ -42,12 +47,14 @@ enum class LayoutOption : u32 { // Shouldn't these have set numbers to prevent l
     SingleScreen,
     LargeScreen,
     SideScreen,
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(OHOS) && !defined(MOBILE_DEVICE)
     SeparateWindows,
 #endif
     HybridScreen,
     CustomLayout,
 };
+
+enum class InputMappingType : u8 { AllControllers, Guid, GuidPort };
 
 /** Defines the layout option for mobile portrait */
 enum class PortraitLayoutOption : u32 {
@@ -57,7 +64,16 @@ enum class PortraitLayoutOption : u32 {
     PortraitOriginal
 };
 
-enum class SecondaryDisplayLayout : u32 { None, TopScreenOnly, BottomScreenOnly, SideBySide };
+enum class SecondaryDisplayLayout : u32 {
+    None,
+    TopScreenOnly,
+    BottomScreenOnly,
+    SideBySide,
+    OppositeScreenOnly,
+    Original,
+    Hybrid,
+    LargeScreen
+};
 /** Defines where the small screen will appear relative to the large screen
  * when in Large Screen mode
  */
@@ -102,6 +118,29 @@ enum class AudioEmulation : u32 {
     LLE = 1,
     LLEMultithreaded = 2,
 };
+
+enum class AntiAliasingMethod : u32 {
+    None = 0,
+    MSAAx2 = 1,
+    MSAAx4 = 2,
+    MSAAx8 = 3,
+    MSAAx16 = 4,
+};
+
+static inline u8 GetAntiAliasingSampleCount(AntiAliasingMethod antialiasing_method) {
+    switch (antialiasing_method) {
+    case AntiAliasingMethod::MSAAx2:
+        return 2;
+    case AntiAliasingMethod::MSAAx4:
+        return 4;
+    case AntiAliasingMethod::MSAAx8:
+        return 8;
+    case AntiAliasingMethod::MSAAx16:
+        return 16;
+    default:
+        return 1;
+    }
+}
 
 enum class TextureFilter : u32 {
     NoFilter = 0,
@@ -449,6 +488,7 @@ struct InputProfile {
     std::string udp_input_address;
     u16 udp_input_port;
     u8 udp_pad_index;
+    InputMappingType maptype = Settings::InputMappingType::GuidPort;
 };
 
 struct TouchFromButtonMap {
@@ -472,6 +512,17 @@ struct Values {
 
     // Core
     Setting<bool> use_cpu_jit{true, Keys::use_cpu_jit};
+    Setting<bool> use_cpu_ir_interpreter{false, Keys::use_cpu_ir_interpreter};
+    Setting<bool> use_cpu_ir_dense_cache{true, Keys::use_cpu_ir_dense_cache};
+    Setting<bool> use_cpu_asm_interpreter{false, Keys::use_cpu_asm_interpreter};
+    // Core::ARMAsm::kAsmMask* handler-family gates
+    Setting<u32> cpu_asm_mask{~0u, Keys::cpu_asm_mask};
+    // Debug aid: after every asm run, replay the same guest-instruction span
+    // through the pure C++ IR engine and diff registers/CPSR, logging the
+    // first diverging block.
+    Setting<bool> cpu_asm_verify{false, Keys::cpu_asm_verify};
+    Setting<bool> use_vfp_hostfp{true, Keys::use_vfp_hostfp};
+    Setting<bool> use_fastinterp{true, Keys::use_fastinterp};
     SwitchableSetting<s32, true> cpu_clock_percentage{100, 5, 400, Keys::cpu_clock_percentage};
     SwitchableSetting<bool> is_new_3ds{true, Keys::is_new_3ds};
     SwitchableSetting<bool> lle_applets{true, Keys::lle_applets};
@@ -479,11 +530,16 @@ struct Values {
                                                            Keys::deterministic_async_operations};
     SwitchableSetting<bool> enable_required_online_lle_modules{
         false, Keys::enable_required_online_lle_modules};
+    // Opt-in gate for the Citra-MMJ per-title performance quirks (the ones
+    // Common::Hacks::IsPerfQuirk classifies as speed-vs-accuracy trade-offs).
+    // Compatibility quirks still apply unconditionally.
+    SwitchableSetting<bool> game_perf_hacks{false, Keys::game_perf_hacks};
 
     // Data Storage
     Setting<bool> use_virtual_sd{true, Keys::use_virtual_sd};
     Setting<bool> use_custom_storage{false, Keys::use_custom_storage};
     Setting<bool> compress_cia_installs{false, Keys::compress_cia_installs};
+    Setting<bool> async_fs_operations{true, Keys::async_fs_operations};
 
     // System
     SwitchableSetting<s32> region_value{REGION_VALUE_AUTO_SELECT, Keys::region_value};
@@ -492,14 +548,21 @@ struct Values {
     Setting<s64> init_time_offset{0, Keys::init_time_offset};
     Setting<InitTicks> init_ticks_type{InitTicks::Random, Keys::init_ticks_type};
     Setting<s64> init_ticks_override{0, Keys::init_ticks_override};
+    Setting<BatteryLevelSource> battery_state_source{BatteryLevelSource::System,
+                                                     Keys::battery_state_source};
+    Setting<bool> battery_charging{true, Keys::battery_charging};
+    SwitchableSetting<u8, true> battery_level{0, 0, 4, Keys::battery_level};
     Setting<bool> plugin_loader_enabled{false, Keys::plugin_loader};
     Setting<bool> allow_plugin_loader{true, Keys::allow_plugin_loader};
     Setting<u16> steps_per_hour{0, Keys::steps_per_hour};
     Setting<bool> apply_region_free_patch{true, Keys::apply_region_free_patch};
 
     // Renderer
+    // clang-format off
     SwitchableSetting<GraphicsAPI, true> graphics_api{
-#if defined(ENABLE_OPENGL)
+#if defined(ANDROID) && defined(ENABLE_VULKAN) // Prefer Vulkan on Android, OpenGL on everything else
+        GraphicsAPI::Vulkan,
+#elif defined(ENABLE_OPENGL)
         GraphicsAPI::OpenGL,
 #elif defined(ENABLE_VULKAN)
         GraphicsAPI::Vulkan,
@@ -510,18 +573,22 @@ struct Values {
 #error "At least one renderer must be enabled."
 #endif
         GraphicsAPI::Software, GraphicsAPI::Vulkan, Keys::graphics_api};
+    // clang-format on
     SwitchableSetting<u32> physical_device{0, Keys::physical_device};
     Setting<bool> use_gles{false, Keys::use_gles};
     Setting<bool> renderer_debug{false, Keys::renderer_debug};
+    Setting<bool> pica_debugging{false, Keys::pica_debugging};
     Setting<bool> dump_command_buffers{false, Keys::dump_command_buffers};
     SwitchableSetting<bool> spirv_shader_gen{true, Keys::spirv_shader_gen};
     SwitchableSetting<bool> disable_spirv_optimizer{true, Keys::disable_spirv_optimizer};
     SwitchableSetting<bool> async_shader_compilation{false, Keys::async_shader_compilation};
     SwitchableSetting<bool> async_presentation{true, Keys::async_presentation};
     SwitchableSetting<bool> use_hw_shader{true, Keys::use_hw_shader};
+    SwitchableSetting<bool> use_hw_geometry_cache{true, Keys::use_hw_geometry_cache};
     SwitchableSetting<bool> use_disk_shader_cache{true, Keys::use_disk_shader_cache};
+    SwitchableSetting<bool> use_skip_duplicate_frames{false, Keys::use_skip_duplicate_frames};
     SwitchableSetting<bool> shaders_accurate_mul{true, Keys::shaders_accurate_mul};
-#ifdef ANDROID // TODO: Fuck this -OS
+#if defined(ANDROID) || defined(OHOS) || defined(MOBILE_DEVICE)
     SwitchableSetting<bool> use_vsync{false, Keys::use_vsync};
 #else
     SwitchableSetting<bool> use_vsync{true, Keys::use_vsync};
@@ -529,25 +596,27 @@ struct Values {
     SwitchableSetting<bool> use_display_refresh_rate_detection{
         true, Keys::use_display_refresh_rate_detection};
     Setting<bool> use_shader_jit{true, Keys::use_shader_jit};
-    SwitchableSetting<u32, true> resolution_factor{1, 0, 10, Keys::resolution_factor};
+    SwitchableSetting<u32, true> resolution_factor{1, 0, 18, Keys::resolution_factor};
+    SwitchableSetting<AntiAliasingMethod> antialiasing{AntiAliasingMethod::None, "antialiasing"};
     SwitchableSetting<bool> use_integer_scaling{false, Keys::use_integer_scaling};
     SwitchableSetting<double, true> frame_limit{100, 0, 1000, Keys::frame_limit};
     SwitchableSetting<double, true> turbo_limit{200, 0, 1000, Keys::turbo_limit};
     SwitchableSetting<TextureFilter> texture_filter{TextureFilter::NoFilter, Keys::texture_filter};
     SwitchableSetting<TextureSampling> texture_sampling{TextureSampling::GameControlled,
                                                         Keys::texture_sampling};
-    SwitchableSetting<u16, true> delay_game_render_thread_us{0, 0, 16000,
+    SwitchableSetting<u16, true> delay_game_render_thread_us{0, 0, 65000,
                                                              Keys::delay_game_render_thread_us};
+    SwitchableSetting<bool> simulate_3ds_gpu_timings{false, Keys::simulate_3ds_gpu_timings};
 
     SwitchableSetting<LayoutOption> layout_option{LayoutOption::Default, Keys::layout_option};
     SwitchableSetting<bool> swap_screen{false, Keys::swap_screen};
     SwitchableSetting<bool> upright_screen{false, Keys::upright_screen};
     SwitchableSetting<SecondaryDisplayLayout> secondary_display_layout{
-        SecondaryDisplayLayout::None, Keys::secondary_display_layout};
+        SecondaryDisplayLayout::OppositeScreenOnly, Keys::secondary_display_layout};
     SwitchableSetting<std::vector<LayoutOption>> layouts_to_cycle{
         {LayoutOption::Default, LayoutOption::SingleScreen, LayoutOption::LargeScreen,
          LayoutOption::SideScreen,
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(OHOS) && !defined(MOBILE_DEVICE)
          LayoutOption::SeparateWindows,
 #endif
          LayoutOption::HybridScreen, LayoutOption::CustomLayout},
@@ -616,13 +685,17 @@ struct Values {
     // Audio
     bool audio_muted;
     SwitchableSetting<AudioEmulation> audio_emulation{AudioEmulation::HLE, Keys::audio_emulation};
-    SwitchableSetting<bool> enable_audio_stretching{true, Keys::enable_audio_stretching};
+    SwitchableSetting<bool> enable_audio_stretching{false, Keys::enable_audio_stretching};
     SwitchableSetting<bool> enable_realtime_audio{false, Keys::enable_realtime_audio};
     SwitchableSetting<float, true> volume{1.f, 0.f, 1.f, Keys::volume};
     Setting<AudioCore::SinkType> output_type{AudioCore::SinkType::Auto, Keys::output_type};
     Setting<std::string> output_device{"Auto", Keys::output_device};
+#ifdef ENABLE_QT
+    Setting<bool> bypass_audio_effects{false, Keys::bypass_audio_effects};
+#endif
     Setting<AudioCore::InputType> input_type{AudioCore::InputType::Auto, Keys::input_type};
     Setting<std::string> input_device{"Auto", Keys::input_device};
+    SwitchableSetting<bool> simulate_headphones_plugged{false, Keys::simulate_headphones_plugged};
 
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;
@@ -638,6 +711,11 @@ struct Values {
     Setting<bool> instant_debug_log{false, Keys::instant_debug_log};
     Setting<bool> enable_rpc_server{false, Keys::enable_rpc_server};
     Setting<bool> toggle_unique_data_console_type{false, Keys::toggle_unique_data_console_type};
+    Setting<bool> enable_exception_handler{false, Keys::enable_exception_handler};
+
+    // WebService
+    Setting<std::string> web_api_url{"", Keys::web_api_url};
+    Setting<std::string> network_token{"", Keys::network_token};
 
     // Miscellaneous
     Setting<std::string> log_filter{"*:Info", Keys::log_filter};
@@ -654,6 +732,33 @@ struct Values {
     std::string audio_encoder;
     std::string audio_encoder_options;
     u64 audio_bitrate;
+
+    // Per-title compatibility quirks (not user settings), Citra-MMJ compat layer.
+    // These are resolved from the built-in Common::Hacks database and applied on
+    // game load by System::ApplyPerProgramHacks; they are reset on every load.
+    s64 core_ticks_hack;
+    // Per-core downcount shift for the CPU_USAGE_LIMIT quirk (applied to the
+    // timers after Init; re-applied after savestate loads rebuild the timers).
+    std::array<u32, 4> cpu_limit_shifts{};
+    bool skip_slow_draw;
+    bool skip_cpu_write;
+    bool skip_texture_copy;
+    bool y2r_perform_hack;
+    bool disable_clip_coef;
+    bool use_linear_filter;
+    bool display_transfer_hack;
+    bool force_new_3ds;
+
+    /**
+     * The effective New 3DS mode for the running title: the user's is_new_3ds
+     * setting OR the FORCE_NEW_3DS per-title quirk (Citra-MMJ compat layer).
+     * Emulation code must query this instead of is_new_3ds so forced titles get
+     * the full New 3DS behavior (resource limits, 804MHz flag, console model
+     * reporting, ...); is_new_3ds itself remains the persisted user preference.
+     */
+    bool IsNew3DSEffective() const {
+        return is_new_3ds.GetValue() || force_new_3ds;
+    }
 };
 
 extern Values values;
@@ -667,6 +772,9 @@ void LogSettings();
 
 // Restore the global state of all applicable settings in the Values struct
 void RestoreGlobalState(bool is_powered_on);
+
+/// Gets the graphics API that should be used; not necessarily one set in settings
+Settings::GraphicsAPI GetWorkingGraphicsAPI();
 
 // Input profiles
 void LoadProfile(int index);

@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "common/arch.h"
 #if CITRA_ARCH(x86_64) || CITRA_ARCH(arm64)
@@ -92,8 +92,10 @@ public:
     Common::Vec4f Run(std::span<const Common::Vec4f> inputs) {
         Pica::ShaderUnit shader_unit;
         RunShader(shader_unit, inputs);
-        return {shader_unit.output[0].x.ToFloat32(), shader_unit.output[0].y.ToFloat32(),
-                shader_unit.output[0].z.ToFloat32(), shader_unit.output[0].w.ToFloat32()};
+        return {shader_unit.output[shader_unit.output_bank][0].x.ToFloat32(),
+                shader_unit.output[shader_unit.output_bank][0].y.ToFloat32(),
+                shader_unit.output[shader_unit.output_bank][0].z.ToFloat32(),
+                shader_unit.output[shader_unit.output_bank][0].w.ToFloat32()};
     }
 
     Common::Vec4f Run(std::initializer_list<float> inputs) {
@@ -481,6 +483,39 @@ SHADER_TEST_CASE("RSQ", "[video_core][shader]") {
     REQUIRE(shader.Run({0.0625f}).x == Catch::Approx(4.0f).margin(0.004f));
 }
 
+SHADER_TEST_CASE("SETEMIT", "[video_core][shader]") {
+    Pica::GeometryEmitter geometry_emitter;
+
+    for (u8 winding = 0; winding <= 1; ++winding) {
+        for (u8 prim_emit = 0; prim_emit <= 1; ++prim_emit) {
+            for (u8 vertex_id = 0; vertex_id <= 3; ++vertex_id) {
+                auto shader_setup = CompileShaderSetup({
+                    {OpCode::Id::NOP}, // setemit
+                    {OpCode::Id::END},
+                });
+
+                // nihstro does not support the SETEMIT instructions, so the instruction-binary must
+                // be manually
+                // inserted here:
+                nihstro::Instruction SETEMIT = {};
+                SETEMIT.opcode = nihstro::OpCode(nihstro::OpCode::Id::SETEMIT);
+                SETEMIT.setemit.winding.Assign(winding);
+                SETEMIT.setemit.prim_emit.Assign(prim_emit);
+                SETEMIT.setemit.vertex_id.Assign(vertex_id);
+                shader_setup->UpdateProgramCode(0, SETEMIT.hex);
+
+                auto shader = TestType(std::move(shader_setup));
+                Pica::ShaderUnit shader_unit(&geometry_emitter);
+                shader.Run(shader_unit, 1.0f);
+
+                REQUIRE(geometry_emitter.emit_state.winding == winding);
+                REQUIRE(geometry_emitter.emit_state.prim_emit == prim_emit);
+                REQUIRE(geometry_emitter.emit_state.vertex_id == vertex_id);
+            }
+        }
+    }
+}
+
 SHADER_TEST_CASE("Uniform Read", "[video_core][shader]") {
     const auto sh_input = SourceRegister::MakeInput(0);
     const auto sh_c0 = SourceRegister::MakeFloat(0);
@@ -678,7 +713,8 @@ TEMPLATE_TEST_CASE("Nested Loop", "[video_core][shader]", ShaderJitTest) {
         shader_test.Run(shader_unit, input);
 
         REQUIRE(shader_unit.address_registers[2] == expected_aL);
-        REQUIRE(shader_unit.output[0].x.ToFloat32() == Catch::Approx(expected_out));
+        REQUIRE(shader_unit.output[shader_unit.output_bank][0].x.ToFloat32() ==
+                Catch::Approx(expected_out));
     }
 }
 
@@ -727,7 +763,7 @@ SHADER_TEST_CASE("Conditional", "[video_core][shader]") {
         auto shader_test = TestType(std::move(shader_setup));
         shader_test.Run(shader_unit, 1.0f);
 
-        REQUIRE(shader_unit.output[0].x.ToFloat32() == result);
+        REQUIRE(shader_unit.output[shader_unit.output_bank][0].x.ToFloat32() == result);
     }
 
     // JustY
@@ -740,7 +776,7 @@ SHADER_TEST_CASE("Conditional", "[video_core][shader]") {
         auto shader_test = TestType(std::move(shader_setup));
         shader_test.Run(shader_unit, 1.0f);
 
-        REQUIRE(shader_unit.output[0].x.ToFloat32() == result);
+        REQUIRE(shader_unit.output[shader_unit.output_bank][0].x.ToFloat32() == result);
     }
 
     // OR
@@ -753,7 +789,7 @@ SHADER_TEST_CASE("Conditional", "[video_core][shader]") {
         auto shader_test = TestType(std::move(shader_setup));
         shader_test.Run(shader_unit, 1.0f);
 
-        REQUIRE(shader_unit.output[0].x.ToFloat32() == result);
+        REQUIRE(shader_unit.output[shader_unit.output_bank][0].x.ToFloat32() == result);
     }
 
     // AND
@@ -766,7 +802,7 @@ SHADER_TEST_CASE("Conditional", "[video_core][shader]") {
         auto shader_test = TestType(std::move(shader_setup));
         shader_test.Run(shader_unit, 1.0f);
 
-        REQUIRE(shader_unit.output[0].x.ToFloat32() == result);
+        REQUIRE(shader_unit.output[shader_unit.output_bank][0].x.ToFloat32() == result);
     }
 }
 

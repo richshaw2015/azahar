@@ -242,7 +242,8 @@ void Timing::Timer::SetNextSlice(s64 max_slice_length) {
             std::min<s64>(event_queue.front().time - executed_ticks, max_slice_length));
     }
 
-    downcount = slice_length;
+    // Citra-MMJ compat (CPU_USAGE_LIMIT): shrink the slice budget by the per-core shift.
+    downcount = slice_length >> downcount_hack;
 }
 
 void Timing::Timer::Idle() {

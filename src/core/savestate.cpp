@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2020-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <chrono>
 #include <sstream>
@@ -16,28 +16,30 @@
 #include "core/loader/loader.h"
 #include "core/movie.h"
 #include "core/savestate.h"
-#include "core/savestate_data.h"
 #include "network/network.h"
 
 namespace Core {
 
 #pragma pack(push, 1)
 struct CSTHeader {
-    std::array<u8, 4> filetype;    /// Unique Identifier to check the file type (always "CST"0x1B)
-    u64_le program_id;             /// ID of the ROM being executed. Also called title_id
-    std::array<u8, 20> revision;   /// Git hash of the revision this savestate was created with
-    u64_le time;                   /// The time when this save state was created
-    std::array<u8, 20> build_name; /// The build name (Canary/Nightly) with the version number
-    u32_le zero = 0;               /// Should be zero, just in case.
+    std::array<u8, 4> filetype{};    /// Unique Identifier to check the file type (always "CST"0x1B)
+    u64_le program_id{};             /// ID of the ROM being executed. Also called title_id
+    std::array<u8, 20> revision{};   /// Git hash of the revision this savestate was created with
+    u64_le time{};                   /// The time when this save state was created
+    std::array<u8, 20> build_name{}; /// The build name (Canary/Nightly) with the version number
+    u32_le zero{};                   /// Should be zero, just in case.
+    std::array<u8, 20> build_version{}; /// Latest build version, used as compatibility.
+    u32_le zero_2{};                    /// Should be zero, just in case.
+    u32_le state_version{}; /// Serialization format version (SaveStateFormatVersion)
 
-    std::array<u8, 192> reserved{}; /// Make heading 256 bytes so it has consistent size
+    std::array<u8, 164> reserved{}; /// Make heading 256 bytes so it has consistent size
 };
 static_assert(sizeof(CSTHeader) == 256, "CSTHeader should be 256 bytes");
 #pragma pack(pop)
 
 constexpr std::array<u8, 4> header_magic_bytes{{'C', 'S', 'T', 0x1B}};
 
-static std::string GetSaveStatePath(u64 program_id, u64 movie_id, u32 slot) {
+std::string GetSaveStatePath(u64 program_id, u64 movie_id, u32 slot) {
     if (movie_id) {
         return fmt::format("{}{:016X}.movie{:016X}.{:02d}.cst",
                            FileUtil::GetUserPath(FileUtil::UserPath::StatesDir), program_id,
@@ -61,36 +63,32 @@ static bool ValidateSaveState(const CSTHeader& header, SaveStateInfo& info, u64 
         LOG_WARNING(Core, "Save state file isn't for the current game {}", path);
         return false;
     }
-    const std::string revision = fmt::format("{:02x}", fmt::join(header.revision, ""));
     const std::string build_name =
         header.zero == 0 ? reinterpret_cast<const char*>(header.build_name.data()) : "";
+    const std::string build_version =
+        header.zero_2 == 0 ? reinterpret_cast<const char*>(header.build_version.data()) : "";
 
-    if (revision == Common::g_scm_rev) {
+    // 兼容性判据 = 显式格式版本号（不用 git SHA —— commit 变化不产生格式差异）：
+    // version==0 是字段引入前的旧档，其序列化格式即首个版本，归一化为 v1；
+    // 低于当前版本 → RevisionMismatch 按宽松策略尽量读取；高于 → BuildMismatch
+    const u32 state_version = header.state_version == 0 ? 1 : header.state_version;
+    if (state_version == SaveStateFormatVersion) {
         info.status = SaveStateInfo::ValidationStatus::OK;
     } else {
-        if (!build_name.empty()) {
-            info.build_name = build_name;
-        } else if (hash_to_version.find(revision) != hash_to_version.end()) {
-            info.build_name = hash_to_version.at(revision);
-        }
-        if (info.build_name.empty()) {
-            LOG_WARNING(Core, "Save state file {} created from a different revision {}", path,
-                        revision);
-        } else {
-            LOG_WARNING(Core,
-                        "Save state file {} created from a different build {} with revision {}",
-                        path, info.build_name, revision);
-        }
+        info.build_name = build_name;
+        info.build_version = build_version;
 
-        info.status = SaveStateInfo::ValidationStatus::RevisionDismatch;
+        info.status = state_version > SaveStateFormatVersion
+                          ? SaveStateInfo::ValidationStatus::BuildMismatch
+                          : SaveStateInfo::ValidationStatus::RevisionMismatch;
     }
     return true;
 }
 
-std::vector<SaveStateInfo> ListSaveStates(u64 program_id, u64 movie_id) {
+std::vector<SaveStateInfo> ListSaveStates(u64 program_id, u64 movie_id, u32 max_slot) {
     std::vector<SaveStateInfo> result;
-    result.reserve(SaveStateSlotCount);
-    for (u32 slot = 0; slot <= SaveStateSlotCount; ++slot) {
+    result.reserve(max_slot + 1);
+    for (u32 slot = 0; slot <= max_slot; ++slot) {
         const auto path = GetSaveStatePath(program_id, movie_id, slot);
         if (!FileUtil::Exists(path)) {
             continue;
@@ -122,10 +120,40 @@ std::vector<SaveStateInfo> ListSaveStates(u64 program_id, u64 movie_id) {
     return result;
 }
 
+SaveStateInfo GetSaveStateInfo(u64 program_id, u64 movie_id, u32 slot) {
+    SaveStateInfo info{};
+    info.slot = std::numeric_limits<u32>::max();
+
+    const auto path = GetSaveStatePath(program_id, movie_id, slot);
+    if (!FileUtil::Exists(path)) {
+        return info;
+    }
+
+    FileUtil::IOFile file(path, "rb");
+    if (!file) {
+        LOG_ERROR(Core, "Could not open file {}", path);
+        return info;
+    }
+    CSTHeader header;
+    if (file.GetSize() < sizeof(header)) {
+        LOG_ERROR(Core, "File too small {}", path);
+        return info;
+    }
+    if (file.ReadBytes(&header, sizeof(header)) != sizeof(header)) {
+        LOG_ERROR(Core, "Could not read from file {}", path);
+        return info;
+    }
+    if (ValidateSaveState(header, info, program_id, movie_id)) {
+        info.slot = slot;
+    }
+    return info;
+}
+
 void System::SaveState(u32 slot) const {
     if (app_loader) {
         if (!app_loader->SupportsSaveStates()) {
-            throw std::runtime_error("The current app loader doesn't support save states");
+            throw std::runtime_error("Savestates are not supported by the current application "
+                                     "loader (Artic Base).");
         }
     }
 
@@ -156,6 +184,7 @@ void System::SaveState(u32 slot) const {
     CryptoPP::StringSource ss(Common::g_scm_rev, true,
                               new CryptoPP::HexDecoder(new CryptoPP::StringSink(rev_bytes)));
     std::memcpy(header.revision.data(), rev_bytes.data(), sizeof(header.revision));
+    header.state_version = SaveStateFormatVersion;
     header.time = std::chrono::duration_cast<std::chrono::seconds>(
                       std::chrono::system_clock::now().time_since_epoch())
                       .count();
@@ -173,10 +202,12 @@ void System::SaveState(u32 slot) const {
 void System::LoadState(u32 slot) {
     if (app_loader) {
         if (!app_loader->SupportsSaveStates()) {
-            throw std::runtime_error("The current app loader doesn't support save states");
+            throw std::runtime_error("Savestates are not supported by the current application "
+                                     "loader (Artic Base)");
         }
     }
-    if (Network::GetRoomMember().lock()->IsConnected()) {
+    auto room_member = Network::GetRoomMember().lock();
+    if (room_member && room_member->IsConnected()) {
         throw std::runtime_error("Unable to load while connected to multiplayer");
     }
 
@@ -198,9 +229,23 @@ void System::LoadState(u32 slot) {
         // validate header
         SaveStateInfo info;
         info.slot = slot;
+#if defined(OHOS)
+        // OHOS：格式版本差异不直接拒绝 —— 按"旧存档默认可用"策略尽量反序列化
+        // （真不兼容时反序列化抛异常，由上层按可恢复错误处理）。
+        // 仅保留 filetype/program_id 的硬校验
         if (!ValidateSaveState(header, info, title_id, movie_id)) {
             throw std::runtime_error("Invalid savestate");
         }
+        if (info.status != SaveStateInfo::ValidationStatus::OK) {
+            LOG_WARNING(Core, "Savestate format version mismatch ({}), attempting load anyway",
+                        info.build_name);
+        }
+#else
+        if (!ValidateSaveState(header, info, title_id, movie_id) ||
+            info.status == SaveStateInfo::ValidationStatus::BuildMismatch) {
+            throw std::runtime_error("Invalid savestate");
+        }
+#endif
 
         if (file.ReadBytes(buffer.data(), buffer.size()) != buffer.size()) {
             throw std::runtime_error("Could not read from file at " + path);
@@ -234,6 +279,7 @@ std::vector<u8> System::SaveStateBuffer() const {
     CryptoPP::StringSource ss(Common::g_scm_rev, true,
                               new CryptoPP::HexDecoder(new CryptoPP::StringSink(rev_bytes)));
     std::memcpy(header.revision.data(), rev_bytes.data(), sizeof(header.revision));
+    header.state_version = SaveStateFormatVersion;
     header.time = std::chrono::duration_cast<std::chrono::seconds>(
                       std::chrono::system_clock::now().time_since_epoch())
                       .count();
@@ -241,6 +287,11 @@ std::vector<u8> System::SaveStateBuffer() const {
     std::memset(header.build_name.data(), 0, sizeof(header.build_name));
     std::memcpy(header.build_name.data(), build_fullname.c_str(),
                 std::min(build_fullname.length(), sizeof(header.build_name) - 1));
+
+    const std::string build_version = Common::g_build_version;
+    std::memset(header.build_version.data(), 0, sizeof(header.build_version));
+    std::memcpy(header.build_version.data(), build_version.c_str(),
+                std::min(build_version.length(), sizeof(header.build_version) - 1));
 
     std::vector<u8> result((u8*)&header, (u8*)&header + sizeof(header));
     std::copy(buffer.begin(), buffer.end(), std::back_inserter(result));
@@ -267,11 +318,12 @@ bool System::LoadStateBuffer(std::vector<u8> buffer) {
         LOG_ERROR(Core, "Save state isn't for the current game");
         return false;
     }
-    std::string revision = fmt::format("{:02x}", fmt::join(header.revision, ""));
-    if (revision != Common::g_scm_rev) {
-        LOG_ERROR(Core,
-                  "Save state file created from a different revision (core: {}, savestate: {})",
-                  Common::g_scm_rev, revision);
+    // 与 ValidateSaveState 同一判据（version==0 旧档归一化为首个版本）：
+    // 只有来自更新格式版本的状态才必然无法解析
+    const u32 state_version = header.state_version == 0 ? 1 : header.state_version;
+    if (state_version > SaveStateFormatVersion) {
+        LOG_ERROR(Core, "Save state from a newer format version ({}, current: {})",
+                  state_version, SaveStateFormatVersion);
         return false;
     }
 

@@ -1,29 +1,29 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 package org.citra.citra_emu.features.settings.ui.viewholder
 
 import android.annotation.SuppressLint
 import android.view.View
-import org.citra.citra_emu.databinding.ListItemSettingBinding
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import org.citra.citra_emu.databinding.ListItemSettingBinding
 import org.citra.citra_emu.features.settings.model.view.DateTimeSetting
 import org.citra.citra_emu.features.settings.model.view.SettingsItem
 import org.citra.citra_emu.features.settings.ui.SettingsAdapter
-import java.text.SimpleDateFormat
 
 class DateTimeViewHolder(val binding: ListItemSettingBinding, adapter: SettingsAdapter) :
-    SettingViewHolder(binding.root, adapter) {
-    private lateinit var setting: DateTimeSetting
+    SettingViewHolder<DateTimeSetting>(binding.root, adapter) {
+    override lateinit var setting: DateTimeSetting
 
     @SuppressLint("SimpleDateFormat")
     override fun bind(item: SettingsItem) {
-        setting = item as DateTimeSetting
+        setting = item as? DateTimeSetting ?: return
         binding.textSettingName.setText(item.nameId)
         if (item.descriptionId != 0) {
             binding.textSettingDescription.visibility = View.VISIBLE
@@ -39,7 +39,7 @@ class DateTimeViewHolder(val binding: ListItemSettingBinding, adapter: SettingsA
             val time = setting.value.substringAfter(" ")
 
             val formatter = SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZZZZ")
-            val gmt = formatter.parse("${date}T${time}+0000")
+            val gmt = formatter.parse("${date}T$time+0000")
             gmt!!.time / 1000
         }
         val instant = Instant.ofEpochMilli(epochTime * 1000)
@@ -56,13 +56,15 @@ class DateTimeViewHolder(val binding: ListItemSettingBinding, adapter: SettingsA
             binding.textSettingDescription.alpha = 0.5f
             binding.textSettingValue.alpha = 0.5f
         }
+
+        showGlobalMessageIfNeeded(binding.messageUseGlobal)
     }
 
     override fun onClick(clicked: View) {
         if (setting.isActive) {
             adapter.onDateTimeClick(setting, bindingAdapterPosition)
         } else {
-            adapter.onClickDisabledSetting(!setting.isEditable)
+            adapter.onClickDisabledSetting(!setting.isEditable, setting.disabledMessage)
         }
     }
 
@@ -70,7 +72,7 @@ class DateTimeViewHolder(val binding: ListItemSettingBinding, adapter: SettingsA
         if (setting.isActive) {
             return adapter.onLongClick(setting.setting!!, bindingAdapterPosition)
         } else {
-            adapter.onClickDisabledSetting(!setting.isEditable)
+            adapter.onClickDisabledSetting(!setting.isEditable, setting.disabledMessage)
         }
         return false
     }

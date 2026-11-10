@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/archives.h"
 #include "common/file_util.h"
@@ -12,12 +12,15 @@
 #include "core/hle/applets/mii_selector.h"
 #include "core/hle/applets/mint.h"
 #include "core/hle/applets/swkbd.h"
+#include "core/hle/kernel/shared_page.h"
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/apt/applet_manager.h"
 #include "core/hle/service/apt/errors.h"
 #include "core/hle/service/apt/ns.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/gsp/gsp_gpu.h"
+#include "core/hle/service/hid/hid.h"
+#include "core/hle/service/ptm/ptm.h"
 #include "video_core/utils.h"
 
 SERVICE_CONSTRUCT_IMPL(Service::APT::AppletManager)
@@ -28,6 +31,12 @@ namespace Service::APT {
 static constexpr u64 button_update_interval_us = 16666;
 /// The interval at which the HLE Applet update callback will be called, 16.6ms.
 static constexpr u64 hle_applet_update_interval_us = 16666;
+/// 睡眠协商窗口（模拟时间）：等待 SleepQuery 应答 / 睡眠准备完成回报的上限，
+/// 超时视为接受并继续流程（对齐真机超时强制入睡）
+static constexpr u64 sleep_query_timeout_us = 1500000;
+static constexpr u64 sleep_prepare_timeout_us = 800000;
+/// SleepQueryReply::Later 最多为 applet 额外争取的询问轮数
+static constexpr u32 max_sleep_later_retries = 1;
 
 struct AppletTitleData {
     // There are two possible applet ids for each applet.
@@ -39,7 +48,7 @@ struct AppletTitleData {
     std::array<u64, NumRegions> n3ds_title_ids = {0, 0, 0, 0, 0, 0, 0};
 };
 
-static constexpr std::size_t NumApplets = 29;
+static constexpr std::size_t NumApplets = 30;
 static constexpr std::array<AppletTitleData, NumApplets> applet_titleids = {{
     {{AppletId::HomeMenu, AppletId::None},
      {0x4003000008202, 0x4003000008F02, 0x4003000009802, 0x4003000008202, 0x400300000A102,
@@ -102,10 +111,13 @@ static constexpr std::array<AppletTitleData, NumApplets> applet_titleids = {{
     {{AppletId::Memolib, AppletId::Memolib2},
      {0x400300000F602, 0x400300000F602, 0x400300000F602, 0x400300000F602, 0x400300000F602,
       0x400300000F602, 0x400300000F602}},
+    {{AppletId::Tiger, AppletId::None},
+     {0x4001000020900, 0x4001000021900, 0x4001000022900, 0x4001000020900, 0, 0x4001000027900,
+      0x4001000028900}},
     // TODO(Subv): Fill in the rest of the titleids
 }};
 
-static u64 GetTitleIdForApplet(AppletId id, u32 region_value) {
+u64 GetTitleIdForApplet(AppletId id, u32 region_value) {
     ASSERT_MSG(id != AppletId::None, "Invalid applet id");
 
     auto itr = std::find_if(applet_titleids.begin(), applet_titleids.end(),
@@ -113,13 +125,18 @@ static u64 GetTitleIdForApplet(AppletId id, u32 region_value) {
                                 return data.applet_ids[0] == id || data.applet_ids[1] == id;
                             });
 
-    ASSERT_MSG(itr != applet_titleids.end(), "Unknown applet id 0x{:#05X}", id);
-
-    auto n3ds_title_id = itr->n3ds_title_ids[region_value];
-    if (n3ds_title_id != 0 && Settings::values.is_new_3ds.GetValue()) {
-        return n3ds_title_id;
+    if (itr != applet_titleids.end()) {
+        auto n3ds_title_id = itr->n3ds_title_ids[region_value];
+        if (n3ds_title_id != 0 && Settings::values.IsNew3DSEffective()) {
+            return n3ds_title_id;
+        }
+        return itr->title_ids[region_value];
     }
-    return itr->title_ids[region_value];
+
+    // AzaharPlus: return a sentinel instead of asserting; some games probe
+    // unknown applet ids during normal operation
+    LOG_ERROR(Service_APT, "Unknown applet id {:#05X}", id);
+    return 0xFFFFFFFFFFFFF;
 }
 
 static constexpr std::size_t NumTitleIDConverts = 3;
@@ -154,11 +171,13 @@ static u64 ConvertTitleID(Core::System& system, u64 base_title_id) {
 }
 
 static bool IsSystemAppletId(AppletId applet_id) {
-    return (static_cast<u32>(applet_id) & static_cast<u32>(AppletId::AnySystemApplet)) != 0;
+    return (static_cast<u32>(applet_id) & static_cast<u32>(AppletId::TypeMask)) ==
+           static_cast<u32>(AppletId::AnySystemApplet);
 }
 
 static bool IsApplicationAppletId(AppletId applet_id) {
-    return (static_cast<u32>(applet_id) & static_cast<u32>(AppletId::Application)) != 0;
+    return (static_cast<u32>(applet_id) & static_cast<u32>(AppletId::TypeMask)) ==
+           static_cast<u32>(AppletId::Application);
 }
 
 AppletManager::AppletSlot AppletManager::GetAppletSlotFromId(AppletId id) {
@@ -272,8 +291,9 @@ void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
                       parameter.sender_id);
 
             if (parameter.buffer.size() >= sizeof(CaptureBufferInfo)) {
-                SetCaptureInfo(parameter.buffer);
+                SetCaptureInfoSuspendedApp(parameter.buffer);
                 CaptureFrameBuffers();
+                TransferCapturedFramebuffers();
             }
 
             next_parameter->sender_id = parameter.destination_id;
@@ -357,6 +377,15 @@ bool AppletManager::CancelParameter(bool check_sender, AppletId sender_appid, bo
         next_parameter = {};
 
     return cancellation_success;
+}
+
+void AppletManager::MapProgramIdForDebug(AppletId app_id, u64 title_id, FS::MediaType media_type) {
+    auto slot = GetAppletSlotFromId(app_id);
+    if (slot != AppletSlot::Error) {
+        auto applet_slot = GetAppletSlot(slot);
+        applet_slot->title_id = title_id;
+        applet_slot->media_type = media_type;
+    }
 }
 
 ResultVal<AppletManager::GetLockHandleResult> AppletManager::GetLockHandle(
@@ -605,8 +634,6 @@ Result AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
     last_library_launcher_slot = active_slot;
     last_prepared_library_applet = applet_id;
 
-    capture_buffer_info.reset();
-
     if (Settings::values.lle_applets) {
         bool is_setup = system.GetAppLoader().DoingInitialSetup();
         auto cfg = Service::CFG::GetModule(system);
@@ -627,6 +654,8 @@ Result AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
         LOG_DEBUG(Service_APT, "Creating HLE applet {:03X} with parent {:03X}", applet_id, parent);
         return CreateHLEApplet(applet_id, parent, false);
     }
+
+    capture_info.reset();
 }
 
 Result AppletManager::PreloadLibraryApplet(AppletId applet_id) {
@@ -724,6 +753,14 @@ Result AppletManager::CloseLibraryApplet(std::shared_ptr<Kernel::Object> object,
         slot->Reset();
     } else {
         SendParameter(param);
+    }
+
+    // TODO: This doesn't work correctly when opening the
+    // theme shop and an error showwing, because for
+    // some reason the theme shop is an application.
+    if (last_library_launcher_slot == AppletSlot::SystemApplet &&
+        GetAppletSlotFromId(AppletId::Application) != AppletSlot::Error) {
+        TransferCapturedFramebuffers();
     }
 
     return ResultSuccess;
@@ -960,7 +997,7 @@ Result AppletManager::PrepareToJumpToHomeMenu() {
 
     last_jump_to_home_slot = active_slot;
 
-    capture_buffer_info.reset();
+    capture_info.reset();
 
     if (last_jump_to_home_slot == AppletSlot::Application) {
         EnsureHomeMenuLoaded();
@@ -1262,7 +1299,7 @@ ResultVal<Service::FS::MediaType> AppletManager::Unknown54(u32 in_param) {
 }
 
 TargetPlatform AppletManager::GetTargetPlatform() {
-    if (Settings::values.is_new_3ds.GetValue() && !new_3ds_mode_blocked) {
+    if (Settings::values.IsNew3DSEffective() && !new_3ds_mode_blocked) {
         return TargetPlatform::New3ds;
     } else {
         return TargetPlatform::Old3ds;
@@ -1454,7 +1491,7 @@ Result AppletManager::PrepareToStartApplication(u64 title_id, FS::MediaType medi
     app_start_parameters->next_title_id = title_id;
     app_start_parameters->next_media_type = media_type;
 
-    capture_buffer_info.reset();
+    capture_info.reset();
 
     app_jump_parameters.Invalidate();
 
@@ -1540,7 +1577,7 @@ Result AppletManager::PrepareToStartNewestHomeMenu() {
     }
 
     bool is_standard;
-    if (Settings::values.is_new_3ds) {
+    if (Settings::values.IsNew3DSEffective()) {
         // Memory layout is standard if it is not NewDev1 (178MB)
         is_standard = system.Kernel().GetMemoryMode() != Kernel::MemoryMode::NewDev1;
     } else {
@@ -1621,8 +1658,8 @@ static u32 GetDisplayBufferModePixelSize(DisplayBufferMode mode) {
     }
 }
 
-static void CaptureFrameBuffer(Core::System& system, u32 capture_offset, VAddr src, u32 height,
-                               DisplayBufferMode mode) {
+static void CaptureFrameBuffer(Core::System& system, u32 capture_offset, std::span<u8> dst,
+                               VAddr src, u32 height, DisplayBufferMode mode) {
     const auto bpp = GetDisplayBufferModePixelSize(mode);
     if (bpp == 0) {
         return;
@@ -1631,15 +1668,8 @@ static void CaptureFrameBuffer(Core::System& system, u32 capture_offset, VAddr s
     system.Memory().RasterizerFlushVirtualRegion(src, GSP::FRAMEBUFFER_WIDTH * height * bpp,
                                                  Memory::FlushMode::Flush);
 
-    // Address in VRAM that APT copies framebuffer captures to.
-    constexpr VAddr screen_capture_base_vaddr = Memory::VRAM_VADDR + 0x500000;
-    const auto dst_vaddr = screen_capture_base_vaddr + capture_offset;
-    auto dst_ptr = system.Memory().GetPointer(dst_vaddr);
-    if (!dst_ptr) {
-        LOG_ERROR(Service_APT,
-                  "Could not retrieve framebuffer capture destination buffer, skipping screen.");
-        return;
-    }
+    // APT captures the framebuffer to a copy on its own bss.
+    u8* dst_ptr = dst.data() + capture_offset;
 
     const auto src_ptr = system.Memory().GetPointer(src);
     if (!src_ptr) {
@@ -1653,26 +1683,38 @@ static void CaptureFrameBuffer(Core::System& system, u32 capture_offset, VAddr s
             const auto dst_offset = VideoCore::GetMortonOffset(x, y, bpp) +
                                     (y & ~7) * GSP::FRAMEBUFFER_WIDTH_POW2 * bpp;
             const auto src_offset = bpp * (GSP::FRAMEBUFFER_WIDTH * y + x);
+            ASSERT(capture_offset + dst_offset + bpp <= dst.size());
             std::memcpy(dst_ptr + dst_offset, src_ptr + src_offset, bpp);
         }
     }
-
-    system.Memory().RasterizerFlushVirtualRegion(
-        dst_vaddr, GSP::FRAMEBUFFER_WIDTH_POW2 * height * bpp, Memory::FlushMode::Invalidate);
 }
 
 void AppletManager::CaptureFrameBuffers() {
-    CaptureFrameBuffer(system, capture_info->bottom_screen_left_offset,
-                       GSP::FRAMEBUFFER_SAVE_AREA_BOTTOM, GSP::BOTTOM_FRAMEBUFFER_HEIGHT,
-                       capture_info->bottom_screen_format);
-    CaptureFrameBuffer(system, capture_info->top_screen_left_offset,
-                       GSP::FRAMEBUFFER_SAVE_AREA_TOP_LEFT, GSP::TOP_FRAMEBUFFER_HEIGHT,
-                       capture_info->top_screen_format);
-    if (capture_info->is_3d) {
-        CaptureFrameBuffer(system, capture_info->top_screen_right_offset,
-                           GSP::FRAMEBUFFER_SAVE_AREA_TOP_RIGHT, GSP::TOP_FRAMEBUFFER_HEIGHT,
-                           capture_info->top_screen_format);
+    CaptureFrameBuffer(system, capture_info_suspended_app->bottom_screen_left_offset,
+                       framebuffer_backup, GSP::FRAMEBUFFER_SAVE_AREA_BOTTOM,
+                       GSP::BOTTOM_FRAMEBUFFER_HEIGHT,
+                       capture_info_suspended_app->bottom_screen_format);
+    CaptureFrameBuffer(system, capture_info_suspended_app->top_screen_left_offset,
+                       framebuffer_backup, GSP::FRAMEBUFFER_SAVE_AREA_TOP_LEFT,
+                       GSP::TOP_FRAMEBUFFER_HEIGHT, capture_info_suspended_app->top_screen_format);
+    if (capture_info_suspended_app->is_3d) {
+        CaptureFrameBuffer(system, capture_info_suspended_app->top_screen_right_offset,
+                           framebuffer_backup, GSP::FRAMEBUFFER_SAVE_AREA_TOP_RIGHT,
+                           GSP::TOP_FRAMEBUFFER_HEIGHT,
+                           capture_info_suspended_app->top_screen_format);
     }
+}
+
+void AppletManager::TransferCapturedFramebuffers() {
+    constexpr u32 VRAM_TRANSFER_OFFSET = 0x500000;
+
+    const VAddr dst_vaddr = Memory::VRAM_VADDR + VRAM_TRANSFER_OFFSET;
+    auto dst_ptr = system.Memory().GetPointer(dst_vaddr);
+
+    memcpy(dst_ptr, framebuffer_backup.data(), framebuffer_backup.size());
+
+    system.Memory().RasterizerFlushVirtualRegion(dst_vaddr, framebuffer_backup.size(),
+                                                 Memory::FlushMode::Invalidate);
 }
 
 void AppletManager::LoadInputDevices() {
@@ -1707,6 +1749,12 @@ void AppletManager::HLEAppletUpdateEvent(std::uintptr_t user_data, s64 cycles_la
 }
 
 void AppletManager::ButtonUpdateEvent(std::uintptr_t user_data, s64 cycles_late) {
+    // 读档把协商中状态归一化为 Awake 时，在这里（载入完成、核心运行中）按外壳状态重发
+    if (sleep_resync_pending) {
+        sleep_resync_pending = false;
+        SyncShellStateAfterLoad();
+    }
+
     if (is_device_reload_pending.exchange(false)) {
         LoadInputDevices();
     }
@@ -1718,13 +1766,18 @@ void AppletManager::ButtonUpdateEvent(std::uintptr_t user_data, s64 cycles_late)
     // where the home menu was already loaded by the user (last condition).
 
     if (GetAppletSlot(AppletSlot::HomeMenu)->registered) {
-        const bool home_state = home_button->GetStatus();
+        Service::HID::Module::InputOverride input{};
+        if (const auto hid = Service::HID::GetModule(system)) {
+            input = hid->GetInputOverride();
+        }
+
+        const bool home_state = home_button->GetStatus() || input.home;
         if (home_state && !last_home_button_state) {
             SendNotification(Notification::HomeButtonSingle);
         }
         last_home_button_state = home_state;
 
-        const bool power_state = power_button->GetStatus();
+        const bool power_state = power_button->GetStatus() || input.power;
         if (power_state && !last_power_button_state) {
             SendNotificationToAll(Notification::PowerButtonClick);
         }
@@ -1734,6 +1787,212 @@ void AppletManager::ButtonUpdateEvent(std::uintptr_t user_data, s64 cycles_late)
     // Reschedule recurrent event
     system.CoreTiming().ScheduleEvent(usToCycles(button_update_interval_us) - cycles_late,
                                       button_update_event);
+}
+
+void AppletManager::RequestShellStateChange(bool open) {
+    // 可从任意线程调用（NAPI/前端线程）：经线程安全事件投递到模拟线程统一处理
+    system.CoreTiming().ScheduleEvent(0, shell_state_event, open ? 1 : 0,
+                                      std::numeric_limits<std::size_t>::max(),
+                                      /*thread_safe_mode=*/true);
+}
+
+void AppletManager::OnShellStateApplied(bool open) {
+    if (open) {
+        switch (sleep_state) {
+        case SleepState::QueryPending:
+        case SleepState::Preparing:
+            // 协商中开盖：取消本次睡眠
+            SendNotificationToAll(Notification::SleepCancelledByOpen);
+            CancelSleepSequence();
+            break;
+        case SleepState::Asleep: {
+            SendNotificationToAll(Notification::SleepAwake);
+            // 真机睡眠期间 RTC 照常走：把主机侧实际睡眠时长补回主机时钟
+            if (sleep_since_host.time_since_epoch().count() != 0) {
+                const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::steady_clock::now() - sleep_since_host);
+                if (elapsed.count() > 0) {
+                    system.Kernel().GetSharedPageHandler().AdvanceSystemTime(elapsed);
+                }
+            }
+            CancelSleepSequence();
+            break;
+        }
+        case SleepState::Awake:
+            break;
+        }
+        return;
+    }
+
+    // 合盖：发起睡眠协商；重复合盖或已在协商/睡眠中直接忽略
+    if (sleep_state != SleepState::Awake) {
+        return;
+    }
+    sleep_state = SleepState::QueryPending;
+    if (IssueSleepQuery()) {
+        ScheduleSleepTimeout();
+    } else {
+        // 没有已注册 applet 可应答：直接进入准备阶段
+        EnterPreparingPhase();
+    }
+}
+
+void AppletManager::OnSleepTimeout() {
+    if (sleep_state == SleepState::QueryPending) {
+        bool resent = false;
+        if (sleep_later_retries < max_sleep_later_retries) {
+            for (auto& slot_data : applet_slots) {
+                if (slot_data.registered && slot_data.sleep_pending && slot_data.sleep_later) {
+                    slot_data.sleep_later = false;
+                    slot_data.notification = Notification::SleepQuery;
+                    slot_data.notification_event->Signal();
+                    resent = true;
+                }
+            }
+        }
+        if (resent) {
+            // 应答 Later 的 applet 获得一次重新询问的机会
+            ++sleep_later_retries;
+            ScheduleSleepTimeout();
+            return;
+        }
+        EnterPreparingPhase();
+        return;
+    }
+    if (sleep_state == SleepState::Preparing) {
+        EnterAsleep();
+    }
+}
+
+bool AppletManager::IssueSleepQuery() {
+    bool any_pending = false;
+    for (auto& slot_data : applet_slots) {
+        if (slot_data.registered) {
+            slot_data.sleep_pending = true;
+            slot_data.sleep_later = false;
+            slot_data.notification = Notification::SleepQuery;
+            slot_data.notification_event->Signal();
+            any_pending = true;
+        }
+    }
+    return any_pending;
+}
+
+void AppletManager::EnterPreparingPhase() {
+    sleep_state = SleepState::Preparing;
+    bool any_pending = false;
+    for (auto& slot_data : applet_slots) {
+        if (slot_data.registered) {
+            slot_data.sleep_pending = true;
+            slot_data.sleep_later = false;
+            slot_data.notification = Notification::SleepAccepted;
+            slot_data.notification_event->Signal();
+            any_pending = true;
+        }
+    }
+    if (any_pending) {
+        ScheduleSleepTimeout();
+    } else {
+        EnterAsleep();
+    }
+}
+
+void AppletManager::TryEnterPreparingPhase() {
+    if (AllSleepPendingCleared()) {
+        // 同类事件同时只允许一个在队列中；阶段切换前先摘掉询问超时
+        system.CoreTiming().RemoveEvent(sleep_timeout_event);
+        EnterPreparingPhase();
+    }
+}
+
+void AppletManager::EnterAsleep() {
+    ClearSleepFlags();
+    sleep_state = SleepState::Asleep;
+    sleep_since_host = std::chrono::steady_clock::now();
+}
+
+void AppletManager::CancelSleepSequence() {
+    ClearSleepFlags();
+    sleep_state = SleepState::Awake;
+    system.CoreTiming().RemoveEvent(sleep_timeout_event);
+}
+
+void AppletManager::SyncShellStateAfterLoad() {
+    auto ptm = system.ServiceManager().GetService<Service::PTM::Module::Interface>("ptm:u");
+    if (ptm && !ptm->GetModule()->IsShellOpen() &&
+        sleep_state.load() == SleepState::Awake) {
+        // 载入的存档里外壳是合上的：协商中状态已在反序列化归一化为 Awake，
+        // 重新发起合盖流程，恢复"盖合即睡"的硬件语义；已入睡的档不受影响
+        RequestShellStateChange(false);
+    }
+}
+
+void AppletManager::ScheduleSleepTimeout() {
+    const u64 window_us =
+        sleep_state == SleepState::QueryPending ? sleep_query_timeout_us : sleep_prepare_timeout_us;
+    system.CoreTiming().ScheduleEvent(usToCycles(window_us), sleep_timeout_event);
+}
+
+bool AppletManager::AllSleepPendingCleared() const {
+    for (const auto& slot_data : applet_slots) {
+        if (slot_data.registered && slot_data.sleep_pending) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void AppletManager::ClearSleepFlags() {
+    for (auto& slot_data : applet_slots) {
+        slot_data.sleep_pending = false;
+        slot_data.sleep_later = false;
+    }
+    sleep_later_retries = 0;
+}
+
+Result AppletManager::ReplySleepQuery(AppletId from_app_id, SleepQueryReply reply) {
+    if (sleep_state != SleepState::QueryPending) {
+        return ResultSuccess;
+    }
+    const auto slot = GetAppletSlotFromId(from_app_id);
+    if (slot == AppletSlot::Error) {
+        return ResultSuccess;
+    }
+    auto* slot_data = GetAppletSlot(slot);
+    if (!slot_data->sleep_pending) {
+        return ResultSuccess;
+    }
+    switch (reply) {
+    case SleepQueryReply::Reject:
+        // 拒绝睡眠：通知全体取消（真机保持合盖但醒着）
+        SendNotificationToAll(Notification::SleepCancelledByOpen);
+        CancelSleepSequence();
+        break;
+    case SleepQueryReply::Accept:
+        slot_data->sleep_pending = false;
+        TryEnterPreparingPhase();
+        break;
+    case SleepQueryReply::Later:
+        slot_data->sleep_later = true;
+        break;
+    }
+    return ResultSuccess;
+}
+
+Result AppletManager::ReplySleepNotificationComplete(AppletId from_app_id) {
+    if (sleep_state != SleepState::Preparing) {
+        return ResultSuccess;
+    }
+    const auto slot = GetAppletSlotFromId(from_app_id);
+    if (slot == AppletSlot::Error) {
+        return ResultSuccess;
+    }
+    GetAppletSlot(slot)->sleep_pending = false;
+    if (AllSleepPendingCleared()) {
+        system.CoreTiming().RemoveEvent(sleep_timeout_event);
+        EnterAsleep();
+    }
+    return ResultSuccess;
 }
 
 AppletManager::AppletManager(Core::System& system) : system(system) {
@@ -1758,12 +2017,22 @@ AppletManager::AppletManager(Core::System& system) : system(system) {
         "APT Button Update Event", [this](std::uintptr_t user_data, s64 cycles_late) {
             ButtonUpdateEvent(user_data, cycles_late);
         });
+    shell_state_event = system.CoreTiming().RegisterEvent(
+        "APT Shell State Change", [this](std::uintptr_t user_data, s64 cycles_late) {
+            OnShellStateApplied(user_data != 0);
+        });
+    sleep_timeout_event = system.CoreTiming().RegisterEvent(
+        "APT Sleep Timeout", [this](std::uintptr_t user_data, s64 cycles_late) {
+            OnSleepTimeout();
+        });
     system.CoreTiming().ScheduleEvent(usToCycles(button_update_interval_us), button_update_event);
 }
 
 AppletManager::~AppletManager() {
     system.CoreTiming().RemoveEvent(hle_applet_update_event);
     system.CoreTiming().RemoveEvent(button_update_event);
+    system.CoreTiming().RemoveEvent(shell_state_event);
+    system.CoreTiming().RemoveEvent(sleep_timeout_event);
 }
 
 void AppletManager::ReloadInputDevices() {

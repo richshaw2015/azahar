@@ -1,10 +1,10 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 // Copyright 2013 Dolphin Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -81,5 +81,7 @@
 // Sys files
 #define SHARED_FONT "shared_font.bin"
 #define KEYS_FILE "keys.txt"
+// AzaharPlus: additional default key file searched by LoadPresetAesKeys
+#define AES_KEYS "aes_keys.txt"
 #define BOOTROM9 "boot9.bin"
 #define SECRET_SECTOR "sector0x96.bin"

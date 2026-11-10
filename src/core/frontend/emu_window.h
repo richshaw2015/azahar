@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -23,6 +23,7 @@ namespace Frontend {
 enum class WindowSystemType : u8 {
     Headless,
     Android,
+    OpenHarmony,
     Windows,
     MacOS,
     X11,
@@ -254,6 +255,19 @@ public:
     void UpdateCurrentFramebufferLayout(unsigned width, unsigned height,
                                         bool is_portrait_mode = {});
 
+    /**
+     * Sets safe-area insets (framebuffer pixels) that game screens should avoid.
+     * The insets shrink the viewport used for layout computation and the resulting
+     * screen rectangles are translated so they stay clear of cutout/status-bar areas.
+     * The reported layout width/height keep describing the full render surface.
+     */
+    void SetFramebufferLayoutInsets(int left, int top, int right, int bottom) {
+        layout_inset_left = left;
+        layout_inset_top = top;
+        layout_inset_right = right;
+        layout_inset_bottom = bottom;
+    }
+
     std::unique_ptr<TextureMailbox> mailbox = nullptr;
     bool isSecondary() const {
         return is_secondary;
@@ -335,18 +349,13 @@ private:
 
     void CreateTouchState();
 
-    /**
-     * Check if the given x/y coordinates are within the touchpad specified by the framebuffer
-     * layout
-     * @param layout FramebufferLayout object describing the framebuffer size and screen positions
-     * @param framebuffer_x Framebuffer x-coordinate to check
-     * @param framebuffer_y Framebuffer y-coordinate to check
-     * @return True if the coordinates are within the touchpad, otherwise false
-     */
-    bool IsWithinTouchscreen(const Layout::FramebufferLayout& layout, unsigned framebuffer_x,
-                             unsigned framebuffer_y);
-
     Layout::FramebufferLayout framebuffer_layout; ///< Current framebuffer layout
+
+    /// Safe-area insets in framebuffer pixels applied by UpdateCurrentFramebufferLayout.
+    int layout_inset_left{};
+    int layout_inset_top{};
+    int layout_inset_right{};
+    int layout_inset_bottom{};
 
     WindowConfig config{};        ///< Internal configuration (changes pending for being applied in
                                   /// ProcessConfigurationChanges)

@@ -1,10 +1,12 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -66,6 +68,14 @@ enum class Notification : u32 {
     OrderToClose = 11,
 };
 
+/// 系统睡眠协商进度（对应真机合盖睡眠流）：Awake → QueryPending → Preparing → Asleep
+enum class SleepState : u32 {
+    Awake = 0,
+    QueryPending = 1,
+    Preparing = 2,
+    Asleep = 3,
+};
+
 /// App Id's used by APT functions
 enum class AppletId : u32 {
     None = 0,
@@ -101,7 +111,10 @@ enum class AppletId : u32 {
     Mint2 = 0x407,
     Extrapad2 = 0x408,
     Memolib2 = 0x409,
+    TypeMask = 0xF00,
 };
+
+u64 GetTitleIdForApplet(AppletId id, u32 region_value);
 
 /// Application Old/New 3DS target platforms
 enum class TargetPlatform : u8 {
@@ -288,6 +301,8 @@ public:
     bool CancelParameter(bool check_sender, AppletId sender_appid, bool check_receiver,
                          AppletId receiver_appid);
 
+    void MapProgramIdForDebug(AppletId app_id, u64 title_id, FS::MediaType media_type);
+
     struct GetLockHandleResult {
         AppletAttributes corrected_attributes;
         u32 state;
@@ -309,6 +324,24 @@ public:
 
     ResultVal<Notification> InquireNotification(AppletId app_id);
     Result SendNotification(Notification notification);
+
+    /**
+     * 盖子（shell）开合入口：可从任意线程调用，经线程安全事件投递到模拟线程，
+     * 驱动真机的睡眠协商（合盖）与唤醒（开盖）序列。
+     */
+    void RequestShellStateChange(bool open);
+
+    /// 游戏对 SleepQuery 通知的应答；非协商期或未登记的 AppID 一律忽略并返回成功
+    Result ReplySleepQuery(AppletId from_app_id, SleepQueryReply reply);
+
+    /// 游戏回报睡眠准备完成；语义同上
+    Result ReplySleepNotificationComplete(AppletId from_app_id);
+
+    /// 当前睡眠协商状态；供前端决定是否挂起模拟（Asleep = 对应真机 ARM11 停机）。
+    /// 可从非模拟线程读取（NAPI 轮询），写入统一发生在模拟线程。
+    SleepState GetSleepState() const {
+        return sleep_state.load(std::memory_order_relaxed);
+    }
 
     Result PrepareToStartLibraryApplet(AppletId applet_id);
     Result PreloadLibraryApplet(AppletId applet_id);
@@ -362,35 +395,36 @@ public:
         deliver_arg = std::move(arg);
     }
 
-    std::vector<u8> GetCaptureInfo() {
+    std::vector<u8> GetCaptureInfoSuspendedApp() {
         std::vector<u8> buffer;
-        if (capture_info) {
+        if (capture_info_suspended_app) {
             buffer.resize(sizeof(CaptureBufferInfo));
-            std::memcpy(buffer.data(), &capture_info.get(), sizeof(CaptureBufferInfo));
+            std::memcpy(buffer.data(), &capture_info_suspended_app.get(),
+                        sizeof(CaptureBufferInfo));
         }
         return buffer;
     }
-    void SetCaptureInfo(std::vector<u8> buffer) {
+    void SetCaptureInfoSuspendedApp(std::vector<u8> buffer) {
         ASSERT_MSG(buffer.size() >= sizeof(CaptureBufferInfo), "CaptureBufferInfo is too small.");
 
-        capture_info.emplace();
-        std::memcpy(&capture_info.get(), buffer.data(), sizeof(CaptureBufferInfo));
+        capture_info_suspended_app.emplace();
+        std::memcpy(&capture_info_suspended_app.get(), buffer.data(), sizeof(CaptureBufferInfo));
     }
 
     std::vector<u8> ReceiveCaptureBufferInfo() {
         std::vector<u8> buffer;
-        if (capture_buffer_info) {
+        if (capture_info) {
             buffer.resize(sizeof(CaptureBufferInfo));
-            std::memcpy(buffer.data(), &capture_buffer_info.get(), sizeof(CaptureBufferInfo));
-            capture_buffer_info.reset();
+            std::memcpy(buffer.data(), &capture_info.get(), sizeof(CaptureBufferInfo));
+            capture_info.reset();
         }
         return buffer;
     }
     void SendCaptureBufferInfo(std::vector<u8> buffer) {
         ASSERT_MSG(buffer.size() >= sizeof(CaptureBufferInfo), "CaptureBufferInfo is too small.");
 
-        capture_buffer_info.emplace();
-        std::memcpy(&capture_buffer_info.get(), buffer.data(), sizeof(CaptureBufferInfo));
+        capture_info.emplace();
+        std::memcpy(&capture_info.get(), buffer.data(), sizeof(CaptureBufferInfo));
     }
 
     Result PrepareToStartApplication(u64 title_id, FS::MediaType media_type);
@@ -446,8 +480,11 @@ private:
     boost::optional<SysMenuArg> sys_menu_arg{};
     u64 home_menu_tid_to_start{};
 
+    boost::optional<CaptureBufferInfo> capture_info_suspended_app;
     boost::optional<CaptureBufferInfo> capture_info;
-    boost::optional<CaptureBufferInfo> capture_buffer_info;
+
+    static constexpr size_t FRAMEBUFFER_BACKUP_SIZE = 0xE7000;
+    std::vector<u8> framebuffer_backup = std::vector<u8>(FRAMEBUFFER_BACKUP_SIZE);
 
     static constexpr std::size_t NumAppletSlot = 4;
 
@@ -473,11 +510,17 @@ private:
         std::shared_ptr<Kernel::Event> notification_event;
         std::shared_ptr<Kernel::Event> parameter_event;
 
+        // 睡眠协商的瞬态应答状态（不随存档持久化：QueryPending/Preparing 在载入时归一化为 Awake）
+        bool sleep_pending = false;
+        bool sleep_later = false;
+
         void Reset() {
             applet_id = AppletId::None;
             registered = false;
             title_id = 0;
             attributes.raw = 0;
+            sleep_pending = false;
+            sleep_later = false;
         }
 
     private:
@@ -525,6 +568,16 @@ private:
     bool last_home_button_state = false;
     bool last_power_button_state = false;
 
+    // 睡眠协商状态机；sleep_since_host 为主机侧入睡时刻（RTC 补偿用，不入档）
+    // atomic：GetSleepState 允许跨线程读，写仍只发生在模拟线程
+    std::atomic<SleepState> sleep_state{SleepState::Awake};
+    // 读档归一化了协商中状态时置位：下一拍 ButtonUpdateEvent 按外壳状态重发协商
+    bool sleep_resync_pending = false;
+    u32 sleep_later_retries = 0;
+    std::chrono::steady_clock::time_point sleep_since_host{};
+    Core::TimingEventType* shell_state_event;
+    Core::TimingEventType* sleep_timeout_event;
+
     FS::MediaType next_app_mediatype = static_cast<FS::MediaType>(UINT32_MAX);
 
     Core::System& system;
@@ -550,12 +603,29 @@ private:
     void EnsureHomeMenuLoaded();
 
     void CaptureFrameBuffers();
+    void TransferCapturedFramebuffers();
 
     Result CreateHLEApplet(AppletId id, AppletId parent, bool preload);
     void HLEAppletUpdateEvent(std::uintptr_t user_data, s64 cycles_late);
 
     void LoadInputDevices();
     void ButtonUpdateEvent(std::uintptr_t user_data, s64 cycles_late);
+
+    /// 睡眠协商：全部经由模拟线程上的 Timing 事件驱动
+    void OnShellStateApplied(bool open);
+    void OnSleepTimeout();
+    /// 向所有已注册 slot 发 SleepQuery 并标记待应答；返回是否有待应答者
+    bool IssueSleepQuery();
+    void EnterPreparingPhase();
+    void TryEnterPreparingPhase();
+    void EnterAsleep();
+    /// 清应答标志并回到 Awake；若处于协商中一并摘掉超时事件
+    void CancelSleepSequence();
+    /// 读档后按外壳实际状态补发合盖流程（PTM 反序列化顺序不保证可读，故延迟到运行拍）
+    void SyncShellStateAfterLoad();
+    void ScheduleSleepTimeout();
+    bool AllSleepPendingCleared() const;
+    void ClearSleepFlags();
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int file_version) {
@@ -566,8 +636,9 @@ private:
         ar & deliver_arg;
         ar & sys_menu_arg;
         ar & home_menu_tid_to_start;
+        ar & capture_info_suspended_app;
         ar & capture_info;
-        ar & capture_buffer_info;
+        ar & framebuffer_backup;
         ar & active_slot;
         ar & last_library_launcher_slot;
         ar & last_prepared_library_applet;
@@ -579,12 +650,29 @@ private:
         ar & application_close_target;
         ar & new_3ds_mode_blocked;
         ar & lock;
-        ar & capture_info;
         ar & applet_slots;
         ar & library_applet_closing_command;
         ar & next_app_mediatype;
 
+        if (file_version >= 2) {
+            SleepState loaded_state = sleep_state.load();
+            ar& loaded_state;
+            if (Archive::is_loading::value) {
+                sleep_state.store(loaded_state);
+            }
+            ar& sleep_resync_pending;
+        }
+
         if (Archive::is_loading::value) {
+            // 睡眠协商是瞬态过程：载入时协商中状态归一化为 Awake；
+            // Asleep 予以保留（唤醒仍走 SleepAwake 路径）
+            const SleepState state = sleep_state.load();
+            if (state == SleepState::QueryPending || state == SleepState::Preparing) {
+                sleep_state.store(SleepState::Awake);
+                // 协商中状态随存档丢失：载入完成后按外壳实际状态重发（见 ButtonUpdateEvent）
+                sleep_resync_pending = true;
+            }
+            sleep_since_host = {};
             LoadInputDevices();
         }
     }
@@ -594,6 +682,6 @@ private:
 } // namespace Service::APT
 
 BOOST_CLASS_VERSION(Service::APT::ApplicationJumpParameters, 1)
-BOOST_CLASS_VERSION(Service::APT::AppletManager, 1)
+BOOST_CLASS_VERSION(Service::APT::AppletManager, 2)
 
 SERVICE_CONSTRUCT(Service::APT::AppletManager)

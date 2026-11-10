@@ -1,15 +1,10 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 // Include the vulkan platform specific header
-#if defined(OHOS_PLATFORM)
-// HarmonyOS: use VK_OHOS_surface with vkCreateSurfaceOHOS
-// We do NOT include vulkan_ohos.h because Citra uses its own vulkan-headers
-// which don't include OHOS types. Instead we define the needed types inline
-// and load vkCreateSurfaceOHOS via vkGetInstanceProcAddr at runtime.
-#include <native_window/external_window.h>
-#define VK_OHOS_SURFACE_EXTENSION_NAME "VK_OHOS_surface"
+#if defined(OHOS) || defined(__OHOS__)
+#define VK_USE_PLATFORM_OHOS
 #elif defined(ANDROID)
 #define VK_USE_PLATFORM_ANDROID_KHR
 #elif defined(WIN32)
@@ -32,9 +27,18 @@
 #include "core/frontend/emu_window.h"
 #include "video_core/renderer_vulkan/vk_platform.h"
 
+#if defined(VK_USE_PLATFORM_OHOS)
+#include <vulkan/vulkan_ohos.h>
+#endif
+
 namespace Vulkan {
 
 namespace {
+#if defined(VK_USE_PLATFORM_OHOS)
+constexpr VkStructureType SurfaceCreateInfoOhos =
+    static_cast<VkStructureType>(1000685000);
+#endif
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsCallback(
     vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type,
     const vk::DebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data) {
@@ -105,8 +109,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(vk::DebugReportFlagsEX
 
 std::shared_ptr<Common::DynamicLibrary> OpenLibrary(
     [[maybe_unused]] Frontend::GraphicsContext* context) {
-#if defined(ANDROID) || defined(OHOS_PLATFORM)
-    // Android/OHOS may override the Vulkan driver from the frontend.
+#ifdef ANDROID
+    // Android may override the Vulkan driver from the frontend.
     if (auto library = context->GetDriverLibrary(); library) {
         return library;
     }
@@ -202,46 +206,32 @@ vk::SurfaceKHR CreateSurface(vk::Instance instance, const Frontend::EmuWindow& e
             UNREACHABLE();
         }
     }
-#elif defined(OHOS_PLATFORM)
-    if (window_info.type == Frontend::WindowSystemType::Android) {
-        // HarmonyOS: use vkCreateSurfaceOHOS loaded dynamically via vkGetInstanceProcAddr
-        // VkSurfaceCreateInfoOHOS layout (from vulkan_ohos.h):
-        //   VkStructureType sType;  // VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS = 1000685000
-        //   const void* pNext;
-        //   VkFlags flags;
-        //   OHNativeWindow* window;
-        struct VkSurfaceCreateInfoOHOS {
-            VkStructureType sType;
-            const void* pNext;
-            VkFlags flags;
-            OHNativeWindow* window;
-        };
-        using PFN_vkCreateSurfaceOHOS = VkResult(VKAPI_PTR*)(
-            VkInstance, const VkSurfaceCreateInfoOHOS*, const VkAllocationCallbacks*, VkSurfaceKHR*);
-
-        auto vkCreateSurfaceOHOS = reinterpret_cast<PFN_vkCreateSurfaceOHOS>(
+#elif defined(VK_USE_PLATFORM_OHOS)
+    if (window_info.type == Frontend::WindowSystemType::OpenHarmony) {
+        const auto create_surface = reinterpret_cast<PFN_vkCreateSurfaceOHOS>(
             VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr(
                 static_cast<VkInstance>(instance), "vkCreateSurfaceOHOS"));
-        if (!vkCreateSurfaceOHOS) {
+        if (!create_surface) {
             LOG_CRITICAL(Render_Vulkan, "Failed to load vkCreateSurfaceOHOS");
             UNREACHABLE();
         }
 
-        VkSurfaceCreateInfoOHOS ohos_ci = {
-            .sType = static_cast<VkStructureType>(1000685000), // VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS
+        const VkSurfaceCreateInfoOHOS ohos_ci = {
+            .sType = SurfaceCreateInfoOhos,
             .pNext = nullptr,
             .flags = 0,
-            .window = reinterpret_cast<OHNativeWindow*>(window_info.render_surface),
+            .window = static_cast<OHNativeWindow*>(window_info.render_surface),
         };
-
-        VkSurfaceKHR raw_surface = VK_NULL_HANDLE;
-        VkResult vk_res = vkCreateSurfaceOHOS(
-            static_cast<VkInstance>(instance), &ohos_ci, nullptr, &raw_surface);
-        if (vk_res != VK_SUCCESS) {
-            LOG_CRITICAL(Render_Vulkan, "Failed to initialize OHOS surface: {}", static_cast<int>(vk_res));
+        VkSurfaceKHR raw_surface{};
+        const VkResult raw_res =
+            create_surface(static_cast<VkInstance>(instance), &ohos_ci, nullptr, &raw_surface);
+        res = static_cast<vk::Result>(raw_res);
+        surface = vk::SurfaceKHR(raw_surface);
+        if (res != vk::Result::eSuccess) {
+            LOG_CRITICAL(Render_Vulkan, "Failed to initialize OHOS surface: {}",
+                         vk::to_string(res));
             UNREACHABLE();
         }
-        surface = vk::SurfaceKHR(raw_surface);
     }
 #endif
 
@@ -293,9 +283,8 @@ std::vector<const char*> GetInstanceExtensions(Frontend::WindowSystemType window
     case Frontend::WindowSystemType::Android:
         extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
         break;
-#elif defined(OHOS_PLATFORM)
-    case Frontend::WindowSystemType::Android:
-        // HarmonyOS uses VK_OHOS_surface instead of VK_KHR_android_surface
+#elif defined(VK_USE_PLATFORM_OHOS)
+    case Frontend::WindowSystemType::OpenHarmony:
         extensions.push_back(VK_OHOS_SURFACE_EXTENSION_NAME);
         break;
 #endif
@@ -379,6 +368,24 @@ vk::UniqueInstance CreateInstance(const Common::DynamicLibrary& library,
     if (dump_command_buffers) {
         layers.push_back("VK_LAYER_LUNARG_api_dump");
     }
+
+    // Sanitize layers list
+    const auto layer_properties = vk::enumerateInstanceLayerProperties();
+    if (layer_properties.empty()) {
+        LOG_WARNING(Render_Vulkan, "Instance layer properties list is empty");
+    }
+
+    boost::container::erase_if(layers, [&](const char* layer) -> bool {
+        const auto it = std::find_if(
+            layer_properties.begin(), layer_properties.end(),
+            [layer](const auto& prop) { return std::strcmp(layer, prop.layerName) == 0; });
+
+        if (it == layer_properties.end()) {
+            LOG_INFO(Render_Vulkan, "Candidate instance layer {} is not available", layer);
+            return true;
+        }
+        return false;
+    });
 
     vk::InstanceCreateInfo instance_ci = {
         .flags = GetInstanceFlags(),

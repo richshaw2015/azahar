@@ -1,10 +1,11 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 package org.citra.citra_emu.features.settings.model.view
 
-import org.citra.citra_emu.NativeLibrary
+import androidx.annotation.StringRes
+import org.citra.citra_emu.R
 import org.citra.citra_emu.activities.EmulationActivity
 import org.citra.citra_emu.features.settings.model.AbstractSetting
 
@@ -16,7 +17,7 @@ import org.citra.citra_emu.features.settings.model.AbstractSetting
  * file.)
  */
 abstract class SettingsItem(
-    var setting: AbstractSetting?,
+    var setting: AbstractSetting<*>?,
     val nameId: Int,
     val descriptionId: Int
 ) {
@@ -29,6 +30,9 @@ abstract class SettingsItem(
         }
 
     open var isEnabled: Boolean = true
+
+    @StringRes open var disabledMessage: Int =
+        R.string.setting_disabled_description_incompatible_setting
 
     val isActive: Boolean
         get() {

@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2017-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -19,6 +19,9 @@ constexpr u16 DefaultRoomPort = 24872;
 
 constexpr u32 MaxMessageSize = 500;
 
+// AzaharPlus: protocol extension version for ZipPass-over-room
+constexpr u32 azaharplus_network_version = 1;
+
 /// Maximum number of concurrent connections allowed to this room.
 static constexpr u32 MaxConcurrentConnections = 254;
 
@@ -32,6 +35,13 @@ struct RoomInformation {
     std::string preferred_game; ///< Game to advertise that you want to play
     u64 preferred_game_id;      ///< Title ID for the advertised game
     std::string host_username;  ///< Forum username of the host
+};
+
+// AzaharPlus-specific protocol extensions; upstream peers never send these
+enum AzaharPlusSpecificTypes : u8 {
+    IdZipPassAnnounce = 1,
+    IdZipPassUpload,
+    IdZipPassDownload,
 };
 
 struct GameInfo {
@@ -75,6 +85,8 @@ enum RoomMessageTypes : u8 {
     IdModPermissionDenied,
     IdModNoSuchUser,
     IdJoinSuccessAsMod,
+    // AzaharPlus-specific extension messages (never sent by upstream peers)
+    idAzaharPlusSpecific = 0xFF,
 };
 
 /// Types of system status messages

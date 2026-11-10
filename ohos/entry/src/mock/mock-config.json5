@@ -1,0 +1,5 @@
+{
+  "libazahar_ohos.so": {
+    "source": "src/mock/LibazaharOhos.mock.ets"
+  }
+}

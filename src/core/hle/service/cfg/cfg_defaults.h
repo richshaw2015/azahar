@@ -1,6 +1,6 @@
 // Copyright 2023 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -22,6 +22,9 @@ struct ConfigBlockDefaults {
 
 /// Gets the default EULA version.
 const EULAVersion& GetDefaultEULAVersion();
+
+/// Gets the default console username.
+std::u16string GetDefaultUsername();
 
 /// Retrieves a map of known config block IDs to their defaults.
 const std::unordered_map<ConfigBlockID, ConfigBlockDefaults>& GetDefaultConfigBlocks();

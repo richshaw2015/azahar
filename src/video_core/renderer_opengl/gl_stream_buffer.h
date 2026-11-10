@@ -1,6 +1,6 @@
 // Copyright 2022 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -14,7 +14,7 @@ class Driver;
 class OGLStreamBuffer : private NonCopyable {
 public:
     explicit OGLStreamBuffer(Driver& driver, GLenum target, GLsizeiptr size,
-                             bool prefer_coherent = false);
+                             bool prefer_coherent = false, GLsizeiptr fallback_size = 0);
     ~OGLStreamBuffer();
 
     GLuint GetHandle() const;

@@ -1,6 +1,6 @@
-// Copyright 2015 Citra Emulator Project
+// Copyright 2015-2024 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -602,16 +602,19 @@ public:
         std::shared_ptr<Module> cecd;
     };
 
+    /// Encoding function used for the message id
+public:
+    // AzaharPlus: exposed for ZipPass message id generation
+    static std::string EncodeBase64(std::span<const u8> in);
+
 private:
     /// String used by cecd for base64 encoding found in the sysmodule disassembly
-    const std::string base64_dict =
+    static inline const std::string base64_dict =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
 
     const std::vector<u8> cecd_system_savedata_id = {0x00, 0x00, 0x00, 0x00,
                                                      0x26, 0x00, 0x01, 0x00};
 
-    /// Encoding function used for the message id
-    std::string EncodeBase64(std::span<const u8> in) const;
 
     std::string GetCecDataPathTypeAsString(
         const CecDataPathType type, const u32 program_id,

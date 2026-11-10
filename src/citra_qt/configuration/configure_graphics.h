@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2016-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -39,11 +39,13 @@ private:
     ConfigurationShared::CheckState shaders_accurate_mul;
     ConfigurationShared::CheckState use_disk_shader_cache;
     ConfigurationShared::CheckState use_vsync;
+    ConfigurationShared::CheckState use_skip_duplicate_frames;
     ConfigurationShared::CheckState use_display_refresh_rate_detection;
     ConfigurationShared::CheckState async_shader_compilation;
     ConfigurationShared::CheckState async_presentation;
     ConfigurationShared::CheckState spirv_shader_gen;
     ConfigurationShared::CheckState disable_spirv_optimizer;
+    ConfigurationShared::CheckState simulate_3ds_gpu_timings;
     std::unique_ptr<Ui::ConfigureGraphics> ui;
     QColor bg_color;
 };

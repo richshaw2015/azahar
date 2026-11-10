@@ -50,16 +50,17 @@ else()
 endif()
 
 # Catch2
-if (ENABLE_TESTS)
+if (ENABLE_TESTS OR ENABLE_OHOS_TESTS)
     add_library(catch2 INTERFACE)
     if(USE_SYSTEM_CATCH2)
         find_package(Catch2 3.0.0 REQUIRED)
     else()
         set(CATCH_INSTALL_DOCS OFF CACHE BOOL "")
         set(CATCH_INSTALL_EXTRAS OFF CACHE BOOL "")
-        add_subdirectory(catch2)
+        add_subdirectory(catch2 EXCLUDE_FROM_ALL)
     endif()
     target_link_libraries(catch2 INTERFACE Catch2::Catch2WithMain)
+    include(Catch)
 endif()
 
 # Crypto++
@@ -68,17 +69,9 @@ if(USE_SYSTEM_CRYPTOPP)
     add_library(cryptopp INTERFACE)
     target_link_libraries(cryptopp INTERFACE cryptopp::cryptopp)
 else()
-    if (WIN32 AND NOT MSVC AND "arm64" IN_LIST ARCHITECTURE)
-        # TODO: CryptoPP ARM64 ASM does not seem to support Windows unless compiled with MSVC.
-        # TODO: See https://github.com/weidai11/cryptopp/issues/1260
-        set(CRYPTOPP_DISABLE_ASM ON CACHE BOOL "")
-    endif()
-
-    set(CRYPTOPP_BUILD_DOCUMENTATION OFF CACHE BOOL "")
     set(CRYPTOPP_BUILD_TESTING OFF CACHE BOOL "")
     set(CRYPTOPP_INSTALL OFF CACHE BOOL "")
-    set(CRYPTOPP_SOURCES "${CMAKE_SOURCE_DIR}/externals/cryptopp" CACHE STRING "")
-    add_subdirectory(cryptopp-cmake)
+    add_subdirectory(cryptopp EXCLUDE_FROM_ALL)
 endif()
 
 # dds-ktx
@@ -111,7 +104,13 @@ endif()
 
 # Oaknut
 if ("arm64" IN_LIST ARCHITECTURE)
-    add_subdirectory(oaknut EXCLUDE_FROM_ALL)
+    if(USE_SYSTEM_OAKNUT)
+        find_package(oaknut REQUIRED)
+        add_library(oaknut INTERFACE)
+        target_link_libraries(oaknut INTERFACE merry::oaknut)
+    else()
+        add_subdirectory(oaknut EXCLUDE_FROM_ALL)
+    endif()
 endif()
 
 # Dynarmic
@@ -135,7 +134,7 @@ endif()
 
 # getopt
 if (MSVC)
-    add_subdirectory(getopt)
+    add_subdirectory(getopt EXCLUDE_FROM_ALL)
 endif()
 
 # inih
@@ -144,7 +143,7 @@ if(USE_SYSTEM_INIH)
     add_library(inih INTERFACE)
     target_link_libraries(inih INTERFACE inih::inih inih::inir)
 else()
-    add_subdirectory(inih)
+    add_subdirectory(inih EXCLUDE_FROM_ALL)
 endif()
 
 # MicroProfile
@@ -157,6 +156,10 @@ else()
     target_compile_definitions(microprofile INTERFACE MICROPROFILE_ENABLED=0)
 endif()
 
+# microtar
+add_library(microtar STATIC ./microtar/src/microtar.c)
+target_include_directories(microtar PUBLIC ./microtar/src)
+
 # Nihstro
 add_library(nihstro-headers INTERFACE)
 target_include_directories(nihstro-headers INTERFACE ./nihstro/include)
@@ -167,28 +170,11 @@ if (NOT MSVC)
 endif()
 
 # Open Source Archives
-add_subdirectory(open_source_archives)
+add_subdirectory(open_source_archives EXCLUDE_FROM_ALL)
 
 # faad2
-add_subdirectory(faad2 EXCLUDE_FROM_ALL)
-
-# Dynamic library headers
-add_library(library-headers INTERFACE)
-
-if (USE_SYSTEM_FFMPEG_HEADERS)
-    find_path(SYSTEM_FFMPEG_INCLUDES NAMES libavutil/avutil.h)
-    if (SYSTEM_FFMPEG_INCLUDES STREQUAL "SYSTEM_FFMPEG_INCLUDES-NOTFOUND")
-        message(WARNING "System FFmpeg headers not found. Falling back on bundled headers.")
-    else()
-        message(STATUS "Using system FFmpeg headers.")
-        target_include_directories(library-headers SYSTEM INTERFACE ${SYSTEM_FFMPEG_INCLUDES})
-        set(FOUND_FFMPEG_HEADERS ON)
-    endif()
-endif()
-if (NOT FOUND_FFMPEG_HEADERS)
-    message(STATUS "Using bundled ffmpeg headers.")
-    target_include_directories(library-headers INTERFACE ./library-headers/ffmpeg/include)
-    target_disable_warnings(library-headers)
+if(NOT USE_SYSTEM_FAAD)
+    add_subdirectory(faad2 EXCLUDE_FROM_ALL)
 endif()
 
 # SoundTouch
@@ -202,16 +188,22 @@ endif()
 
 # Teakra
 set(BUILD_TESTING OFF CACHE BOOL "")
-add_subdirectory(teakra EXCLUDE_FROM_ALL)
+if (USE_SYSTEM_TEAKRA)
+    find_package(teakra CONFIG REQUIRED)
+    message(STATUS "Using system Teakra")
+else()
+    message(STATUS "Using bundled Teakra")
+    add_subdirectory(teakra EXCLUDE_FROM_ALL)
+endif()
 
 # SDL2
 if (ENABLE_SDL2 AND NOT USE_SYSTEM_SDL2)
-    add_subdirectory(sdl2)
+    add_subdirectory(sdl2 EXCLUDE_FROM_ALL)
 endif()
 
 # libusb
 if (ENABLE_LIBUSB AND NOT USE_SYSTEM_LIBUSB)
-    add_subdirectory(libusb)
+    add_subdirectory(libusb EXCLUDE_FROM_ALL)
     set(LIBUSB_INCLUDE_DIR "" PARENT_SCOPE)
     set(LIBUSB_LIBRARIES usb PARENT_SCOPE)
 endif()
@@ -219,15 +211,26 @@ endif()
 # Zstandard
 if(USE_SYSTEM_ZSTD)
     find_package(zstd REQUIRED)
-    add_library(zstd INTERFACE)
+
+    add_library(citra_zstd INTERFACE)
+
     if(TARGET zstd::libzstd_shared)
-        message(STATUS "Found system Zstandard")
+        target_link_libraries(citra_zstd INTERFACE zstd::libzstd_shared)
+    elseif(TARGET zstd::libzstd_static)
+        target_link_libraries(citra_zstd INTERFACE zstd::libzstd_static)
+    elseif(TARGET libzstd_static)
+        target_link_libraries(citra_zstd INTERFACE libzstd_static)
+    else()
+        message(FATAL_ERROR "No usable zstd CMake target was found")
     endif()
-    target_link_libraries(zstd INTERFACE zstd::libzstd_shared)
 else()
-    set(ZSTD_LEGACY_SUPPORT OFF)
-    set(ZSTD_BUILD_PROGRAMS OFF)
-    set(ZSTD_BUILD_SHARED OFF)
+    # These must be cache values because zstd's own CMake files define options.
+    set(ZSTD_LEGACY_SUPPORT OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+
     add_subdirectory(zstd/build/cmake EXCLUDE_FROM_ALL)
 
     target_include_directories(libzstd_static INTERFACE
@@ -236,17 +239,22 @@ else()
     )
 
     add_library(zstd_seekable STATIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format/zstdseek_compress.c>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format/zstdseek_decompress.c>
+        ${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format/zstdseek_compress.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format/zstdseek_decompress.c
     )
+
     target_include_directories(zstd_seekable PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/zstd/lib/common>
+        ${CMAKE_CURRENT_SOURCE_DIR}/zstd/contrib/seekable_format
+        ${CMAKE_CURRENT_SOURCE_DIR}/zstd/lib/common
     )
+
     target_link_libraries(zstd_seekable PUBLIC libzstd_static)
 
-    add_library(zstd INTERFACE)
-    target_link_libraries(zstd INTERFACE libzstd_static zstd_seekable)
+    add_library(citra_zstd INTERFACE)
+    target_link_libraries(citra_zstd INTERFACE
+        libzstd_static
+        zstd_seekable
+    )
 endif()
 
 # ENet
@@ -255,7 +263,7 @@ if(USE_SYSTEM_ENET)
     add_library(enet INTERFACE)
     target_link_libraries(enet INTERFACE libenet::libenet)
 else()
-    add_subdirectory(enet)
+    add_subdirectory(enet EXCLUDE_FROM_ALL)
     target_include_directories(enet INTERFACE ./enet/include)
 endif()
 
@@ -277,7 +285,7 @@ if (ENABLE_CUBEB)
 endif()
 
 # DiscordRPC
-if (USE_DISCORD_PRESENCE)
+if (ENABLE_DISCORD_RPC)
     # rapidjson used by discord-rpc is old and doesn't correctly detect endianness for some platforms.
     include(TestBigEndian)
     test_big_endian(RAPIDJSON_BIG_ENDIAN)
@@ -320,12 +328,8 @@ endif()
 # OpenSSL
 if (USE_SYSTEM_OPENSSL)
     find_package(OpenSSL 1.1)
-    if (OPENSSL_FOUND)
-        set(OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
-    endif()
-endif()
-
-if (NOT OPENSSL_FOUND)
+    set(OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
+else()
     # LibreSSL
     set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
     set(OPENSSLDIR "/etc/ssl/")
@@ -367,7 +371,7 @@ target_compile_options(httplib INTERFACE -DCPPHTTPLIB_OPENSSL_SUPPORT)
 target_link_libraries(httplib INTERFACE ${OPENSSL_LIBRARIES})
 
 if (UNIX AND NOT APPLE)
-    add_subdirectory(gamemode)
+    add_subdirectory(gamemode EXCLUDE_FROM_ALL)
 endif()
 
 # cpp-jwt
@@ -390,13 +394,13 @@ if(USE_SYSTEM_LODEPNG)
     find_package(lodepng REQUIRED)
     target_link_libraries(lodepng INTERFACE lodepng::lodepng)
 else()
-    add_subdirectory(lodepng)
+    add_subdirectory(lodepng EXCLUDE_FROM_ALL)
 endif()
 
 # (xperia64): Only use libyuv on Android b/c of build issues on Windows and mandatory JPEG
-if(ANDROID)
+if(ANDROID OR OHOS)
     # libyuv
-    add_subdirectory(libyuv)
+    add_subdirectory(libyuv EXCLUDE_FROM_ALL)
     target_include_directories(yuv INTERFACE ./libyuv/include)
 endif()
 
@@ -407,7 +411,10 @@ if (ENABLE_OPENAL)
         find_package(OpenAL REQUIRED)
         target_link_libraries(OpenAL INTERFACE OpenAL::OpenAL)
     else()
-        set(ALSOFT_EMBED_HRTF_DATA OFF CACHE BOOL "")
+        if (BSD STREQUAL "OpenBSD")
+            set(ALSOFT_BACKEND_SOLARIS OFF CACHE BOOL "")
+        endif()
+        set(ALSOFT_EMBED_HRTF_DATA ON CACHE BOOL "")
         set(ALSOFT_EXAMPLES OFF CACHE BOOL "")
         set(ALSOFT_INSTALL OFF CACHE BOOL "")
         set(ALSOFT_INSTALL_CONFIG OFF CACHE BOOL "")
@@ -422,7 +429,7 @@ endif()
 # OpenGL dependencies
 if (ENABLE_OPENGL)
     # Glad
-    add_subdirectory(glad)
+    add_subdirectory(glad EXCLUDE_FROM_ALL)
 endif()
 
 # Vulkan dependencies
@@ -441,9 +448,13 @@ if (ENABLE_VULKAN)
     endif()
 
     # spirv-tools
-    # TODO: Implement USE_SYSTEM_SPIRV_TOOLS -OS
-    set(SPIRV_SKIP_EXECUTABLES ON)
-    add_subdirectory(spirv-tools EXCLUDE_FROM_ALL)
+    if(USE_SYSTEM_SPIRV_TOOLS)
+        find_package(SPIRV-Tools REQUIRED)
+        set(ALLOW_EXTERNAL_SPIRV_TOOLS ON)
+    else()
+        set(SPIRV_SKIP_EXECUTABLES ON)
+        add_subdirectory(spirv-tools EXCLUDE_FROM_ALL)
+    endif()
 
     # glslang
     if(USE_SYSTEM_GLSLANG)
@@ -462,7 +473,7 @@ if (ENABLE_VULKAN)
         set(ENABLE_CTEST OFF CACHE BOOL "")
         set(ENABLE_HLSL OFF CACHE BOOL "")
         set(BUILD_EXTERNAL OFF CACHE BOOL "")
-        add_subdirectory(glslang)
+        add_subdirectory(glslang EXCLUDE_FROM_ALL)
     endif()
 
     # sirit
@@ -493,24 +504,39 @@ if (ENABLE_VULKAN)
     else()
         target_include_directories(vulkan-headers INTERFACE ./vulkan-headers/include)
         target_disable_warnings(vulkan-headers)
+        if (BSD STREQUAL "NetBSD")
+            # There may be a better way to do this with
+            # find_package(X11), but I couldn't get
+            # CMake to do it, so we're depending on
+            # the x11-links package and assuming the
+            # prefix location. -OS
+            target_include_directories(vulkan-headers INTERFACE
+                /usr/pkg/share/x11-links/include)
+        elseif (BSD STREQUAL "OpenBSD")
+            # This is fine to hardcode because it'll never change
+            target_include_directories(vulkan-headers INTERFACE
+                /usr/X11R6/include)
+        endif()
     endif()
 
     # adrenotools
     if (ANDROID AND "arm64" IN_LIST ARCHITECTURE)
-        add_subdirectory(libadrenotools)
+        add_subdirectory(libadrenotools EXCLUDE_FROM_ALL)
     endif()
 endif()
 
-set(XXHASH_BUILD_XXHSUM OFF)
-add_subdirectory(xxHash/cmake_unofficial EXCLUDE_FROM_ALL)
-target_compile_definitions(xxhash PRIVATE XXH_FORCE_MEMORY_ACCESS=2)
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
-    target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_SSE2)
-    message(STATUS "Enabling SSE2 for xxHash")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|ARM64|armv8")
-    target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_NEON)
-    message(STATUS "Enabling NEON for xxHash")
-else()
-    target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_SCALAR)
-    message(STATUS "Disabling SIMD for xxHash")
+if(NOT USE_SYSTEM_XXHASH)
+    set(XXHASH_BUILD_XXHSUM OFF)
+    add_subdirectory(xxHash/cmake_unofficial EXCLUDE_FROM_ALL)
+    target_compile_definitions(xxhash PRIVATE XXH_FORCE_MEMORY_ACCESS=2)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+        target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_SSE2)
+        message(STATUS "Enabling SSE2 for xxHash")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|ARM64|armv8")
+        target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_NEON)
+        message(STATUS "Enabling NEON for xxHash")
+    else()
+        target_compile_definitions(xxhash PRIVATE XXH_VECTOR=XXH_SCALAR)
+        message(STATUS "Disabling SIMD for xxHash")
+    endif()
 endif()

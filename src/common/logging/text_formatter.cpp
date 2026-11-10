@@ -1,6 +1,6 @@
 // Copyright 2014 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <array>
 #include <cstdio>
@@ -9,7 +9,9 @@
 #include <windows.h>
 #elif defined(ANDROID)
 #include <android/log.h>
-#elif defined(OHOS_PLATFORM)
+#endif
+
+#if defined(__OHOS__)
 #include <hilog/log.h>
 #endif
 
@@ -35,7 +37,12 @@ std::string FormatLogMessage(const Entry& entry) {
 
 void PrintMessage(const Entry& entry) {
     const auto str = FormatLogMessage(entry).append(1, '\n');
+#if defined(__OHOS__)
+    // stderr is invisible in the OHOS app sandbox; mirror to hilog.
+    OH_LOG_Print(LOG_APP, LOG_ERROR, 0x3203, "AzaharLog", "%{public}s", str.c_str());
+#else
     fputs(str.c_str(), stderr);
+#endif
 }
 
 void PrintColoredMessage(const Entry& entry) {
@@ -140,33 +147,6 @@ void PrintMessageToLogcat([[maybe_unused]] const Entry& entry) {
         UNREACHABLE();
     }
     __android_log_print(android_log_priority, "CitraNative", "%s", str.c_str());
-#elif defined(OHOS_PLATFORM)
-    const auto str = FormatLogMessage(entry);
-
-    LogLevel ohos_log_level;
-    switch (entry.log_level) {
-    case Level::Trace:
-        ohos_log_level = LOG_DEBUG;
-        break;
-    case Level::Debug:
-        ohos_log_level = LOG_DEBUG;
-        break;
-    case Level::Info:
-        ohos_log_level = LOG_INFO;
-        break;
-    case Level::Warning:
-        ohos_log_level = LOG_WARN;
-        break;
-    case Level::Error:
-        ohos_log_level = LOG_ERROR;
-        break;
-    case Level::Critical:
-        ohos_log_level = LOG_FATAL;
-        break;
-    case Level::Count:
-        UNREACHABLE();
-    }
-    OH_LOG_Print(LOG_APP, ohos_log_level, 0xFF00, "CitraNative", "%{public}s", str.c_str());
 #endif
 }
 } // namespace Common::Log

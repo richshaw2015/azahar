@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <algorithm>
 #include <cstring>
@@ -43,6 +43,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <poll.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -262,6 +263,14 @@ static const std::unordered_map<int, int> error_map = {{
     {ERRNO(ETIMEDOUT), 76},
 }};
 
+static const std::unordered_map<int, int> gai_error_map = {{
+    {EAI_AGAIN, 302},
+    {EAI_FAMILY, 303},
+    {EAI_MEMORY, 304},
+    {EAI_NONAME, 305},
+    {EAI_SOCKTYPE, 307},
+}};
+
 /// Converts a network error from platform-specific to 3ds-specific
 static int TranslateError(int error) {
     const auto& found = error_map.find(error);
@@ -269,6 +278,15 @@ static int TranslateError(int error) {
         return -found->second;
     }
     return error;
+}
+
+/// Converts a getaddrinfo/getnameinfo error from platform-specific to 3ds-specific
+static int TranslateGaiError(int gai_error) {
+    if (const auto& known_soc_errno = gai_error_map.find(gai_error);
+        known_soc_errno != gai_error_map.end()) {
+        return -known_soc_errno->second;
+    }
+    return gai_error;
 }
 
 struct CTRLinger {
@@ -452,7 +470,9 @@ std::optional<std::reference_wrapper<SocketHolder>> SOC_U::GetSocketHolder(u32 c
 void SOC_U::CloseAndDeleteAllSockets(s32 process_id) {
     std::erase_if(created_sockets, [process_id](const auto& entry) {
         if (process_id == -1 || entry.second.ownerProcess == static_cast<u32>(process_id)) {
-            closesocket(entry.second.socket_fd);
+            if (!entry.second.IsLost()) {
+                closesocket(entry.second.socket_fd);
+            }
             return true;
         }
         return false;
@@ -567,16 +587,11 @@ struct CTRPollFD {
     Events revents; ///< Events received (output)
 
     /// Converts a platform-specific pollfd to a 3ds specific structure
-    static CTRPollFD FromPlatform(SOC::SOC_U& socu, pollfd const& fd, u8 has_libctru_bug) {
+    static CTRPollFD FromPlatform(u32 ctr_fd, pollfd const& fd, u8 has_libctru_bug) {
         CTRPollFD result;
+        result.fd = ctr_fd;
         result.events.hex = Events::TranslateTo3DS(fd.events, has_libctru_bug).hex;
         result.revents.hex = Events::TranslateTo3DS(fd.revents, has_libctru_bug).hex;
-        for (const auto& socket : socu.created_sockets) {
-            if (socket.second.socket_fd == fd.fd) {
-                result.fd = socket.first;
-                break;
-            }
-        }
         return result;
     }
 
@@ -1043,9 +1058,13 @@ void SOC_U::SockAtMark(Kernel::HLERequestContext& ctx) {
     func_res = ::ioctlsocket(holder.socket_fd, SIOCATMARK, &atMark);
     is_at_mark = atMark != 0;
 #else
-#if defined(ANDROID) || defined(OHOS_PLATFORM)
+#ifdef ANDROID
     func_res = 0;
     LOG_WARNING(Service_SOC, "(STUBBED) called");
+#elif defined(__OHOS__)
+    int at_mark = 0;
+    func_res = ::ioctl(holder.socket_fd, SIOCATMARK, &at_mark);
+    is_at_mark = at_mark != 0;
 #else
     func_res = ::sockatmark(holder.socket_fd);
 #endif
@@ -1093,7 +1112,9 @@ void SOC_U::Close(Kernel::HLERequestContext& ctx) {
     SocketHolder& holder = socket_holder_optional->get();
 
     s32 ret = 0;
-    ret = closesocket(holder.socket_fd);
+    if (!holder.IsLost()) {
+        ret = closesocket(holder.socket_fd);
+    }
 
     if (ret != 0) {
         ret = TranslateError(GET_ERRNO);
@@ -1169,9 +1190,10 @@ void SOC_U::SendToOther(Kernel::HLERequestContext& ctx) {
 
     LOG_SEND_RECV(Service_SOC, "called, fd={}, ret={}", socket_handle, static_cast<s32>(ret));
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
     rb.Push(ResultSuccess);
     rb.Push(ret);
+    rb.PushMappedBuffer(input_mapped_buff);
 }
 
 s32 SOC_U::SendToImpl(SocketHolder& holder, u32 len, u32 flags, u32 addr_len,
@@ -1538,12 +1560,32 @@ void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
     // so we have to copy the data in order
     async_data->platform_pollfd.resize(nfds);
     async_data->has_libctru_bug.resize(nfds, false);
+    s32 lost_sockets = 0;
     for (u32 i = 0; i < nfds; i++) {
-        if (!GetSocketHolder(async_data->ctr_fds[i].fd, pid, rp)) {
+        const auto holder = GetSocketHolder(async_data->ctr_fds[i].fd, pid, rp);
+        if (!holder) {
             return;
+        }
+        if (holder->get().IsLost()) {
+            lost_sockets++;
         }
         async_data->platform_pollfd[i] =
             CTRPollFD::ToPlatform(*this, async_data->ctr_fds[i], async_data->has_libctru_bug[i]);
+    }
+
+    if (lost_sockets != 0) {
+        for (auto& ctr_fd : async_data->ctr_fds) {
+            ctr_fd.revents.hex = 0;
+            ctr_fd.revents.pollnval.Assign(created_sockets.at(ctr_fd.fd).IsLost());
+        }
+        std::vector<u8> output_fds(nfds * sizeof(CTRPollFD));
+        std::memcpy(output_fds.data(), async_data->ctr_fds.data(), output_fds.size());
+
+        IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+        rb.Push(ResultSuccess);
+        rb.Push(lost_sockets);
+        rb.PushStaticBuffer(std::move(output_fds), 0);
+        return;
     }
 
     ctx.RunAsync(
@@ -1555,11 +1597,12 @@ void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
             }
             return 0;
         },
-        [this, async_data](Kernel::HLERequestContext& ctx) {
+        [async_data](Kernel::HLERequestContext& ctx) {
             // Now update the output 3ds_pollfd structure
             for (u32 i = 0; i < async_data->nfds; i++) {
-                async_data->ctr_fds[i] = CTRPollFD::FromPlatform(
-                    *this, async_data->platform_pollfd[i], async_data->has_libctru_bug[i]);
+                async_data->ctr_fds[i] = CTRPollFD::FromPlatform(async_data->ctr_fds[i].fd,
+                                                                 async_data->platform_pollfd[i],
+                                                                 async_data->has_libctru_bug[i]);
             }
 
             std::vector<u8> output_fds(async_data->nfds * sizeof(CTRPollFD));
@@ -2049,14 +2092,18 @@ void SOC_U::GetAddrInfoImpl(Kernel::HLERequestContext& ctx) {
     std::vector<u8> out_buff(out_size);
     u32 count = 0;
 
-    if (ret == SOCKET_ERROR_VALUE) {
-        ret = TranslateError(GET_ERRNO);
+    if (ret != 0) {
+#ifdef _WIN32
+        ret = TranslateGaiError(ret);
+#else
+        ret = ret == EAI_SYSTEM ? TranslateError(GET_ERRNO) : TranslateGaiError(ret);
+#endif
         out_buff.resize(0);
     } else {
         std::size_t pos = 0;
         addrinfo* cur = out;
         while (cur != nullptr) {
-            if (pos <= out_size - sizeof(CTRAddrInfo)) {
+            if (sizeof(CTRAddrInfo) <= out_size - pos) {
                 // According to 3dbrew, this function fills whatever it can and does not error even
                 // if the buffer is not big enough. However the count returned is always correct.
                 CTRAddrInfo ctr_addr = CTRAddrInfo::FromPlatform(*cur);
@@ -2096,8 +2143,12 @@ void SOC_U::GetNameInfoImpl(Kernel::HLERequestContext& ctx) {
 
     s32 ret = getnameinfo(reinterpret_cast<sockaddr*>(&sa), sa_len, host_data, hostlen, serv_data,
                           servlen, flags);
-    if (ret == SOCKET_ERROR_VALUE) {
-        ret = TranslateError(GET_ERRNO);
+    if (ret != 0) {
+#ifdef _WIN32
+        ret = TranslateGaiError(ret);
+#else
+        ret = ret == EAI_SYSTEM ? TranslateError(GET_ERRNO) : TranslateGaiError(ret);
+#endif
     }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 4);

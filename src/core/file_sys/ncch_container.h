@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -182,7 +182,14 @@ struct ExHeader_ARM11_SystemLocalCaps {
         BitField<4, 4, u8> system_mode;
     };
     u8 priority;
-    u8 resource_limit_descriptor[0x10][2];
+    union {
+        u16 core1_schedule_flags;
+        BitField<0, 7, u16> max_cpu;
+        // Schedule mode flag, 0 -> "single", 1 -> "multi"
+        BitField<7, 1, u16> schedule_mode;
+        BitField<8, 8, u16> unknown;
+    };
+    u8 resource_limit_descriptor[0xF][2]; // Always 0 (unused?)
     ExHeader_StorageInfo storage_info;
     u8 service_access_control[0x20][8];
     u8 ex_service_access_control[0x2][8];
@@ -230,7 +237,11 @@ namespace FileSys {
  */
 class NCCHContainer {
 public:
-    NCCHContainer(const std::string& filepath, u32 ncch_offset = 0, u32 partition = 0);
+    static std::unique_ptr<FileUtil::IOFileBase> AutoOpenNCCHNCSD(const std::string& filepath);
+    static std::unique_ptr<FileUtil::IOFileBase> AutoOpenNCCHNCSD(FileUtil::IOFileBase* file);
+
+    NCCHContainer(const std::string& filepath, u32 partition = 0);
+    NCCHContainer(FileUtil::IOFileBase* file, u32 partition = 0);
     NCCHContainer() {}
 
     Loader::ResultStatus OpenFile(const std::string& filepath, u32 ncch_offset = 0,
@@ -307,6 +318,12 @@ public:
     Loader::ResultStatus ReadProgramId(u64_le& program_id);
 
     /**
+     * Get the Product Code of the NCCH container (e.g. "CTR-P-A22J")
+     * @return ResultStatus result of function
+     */
+    Loader::ResultStatus ReadProductCode(std::string& product_code);
+
+    /**
      * Get the Extdata ID of the NCCH container
      * @return ResultStatus result of function
      */
@@ -342,17 +359,26 @@ public:
     }
 
     bool IsFileCompressed() {
-        return file->IsCompressed();
+        return file->GetType().HasCompressedType();
     }
 
-    NCCH_Header ncch_header;
+    bool IsFileBundle() {
+        return file->GetType().HasType(FileUtil::IOType::Type::TarIOFile);
+    }
+
+    const std::unique_ptr<FileUtil::IOFileBase>& GetFile() {
+        return file;
+    }
+
+    bool IsLoaded() {
+        return is_loaded;
+    }
+
+    NCCH_Header ncch_header{};
     ExeFs_Header exefs_header;
     ExHeader_Header exheader_header;
 
 private:
-    std::unique_ptr<FileUtil::IOFile> Reopen(const std::unique_ptr<FileUtil::IOFile>& orig_file,
-                                             const std::string& new_filename = "");
-
     bool has_header = false;
     bool has_exheader = false;
     bool has_exefs = false;
@@ -363,14 +389,21 @@ private:
     bool is_tainted = false; // Are there parts of this container being overridden?
     bool is_loaded = false;
     bool is_compressed = false;
+    // AzaharPlus: state for on-the-fly NCCH decryption
+    bool is_encrypted = false;
+    // For decrypting exheader, exefs header and icon/banner section
+    std::array<u8, 16> primary_key{};
+    // For decrypting romfs and .code section
+    std::array<u8, 16> secondary_key{};
+    std::array<u8, 16> exheader_ctr{};
+    std::array<u8, 16> exefs_ctr{};
+    std::array<u8, 16> romfs_ctr{};
 
-    u32 ncch_offset = 0; // Offset to NCCH header, can be 0 for NCCHs or non-zero for CIAs/NCSDs
-    u32 exefs_offset = 0;
     u32 partition = 0;
 
     std::string filepath;
-    std::unique_ptr<FileUtil::IOFile> file;
-    std::unique_ptr<FileUtil::IOFile> exefs_file;
+    std::unique_ptr<FileUtil::IOFileBase> file;
+    std::unique_ptr<FileUtil::IOFileBase> exefs_file;
 };
 
 } // namespace FileSys

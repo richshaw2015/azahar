@@ -1,7 +1,9 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
+#include <chrono>
+#include <thread>
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QKeyEvent>
@@ -15,6 +17,7 @@
 #include "common/microprofile.h"
 #include "common/scm_rev.h"
 #include "common/settings.h"
+#include "common/thread.h"
 #include "core/3ds.h"
 #include "core/core.h"
 #include "core/frontend/framebuffer_layout.h"
@@ -34,11 +37,11 @@
 // clang-format on
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QThread>
 #endif
 
 #if defined(__APPLE__)
-#include <objc/message.h>
-#include <objc/objc.h>
+#include "util/metal_util.h"
 #elif !defined(WIN32)
 #include <qpa/qplatformnativeinterface.h>
 #endif
@@ -100,6 +103,8 @@ void EmuThread::run() {
         emit HideLoadingScreen();
         system.frame_limiter.WaitOnce();
     }
+
+    system.RegisterCoreLoopThreadId();
 
     // Holds whether the cpu was running during the last iteration,
     // so that the DebugModeLeft signal can be emitted before the
@@ -283,25 +288,65 @@ public:
         windowHandle()->setSurfaceType(QWindow::OpenGLSurface);
     }
 
+    ~OpenGLRenderWidget() override {
+        StopPresenting();
+    }
+
     void SetContext(std::unique_ptr<Frontend::GraphicsContext>&& context_) {
         context = std::move(context_);
     }
 
-    void Present() {
-        if (!isVisible()) {
+    void StartPresenting() {
+        if (present_thread || !QOpenGLContext::supportsThreadedOpenGL()) {
             return;
         }
-        if (!system.IsPoweredOn()) {
+        QOpenGLContext* gl_context =
+            static_cast<OpenGLSharedContext*>(context.get())->GetShareContext();
+        QThread* gui_thread = QThread::currentThread();
+        stop_presenting = false;
+        present_thread.reset(QThread::create([this, gl_context, gui_thread] {
+            Common::SetCurrentThreadName(is_secondary ? "SecondaryPresent" : "Present");
+            while (!stop_presenting) {
+                if (!Present()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+            }
+            context->DoneCurrent();
+            gl_context->moveToThread(gui_thread);
+        }));
+        gl_context->moveToThread(present_thread.get());
+        present_thread->start();
+    }
+
+    void StopPresenting() {
+        if (!present_thread) {
             return;
+        }
+        stop_presenting = true;
+        present_thread->wait();
+        present_thread.reset();
+        update();
+    }
+
+    bool Present() {
+        if (!isVisible()) {
+            return false;
+        }
+        if (!system.IsPoweredOn()) {
+            return false;
         }
         context->MakeCurrent();
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         system.GPU().Renderer().TryPresent(100, is_secondary);
         context->SwapBuffers();
         glFinish();
+        return true;
     }
 
     void paintEvent(QPaintEvent* event) override {
+        if (present_thread) {
+            return;
+        }
         Present();
         update();
     }
@@ -312,6 +357,8 @@ public:
 
 private:
     std::unique_ptr<Frontend::GraphicsContext> context{};
+    std::unique_ptr<QThread> present_thread;
+    std::atomic<bool> stop_presenting{false};
     Core::System& system;
     bool is_secondary;
 };
@@ -420,8 +467,7 @@ static Frontend::EmuWindow::WindowSystemInfo GetWindowSystemInfo(QWindow* window
         // Our Win32 Qt external doesn't have the private API.
         wsi.render_surface = reinterpret_cast<void*>(window->winId());
 #elif defined(__APPLE__)
-        wsi.render_surface = reinterpret_cast<void* (*)(id, SEL)>(objc_msgSend)(
-            reinterpret_cast<id>(window->winId()), sel_registerName("layer"));
+        wsi.render_surface = MetalUtil::CreateMetalLayer(window->winId());
 #else
         QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
         wsi.display_connection = pni->nativeResourceForWindow("display", window);
@@ -548,6 +594,8 @@ void GRenderWindow::mousePressEvent(QMouseEvent* event) {
         this->TouchPressed(x, y);
     } else if (event->button() == Qt::RightButton) {
         InputCommon::GetMotionEmu()->BeginTilt(pos.x(), pos.y());
+    } else if (event->button() == Qt::MiddleButton) {
+        InputCommon::GetMotionEmu()->BeginLook(pos.x(), pos.y());
     }
     emit MouseActivity();
 }
@@ -561,6 +609,7 @@ void GRenderWindow::mouseMoveEvent(QMouseEvent* event) {
     const auto [x, y] = ScaleTouch(pos);
     this->TouchMoved(x, y);
     InputCommon::GetMotionEmu()->Tilt(pos.x(), pos.y());
+    InputCommon::GetMotionEmu()->Look(pos.x(), pos.y());
     emit MouseActivity();
 }
 
@@ -573,6 +622,8 @@ void GRenderWindow::mouseReleaseEvent(QMouseEvent* event) {
         this->TouchReleased();
     else if (event->button() == Qt::RightButton)
         InputCommon::GetMotionEmu()->EndTilt();
+    else if (event->button() == Qt::MiddleButton)
+        InputCommon::GetMotionEmu()->EndLook();
     emit MouseActivity();
 }
 
@@ -650,7 +701,7 @@ bool GRenderWindow::InitRenderTarget() {
 
     first_frame = false;
 
-    const auto graphics_api = Settings::values.graphics_api.GetValue();
+    const auto graphics_api = Settings::GetWorkingGraphicsAPI();
     switch (graphics_api) {
 #ifdef ENABLE_SOFTWARE_RENDERER
     case Settings::GraphicsAPI::Software:
@@ -825,9 +876,20 @@ void GRenderWindow::InitializeSoftware() {
 
 void GRenderWindow::OnEmulationStarting(EmuThread* emu_thread) {
     this->emu_thread = emu_thread;
+#ifdef ENABLE_OPENGL
+    if (auto* gl_widget = dynamic_cast<OpenGLRenderWidget*>(child_widget)) {
+        gl_widget->StartPresenting();
+    }
+#endif
 }
 
 void GRenderWindow::OnEmulationStopping() {
+#ifdef ENABLE_OPENGL
+    // The renderer is destroyed when the emulation thread ends, so presenting must stop first
+    if (auto* gl_widget = dynamic_cast<OpenGLRenderWidget*>(child_widget)) {
+        gl_widget->StopPresenting();
+    }
+#endif
     emu_thread = nullptr;
 }
 
@@ -837,7 +899,7 @@ void GRenderWindow::showEvent(QShowEvent* event) {
 
 std::unique_ptr<Frontend::GraphicsContext> GRenderWindow::CreateSharedContext() const {
 #ifdef ENABLE_OPENGL
-    const auto graphics_api = Settings::values.graphics_api.GetValue();
+    const auto graphics_api = Settings::GetWorkingGraphicsAPI();
     if (graphics_api == Settings::GraphicsAPI::OpenGL) {
         auto gl_context = static_cast<OpenGLSharedContext*>(main_context.get());
         // Bind the shared contexts to the main surface in case the backend wants to take over

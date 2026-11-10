@@ -1,0 +1,22 @@
+{
+  "UniformDataTypeDeclarations": [
+    {
+      "TypeId": "app.superedu.3ds.game",
+      "BelongingToTypes": [
+        "general.object"
+      ],
+      "FilenameExtensions": [
+        ".3ds",
+        ".3dsx",
+        ".cci",
+        ".cxi",
+        ".cia"
+      ],
+      "MIMETypes": [
+        "application/x-nintendo-3ds-executable"
+      ],
+      "Description": "Nintendo 3DS game file",
+      "ReferenceURL": ""
+    }
+  ]
+}

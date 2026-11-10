@@ -1,6 +1,6 @@
 // Copyright 2017 Citra Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -21,6 +21,7 @@ constexpr std::array<u8, 3> NintendoOUI = {0x00, 0x1F, 0x32};
  * VendorSpecific blocks in the Beacon frames.
  */
 enum class NintendoTagId : u8 {
+    Probe = 0, // AzaharPlus
     Dummy = 20,
     NetworkInfo = 21,
     EncryptedData0 = 24,
@@ -86,6 +87,16 @@ struct NetworkInfoTag {
 
 static_assert(sizeof(NetworkInfoTag) == 54, "NetworkInfoTag has incorrect size.");
 
+// AzaharPlus: vendor-specific probe tag sent when SetProbeResponseParam is used
+struct ProbeTag {
+    TagHeader header;
+    std::array<u8, 3> oui;
+    u8 oui_type;
+    u8 data;
+};
+
+static_assert(sizeof(ProbeTag) == 7, "ProbeTag has incorrect size.");
+
 struct EncryptedDataTag {
     TagHeader header;
     std::array<u8, 3> oui;
@@ -133,6 +144,7 @@ void DecryptBeacon(const NetworkInfo& network_info, std::vector<u8>& buffer);
  * This frame contains information about the network and its connected clients.
  * @returns The generated frame.
  */
-std::vector<u8> GenerateBeaconFrame(const NetworkInfo& network_info, const NodeList& nodes);
+std::vector<u8> GenerateBeaconFrame(const NetworkInfo& network_info, const NodeList& nodes,
+                                    u32 probe_oui, u8 probe_data);
 
 } // namespace Service::NWM

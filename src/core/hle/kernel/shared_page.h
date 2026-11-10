@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -28,6 +28,11 @@ class Timing;
 
 namespace SharedPage {
 
+// AzaharPlus: exported for ZipPass message timestamps
+/// Returns the clock init time in seconds (0 = use configured clock).
+std::chrono::seconds GetInitTime(u64 override_init_time);
+
+
 // See http://3dbrew.org/wiki/Configuration_Memory#Shared_Memory_Page_For_ARM11_Processes
 
 struct DateTime {
@@ -42,7 +47,7 @@ union BatteryState {
     u8 raw;
     BitField<0, 1, u8> is_adapter_connected;
     BitField<1, 1, u8> is_charging;
-    BitField<2, 3, u8> charge_level;
+    BitField<2, 3, u8> charge_level; // Same as PTM::ChargeLevels
 };
 
 using MacAddress = std::array<u8, 6>;
@@ -107,6 +112,10 @@ public:
 
     void Set3DSlider(float);
 
+    void SetBatteryState(const BatteryState& state);
+
+    const BatteryState& GetBatteryState();
+
     SharedPageDef& GetSharedPage();
 
     u8* GetPtr() override {
@@ -126,6 +135,11 @@ public:
 
     /// Gets the system time in milliseconds since the year 1900.
     u64 GetSystemTimeSince1900() const;
+
+    /// 推进主机时钟：真机睡眠期间 RTC 照常运行，唤醒时把实际睡眠时长补回来
+    void AdvanceSystemTime(std::chrono::seconds delta) {
+        init_time += delta;
+    }
 
 private:
     void UpdateTimeCallback(std::uintptr_t user_data, int cycles_late);

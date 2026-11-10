@@ -1,12 +1,13 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <functional>
 #include <span>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -305,43 +306,43 @@ void GatewayCheat::Execute(Core::System& system, u32 process_id) const {
             WriteOp<u8>(line, state, Read8, Write8, system);
             break;
         case CheatType::GreaterThan32:
-            // 3XXXXXXX YYYYYYYY - Execute next block IF YYYYYYYY > word[XXXXXXX]   ;unsigned
+            // 3XXXXXXX YYYYYYYY - execute next block IF YYYYYYYY > word[XXXXXXX]   ;unsigned
             CompOp<u32>(line, state, Read32, [&line](u32 val) -> bool { return line.value > val; });
             break;
         case CheatType::LessThan32:
-            // 4XXXXXXX YYYYYYYY - Execute next block IF YYYYYYYY < word[XXXXXXX]   ;unsigned
+            // 4XXXXXXX YYYYYYYY - execute next block IF YYYYYYYY < word[XXXXXXX]   ;unsigned
             CompOp<u32>(line, state, Read32, [&line](u32 val) -> bool { return line.value < val; });
             break;
         case CheatType::EqualTo32:
-            // 5XXXXXXX YYYYYYYY - Execute next block IF YYYYYYYY == word[XXXXXXX]   ;unsigned
+            // 5XXXXXXX YYYYYYYY - execute next block IF YYYYYYYY == word[XXXXXXX]   ;unsigned
             CompOp<u32>(line, state, Read32,
                         [&line](u32 val) -> bool { return line.value == val; });
             break;
         case CheatType::NotEqualTo32:
-            // 6XXXXXXX YYYYYYYY - Execute next block IF YYYYYYYY != word[XXXXXXX]   ;unsigned
+            // 6XXXXXXX YYYYYYYY - execute next block IF YYYYYYYY != word[XXXXXXX]   ;unsigned
             CompOp<u32>(line, state, Read32,
                         [&line](u32 val) -> bool { return line.value != val; });
             break;
         case CheatType::GreaterThan16WithMask:
-            // 7XXXXXXX ZZZZYYYY - Execute next block IF YYYY > ((not ZZZZ) AND half[XXXXXXX])
+            // 7XXXXXXX ZZZZYYYY - execute next block IF YYYY > ((not ZZZZ) AND half[XXXXXXX])
             CompOp<u16>(line, state, Read16, [&line](u16 val) -> bool {
                 return static_cast<u16>(line.value) > (static_cast<u16>(~line.value >> 16) & val);
             });
             break;
         case CheatType::LessThan16WithMask:
-            // 8XXXXXXX ZZZZYYYY - Execute next block IF YYYY < ((not ZZZZ) AND half[XXXXXXX])
+            // 8XXXXXXX ZZZZYYYY - execute next block IF YYYY < ((not ZZZZ) AND half[XXXXXXX])
             CompOp<u16>(line, state, Read16, [&line](u16 val) -> bool {
                 return static_cast<u16>(line.value) < (static_cast<u16>(~line.value >> 16) & val);
             });
             break;
         case CheatType::EqualTo16WithMask:
-            // 9XXXXXXX ZZZZYYYY - Execute next block IF YYYY = ((not ZZZZ) AND half[XXXXXXX])
+            // 9XXXXXXX ZZZZYYYY - execute next block IF YYYY = ((not ZZZZ) AND half[XXXXXXX])
             CompOp<u16>(line, state, Read16, [&line](u16 val) -> bool {
                 return static_cast<u16>(line.value) == (static_cast<u16>(~line.value >> 16) & val);
             });
             break;
         case CheatType::NotEqualTo16WithMask:
-            // AXXXXXXX ZZZZYYYY - Execute next block IF YYYY <> ((not ZZZZ) AND half[XXXXXXX])
+            // AXXXXXXX ZZZZYYYY - execute next block IF YYYY <> ((not ZZZZ) AND half[XXXXXXX])
             CompOp<u16>(line, state, Read16, [&line](u16 val) -> bool {
                 return static_cast<u16>(line.value) != (static_cast<u16>(~line.value >> 16) & val);
             });
@@ -484,29 +485,20 @@ std::string GatewayCheat::ToString() const {
     return result;
 }
 
-std::vector<std::shared_ptr<CheatBase>> GatewayCheat::LoadFile(const std::string& filepath) {
+static std::vector<std::shared_ptr<CheatBase>> LoadStream(std::istream& file) {
     std::vector<std::shared_ptr<CheatBase>> cheats;
 
-    if (!FileUtil::Exists(filepath)) {
-        LOG_INFO(Core_Cheats, "GatewayCheat::LoadFile failed, file doesn't exist: {}", filepath);
-        return cheats;
-    }
-
-    boost::iostreams::stream<boost::iostreams::file_descriptor_source> file;
-    FileUtil::OpenFStream<std::ios_base::in>(file, filepath);
-    if (!file.is_open()) {
-        LOG_INFO(Core_Cheats, "GatewayCheat::LoadFile failed, file failed to open: {}", filepath);
-        return cheats;
-    }
-
     std::string comments;
-    std::vector<CheatLine> cheat_lines;
+    std::vector<GatewayCheat::CheatLine> cheat_lines;
     std::string name;
     bool enabled = false;
 
     while (!file.eof()) {
         std::string line;
         std::getline(file, line);
+        if (line.starts_with("\xEF\xBB\xBF")) {
+            line.erase(0, 3);
+        }
         line.erase(std::remove(line.begin(), line.end(), '\0'), line.end());
         line = Common::StripSpaces(line); // remove spaces at front and end
         if (line.length() >= 2 && line.front() == '[') {
@@ -533,5 +525,26 @@ std::vector<std::shared_ptr<CheatBase>> GatewayCheat::LoadFile(const std::string
         cheats.back()->SetEnabled(enabled);
     }
     return cheats;
+}
+
+std::vector<std::shared_ptr<CheatBase>> GatewayCheat::LoadFile(const std::string& filepath) {
+    std::vector<std::shared_ptr<CheatBase>> cheats;
+    if (!FileUtil::Exists(filepath)) {
+        LOG_INFO(Core_Cheats, "GatewayCheat::LoadFile failed, file doesn't exist: {}", filepath);
+        return cheats;
+    }
+
+    boost::iostreams::stream<boost::iostreams::file_descriptor_source> file;
+    FileUtil::OpenFStream<std::ios_base::in>(file, filepath);
+    if (!file.is_open()) {
+        LOG_INFO(Core_Cheats, "GatewayCheat::LoadFile failed, file failed to open: {}", filepath);
+        return cheats;
+    }
+    return LoadStream(file);
+}
+
+std::vector<std::shared_ptr<CheatBase>> GatewayCheat::LoadString(const std::string& contents) {
+    std::istringstream file(contents);
+    return LoadStream(file);
 }
 } // namespace Cheats

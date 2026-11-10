@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <algorithm>
 #include <cstring>
@@ -200,7 +200,7 @@ void NWM_UDS::HandleAssociationResponseFrame(const Network::WifiPacket& packet) 
 }
 
 void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
-    std::scoped_lock lock{connection_status_mutex, system.Kernel().GetHLELock()};
+    std::scoped_lock lock{connection_status_mutex};
 
     if (GetEAPoLFrameType(packet.data) == EAPoLStartMagic) {
         if (connection_status.status != NetworkStatus::ConnectedAsHost) {
@@ -227,7 +227,8 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         auto node = DeserializeNodeInfo(eapol_start.node);
 
-        if (eapol_start.connection_type == ConnectionType::Client) {
+        // AzaharPlus: also accept eapol_start from Spectator-connection clients
+        if (eapol_start.connection_type != ConnectionType::Spectator) {
             // Get an unused network node id
             u16 node_id = GetNextAvailableNodeId();
             node.network_node_id = node_id;
@@ -273,7 +274,7 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         SendPacket(eapol_logoff);
 
-        connection_status_event->Signal();
+        SignalEventAsync(connection_status_event);
     } else if (connection_status.status == NetworkStatus::Connecting) {
         auto logoff = ParseEAPoLLogoffFrame(packet.data);
 
@@ -313,8 +314,8 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
         // Some games require ConnectToNetwork to block, for now it doesn't
         // If blocking is implemented this lock needs to be changed,
         // otherwise it might cause deadlocks
-        connection_status_event->Signal();
-        connection_event->Signal();
+        SignalEventAsync(connection_status_event);
+        SignalEventAsync(connection_event);
     } else if (connection_status.status == NetworkStatus::ConnectedAsClient ||
                connection_status.status == NetworkStatus::ConnectedAsSpectator) {
         // TODO(B3N30): Remove that section and send/receive a proper connection_status packet
@@ -345,13 +346,13 @@ void NWM_UDS::HandleEAPoLPacket(const Network::WifiPacket& packet) {
         }
         connection_status.changed_nodes = old_bitmask ^ connection_status.node_bitmask;
 
-        connection_status_event->Signal();
+        SignalEventAsync(connection_status_event);
     }
 }
 
 void NWM_UDS::HandleSecureDataPacket(const Network::WifiPacket& packet) {
     const auto secure_data = ParseSecureDataHeader(packet.data);
-    std::scoped_lock lock{connection_status_mutex, system.Kernel().GetHLELock()};
+    std::scoped_lock lock{connection_status_mutex};
 
     if (connection_status.status != NetworkStatus::ConnectedAsHost &&
         connection_status.status != NetworkStatus::ConnectedAsClient &&
@@ -408,8 +409,8 @@ void NWM_UDS::HandleSecureDataPacket(const Network::WifiPacket& packet) {
     // Add the received packet to the data queue.
     channel_info->second.received_packets.emplace_back(packet.data);
 
-    // Signal the data event. We can do this directly because we locked hle_lock
-    channel_info->second.event->Signal();
+    // Signal the data event. We can do this directly because we use SignalEventAsync
+    SignalEventAsync(channel_info->second.event);
 }
 
 void NWM_UDS::StartConnectionSequence(const MacAddress& server) {
@@ -498,14 +499,19 @@ void NWM_UDS::HandleAuthenticationFrame(const Network::WifiPacket& packet) {
 
 void NWM_UDS::HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
     LOG_DEBUG(Service_NWM, "called");
-    std::scoped_lock lock{connection_status_mutex, system.Kernel().GetHLELock()};
+    std::scoped_lock lock{connection_status_mutex};
 
     if (connection_status.status != NetworkStatus::ConnectedAsHost) {
         LOG_ERROR(Service_NWM, "Got deauthentication frame but we are not the host");
         return;
     }
     if (node_map.find(packet.transmitter_address) == node_map.end()) {
-        LOG_ERROR(Service_NWM, "Got deauthentication frame from unknown node");
+        LOG_ERROR(Service_NWM,
+                  "Got deauthentication frame from unknown node "
+                  "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
+                  packet.transmitter_address[0], packet.transmitter_address[1],
+                  packet.transmitter_address[2], packet.transmitter_address[3],
+                  packet.transmitter_address[4], packet.transmitter_address[5]);
         return;
     }
 
@@ -535,7 +541,7 @@ void NWM_UDS::HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
         // TODO(B3N30): broadcast new connection_status to clients
     }
     node_it->Reset();
-    connection_status_event->Signal();
+    SignalEventAsync(connection_status_event);
 }
 
 void NWM_UDS::HandleDataFrame(const Network::WifiPacket& packet) {
@@ -600,7 +606,7 @@ void NWM_UDS::ShutdownHLE() {
     initialized = false;
 
     for (auto& bind_node : channel_data) {
-        bind_node.second.event->Signal();
+        SignalEventAsync(bind_node.second.event);
     }
     channel_data.clear();
     node_map.clear();
@@ -909,7 +915,7 @@ void NWM_UDS::UnbindHLE(u32 bind_node_id) {
 
     if (itr != channel_data.end()) {
         // TODO(B3N30): Check out what Unbind does if the bind_node_id wasn't in the map
-        itr->second.event->Signal();
+        SignalEventAsync(itr->second.event);
         channel_data.erase(itr);
     }
 }
@@ -989,7 +995,7 @@ Result NWM_UDS::BeginHostingNetwork(std::span<const u8> network_info_buffer,
             network_info.channel = DefaultNetworkChannel;
     }
 
-    connection_status_event->Signal();
+    SignalEventAsync(connection_status_event);
 
     // Start broadcasting the network, send a beacon frame every 102.4ms.
     system.CoreTiming().ScheduleEvent(msToCycles(DefaultBeaconInterval * MillisecondsPerTU),
@@ -1128,10 +1134,10 @@ Result NWM_UDS::DestroyNetworkHLE() {
     connection_status.status = NetworkStatus::NotConnected;
     connection_status.network_node_id = tmp_node_id;
     node_map.clear();
-    connection_status_event->Signal();
+    SignalEventAsync(connection_status_event);
 
     for (auto& bind_node : channel_data) {
-        bind_node.second.event->Signal();
+        SignalEventAsync(bind_node.second.event);
     }
     channel_data.clear();
 
@@ -1261,26 +1267,28 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     auto ret = PullPacketHLE(bind_node_id, max_out_buff_size, max_out_buff_size_aligned,
                              output_buffer, &secure_data);
 
-    switch (ret.error()) {
-    case ResultStatus::RecvError_NotConnected: {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-        rb.Push(Result(ErrorDescription::NotAuthorized, ErrorModule::UDS,
-                       ErrorSummary::InvalidState, ErrorLevel::Status));
-        return;
-    }
-    case ResultStatus::RecvError_BadNode: {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-        rb.Push(Result(ErrorDescription::NotAuthorized, ErrorModule::UDS,
-                       ErrorSummary::InvalidState, ErrorLevel::Status));
-        return;
-    }
-    case ResultStatus::RecvError_PacketSizeTooLarge: {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-        rb.Push(Result(ErrorDescription::TooLarge, ErrorModule::UDS, ErrorSummary::WrongArgument,
-                       ErrorLevel::Usage));
-        return;
-    }
-    default:;
+    if (!ret.has_value()) {
+        switch (ret.error()) {
+        case ResultStatus::RecvError_NotConnected: {
+            IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+            rb.Push(Result(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::InvalidState, ErrorLevel::Status));
+            return;
+        }
+        case ResultStatus::RecvError_BadNode: {
+            IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+            rb.Push(Result(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::InvalidState, ErrorLevel::Status));
+            return;
+        }
+        case ResultStatus::RecvError_PacketSizeTooLarge: {
+            IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+            rb.Push(Result(ErrorDescription::TooLarge, ErrorModule::UDS,
+                           ErrorSummary::WrongArgument, ErrorLevel::Usage));
+            return;
+        }
+        default:;
+        }
     }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
@@ -1464,7 +1472,7 @@ ResultStatus NWM_UDS::DisconnectNetworkHLE() {
         connection_status.status = NetworkStatus::NotConnected;
         connection_status.network_node_id = tmp_node_id;
         node_map.clear();
-        connection_status_event->Signal();
+        SignalEventAsync(connection_status_event);
 
         deauth.channel = network_channel;
         // TODO(B3N30): Add disconnect reason
@@ -1476,7 +1484,7 @@ ResultStatus NWM_UDS::DisconnectNetworkHLE() {
     SendPacket(deauth);
 
     for (auto& bind_node : channel_data) {
-        bind_node.second.event->Signal();
+        SignalEventAsync(bind_node.second.event);
     }
     channel_data.clear();
 
@@ -1618,13 +1626,29 @@ void NWM_UDS::EjectSpectators(Kernel::HLERequestContext& ctx) {
     rb.Push(ResultSuccess);
 }
 
+void NWM_UDS::SetProbeResponseParam(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx);
+    u32 oui = rp.Pop<u32>();
+    u8 data = static_cast<u8>(rp.Pop<u32>());
+
+    LOG_DEBUG(Service_NWM, "called oui=0x{:08X}, data=0x{:02X}", oui, data);
+
+    probe_oui = oui;
+    probe_data = data;
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+
+    rb.Push(ResultSuccess);
+}
+
 // Sends a 802.11 beacon frame with information about the current network.
 void NWM_UDS::BeaconBroadcastCallback(std::uintptr_t user_data, s64 cycles_late) {
     // Don't do anything if we're not actually hosting a network
     if (connection_status.status != NetworkStatus::ConnectedAsHost)
         return;
 
-    std::vector<u8> frame = GenerateBeaconFrame(network_info, node_info);
+    std::vector<u8> frame =
+        GenerateBeaconFrame(network_info, node_info, probe_oui, probe_data);
 
     using Network::WifiPacket;
     WifiPacket packet;
@@ -1660,6 +1684,25 @@ Network::MacAddress NWM_UDS::GetMacAddress() {
     return mac;
 }
 
+void NWM_UDS::SignalEventAsync(std::shared_ptr<Kernel::Event> event) {
+    if (system.GetCoreLoopThreadId() == std::this_thread::get_id()) {
+        event->Signal();
+        return;
+    }
+    pending_async_event_signals.Push(event);
+    system.CoreTiming().ScheduleEvent(0, handle_async_event_signals_event, 0, 1, true);
+}
+
+void NWM_UDS::DispatchQueuedAsyncEventSignals() {
+    std::shared_ptr<Kernel::Event> event;
+    pending_async_event_signals.Pop(event);
+    if (!event) {
+        LOG_WARNING(Service_NWM, "Tried to signal async event, but event was null");
+        return;
+    }
+    event->Signal();
+}
+
 NWM_UDS::NWM_UDS(Core::System& system) : ServiceFramework("nwm::UDS"), system(system) {
     static const FunctionInfo functions[] = {
         // clang-format off
@@ -1690,7 +1733,7 @@ NWM_UDS::NWM_UDS(Core::System& system) : ServiceFramework("nwm::UDS"), system(sy
         {0x001E, &NWM_UDS::ConnectToNetwork, "ConnectToNetwork"},
         {0x001F, &NWM_UDS::DecryptBeaconData, "DecryptBeaconData"},
         {0x0020, nullptr, "Flush"},
-        {0x0021, nullptr, "SetProbeResponseParam"},
+        {0x0021, &NWM_UDS::SetProbeResponseParam, "SetProbeResponseParam"},
         {0x0022, nullptr, "ScanOnConnection"},
         // clang-format on
     };
@@ -1702,6 +1745,12 @@ NWM_UDS::NWM_UDS(Core::System& system) : ServiceFramework("nwm::UDS"), system(sy
     beacon_broadcast_event = system.CoreTiming().RegisterEvent(
         "UDS::BeaconBroadcastCallback", [this](std::uintptr_t user_data, s64 cycles_late) {
             BeaconBroadcastCallback(user_data, cycles_late);
+        });
+
+    handle_async_event_signals_event = system.CoreTiming().RegisterEvent(
+        "UDS::handle_async_event_signals_event",
+        [this]([[maybe_unused]] std::uintptr_t user_data, [[maybe_unused]] s64 cycles_late) {
+            DispatchQueuedAsyncEventSignals();
         });
 
     system.Kernel().GetSharedPageHandler().SetMacAddress(GetMacAddress());

@@ -113,7 +113,7 @@ MasterSemaphoreFence::MasterSemaphoreFence(const Instance& instance_) : instance
 }
 
 MasterSemaphoreFence::~MasterSemaphoreFence() {
-    for (auto fence : free_queue) {
+    for (const auto fence : free_queue) {
         instance.GetDevice().destroyFence(fence);
     }
 }

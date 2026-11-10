@@ -1,3 +1,7 @@
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv2 or any later version
+// Refer to the misc/licenses/gplv2.txt file included.
+
 /*  armdefs.h -- ARMulator common definitions:  ARM6 Instruction Emulator.
     Copyright (C) 1994 Advanced RISC Machines Ltd.
 
@@ -21,7 +25,9 @@
 #include <unordered_map>
 #include "common/common_types.h"
 #include "core/arm/skyeye_common/arm_regformat.h"
+#ifdef ENABLE_GDBSTUB
 #include "core/gdbstub/gdbstub.h"
+#endif
 
 namespace Core {
 class System;
@@ -141,7 +147,7 @@ enum : u32 {
 enum {
     STOP = 0,       // Stop
     CHANGEMODE = 1, // Change mode
-    ONCE = 2,       // Execute just one iteration
+    ONCE = 2,       // execute just one iteration
     RUN = 3         // Continuous execution
 };
 
@@ -179,6 +185,15 @@ public:
         exclusive_tag = 0xFFFFFFFF;
         exclusive_state = false;
     }
+    // Raw storage addresses for the threaded asm executor: the monitor fields
+    // sit behind instruction_cache (an unordered_map), so their offsets are
+    // not stable enough to bake into assembly.
+    u32* ExclusiveTagStorage() {
+        return &exclusive_tag;
+    }
+    u8* ExclusiveStateStorage() {
+        return reinterpret_cast<u8*>(&exclusive_state);
+    }
 
     // Whether or not the given CPU is in big endian mode (E bit is set)
     bool InBigEndianMode() const {
@@ -199,10 +214,12 @@ public:
         return TFlag ? 2 : 4;
     }
 
+#ifdef ENABLE_GDBSTUB
     void RecordBreak(GDBStub::BreakpointAddress bkpt) {
         last_bkpt = bkpt;
         last_bkpt_hit = true;
     }
+#endif
 
     void ServeBreak();
 
@@ -229,7 +246,7 @@ public:
 
     u32 Emulate; // To start and stop emulation
     u32 Cpsr;    // The current PSR
-    u32 Spsr_copy;
+    u32 Spsr_copy = 0;
     u32 phys_pc;
 
     u32 Mode; // The current mode
@@ -256,20 +273,6 @@ public:
     // process for our purposes), not per ARMul_State (which tracks CPU core state).
     std::unordered_map<u32, std::size_t> instruction_cache;
 
-    // ========================================================================
-    // [OHOS 性能优化] 直接映射指令缓存 (替代 unordered_map 的热路径)
-    // ========================================================================
-    // unordered_map 的 find() 在 DISPATCH 热循环中开销过大（哈希+桶+链表）
-    // 直接映射缓存用 PC 低位做索引，O(1) 数组访问，命中率 >95%
-    // 未命中时回退到 unordered_map
-    static constexpr std::size_t IC_DIRECT_SIZE = 65536; // 64K 条目
-    static constexpr std::size_t IC_DIRECT_MASK = IC_DIRECT_SIZE - 1;
-    struct ICDirectEntry {
-        u32 pc = 0xFFFFFFFF;   // 缓存的 PC 地址 (0xFFFFFFFF = 无效)
-        std::size_t ptr = 0;   // trans_cache_buf 中的偏移
-    };
-    ICDirectEntry ic_direct[IC_DIRECT_SIZE];
-
 private:
     void ResetMPCoreCP15Registers();
 
@@ -281,6 +284,15 @@ private:
     u32 exclusive_tag; // The address for which the local monitor is in exclusive access mode
     bool exclusive_state;
 
+#ifdef ENABLE_GDBSTUB
     GDBStub::BreakpointAddress last_bkpt{};
     bool last_bkpt_hit = false;
+#endif
 };
+
+// Resolve a cp15 (crn, opcode_1, crm, opcode_2) encoding to a CP15[] index.
+// Bit 7 of the result marks entries requiring a privileged mode; -1 means the
+// combination maps to no register (reads log + return 0, writes are ignored).
+// Shared with the asm translator, which resolves the index at translate time.
+int Cp15ReadIndex(u32 crn, u32 opcode_1, u32 crm, u32 opcode_2);
+int Cp15WriteIndex(u32 crn, u32 opcode_1, u32 crm, u32 opcode_2);

@@ -1,7 +1,9 @@
-add_library(audio_core STATIC
+add_library(audio_core STATIC EXCLUDE_FROM_ALL
     audio_types.h
     codec.cpp
     codec.h
+    csnd.cpp
+    csnd.h
     dsp_interface.cpp
     dsp_interface.h
     hle/aac_decoder.cpp
@@ -9,6 +11,8 @@ add_library(audio_core STATIC
     hle/common.h
     hle/decoder.cpp
     hle/decoder.h
+    hle/effects.cpp
+    hle/effects.h
     hle/filter.cpp
     hle/filter.h
     hle/hle.cpp
@@ -40,12 +44,18 @@ add_library(audio_core STATIC
     $<$<BOOL:${ENABLE_CUBEB}>:cubeb_sink.cpp cubeb_sink.h cubeb_input.cpp cubeb_input.h>
     $<$<BOOL:${ENABLE_LIBRETRO}>:libretro_sink.cpp libretro_sink.h libretro_input.cpp libretro_input.h>
     $<$<BOOL:${ENABLE_OPENAL}>:openal_input.cpp openal_input.h openal_sink.cpp openal_sink.h>
+    $<$<BOOL:${ENABLE_OHOS}>:ohos_sink.cpp ohos_sink.h ohos_input.cpp ohos_input.h blow_input.cpp blow_input.h>
 )
 
 create_target_directory_groups(audio_core)
 
 target_link_libraries(audio_core PUBLIC citra_common citra_core)
-target_link_libraries(audio_core PRIVATE faad2 SoundTouch teakra)
+target_link_libraries(audio_core PRIVATE SoundTouch teakra)
+if(USE_SYSTEM_FAAD)
+    target_link_libraries(audio_core PRIVATE faad)
+else()
+    target_link_libraries(audio_core PRIVATE faad2)
+endif()
 
 if(ENABLE_SDL2)
     target_link_libraries(audio_core PRIVATE SDL2::SDL2)
@@ -61,6 +71,11 @@ if(ENABLE_OPENAL)
     target_link_libraries(audio_core PRIVATE OpenAL)
     target_compile_definitions(audio_core PUBLIC HAVE_OPENAL)
     add_definitions(-DAL_LIBTYPE_STATIC)
+endif()
+
+if(ENABLE_OHOS)
+    target_link_libraries(audio_core PRIVATE libohaudio.so)
+    target_compile_definitions(audio_core PUBLIC HAVE_OHOS_AUDIO)
 endif()
 
 if (CITRA_USE_PRECOMPILED_HEADERS)

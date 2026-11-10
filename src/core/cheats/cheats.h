@@ -1,11 +1,10 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2018-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <shared_mutex>
 #include <span>
 #include <vector>
@@ -45,6 +44,7 @@ public:
     void UpdateCheat(std::size_t index, std::shared_ptr<CheatBase>&& new_cheat);
 
     /// Loads the cheat file from disk for the specified title id.
+    /// Always re-reads from disk; the file may have been seeded or edited since the last load.
     void LoadCheatFile(u64 title_id);
 
     /// Saves currently active cheats to file for the specified title id.
@@ -61,7 +61,6 @@ private:
 private:
     Core::System& system;
     Core::TimingEventType* event;
-    std::optional<u64> loaded_title_id;
     u32 process_id = 0xFFFFFFFF;
     std::vector<std::shared_ptr<CheatBase>> cheats_list;
     mutable std::shared_mutex cheats_list_mutex;

@@ -1,8 +1,10 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2022-2025 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
+
+#include <unordered_map>
 
 #include "video_core/rasterizer_accelerated.h"
 #include "video_core/rasterizer_interface.h"
@@ -58,6 +60,38 @@ public:
     bool AccelerateDrawBatch(bool is_indexed) override;
 
 private:
+    struct GeometryKey {
+        PAddr base_address{};
+        u32 vertex_min{};
+        u32 vertex_max{};
+        u32 index_offset{};
+        u32 vertex_count{};
+        bool indexed{};
+        bool index_u16{};
+        std::array<u32, 48> layout{};
+
+        bool operator==(const GeometryKey&) const = default;
+    };
+
+    struct GeometryKeyHash {
+        std::size_t operator()(const GeometryKey& key) const;
+    };
+
+    struct GeometryRange {
+        PAddr address{};
+        u32 size{};
+        u32 snapshot_offset{};
+    };
+
+    struct GeometryCacheEntry {
+        GLintptr vertex_offset{};
+        GLintptr index_buffer_offset{};
+        std::vector<GeometryRange> vertex_ranges;
+        std::vector<u8> vertex_snapshot;
+        std::vector<u8> index_snapshot;
+        u64 last_used_frame{};
+    };
+
     /// Syncs pipeline state from PICA registers
     void SyncDrawState();
 
@@ -94,7 +128,15 @@ private:
 
     /// Setup vertex array for AccelerateDrawBatch
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint vs_input_index_min,
-                          GLuint vs_input_index_max);
+                          GLuint vs_input_index_max, std::vector<GeometryRange>* ranges = nullptr,
+                          std::vector<u8>* snapshot = nullptr);
+    GeometryKey MakeGeometryKey(bool is_indexed, u32 vertex_min, u32 vertex_max) const;
+    bool ValidateGeometryCacheEntry(const GeometryKey& key, const GeometryCacheEntry& entry);
+    void TrimGeometryCache();
+    void ClearGeometryCache();
+    void InitializeGpuTimer();
+    void BeginGpuTimer();
+    void EndAndCollectGpuTimer();
 
     /// Setup vertex shader for AccelerateDrawBatch
     bool SetupVertexShader();
@@ -129,6 +171,32 @@ private:
     OGLTexture texture_buffer_lut_rg;
     OGLTexture texture_buffer_lut_rgba;
     bool emulate_minmax_blend{};
+
+    std::unordered_map<GeometryKey, GeometryCacheEntry, GeometryKeyHash> geometry_cache;
+    std::unordered_map<GeometryKey, u8, GeometryKeyHash> geometry_probation;
+    std::unordered_map<GeometryKey, u64, GeometryKeyHash> geometry_disabled_until;
+    std::size_t geometry_cache_bytes{};
+    u64 geometry_cache_frame{};
+
+#if defined(OHOS)
+    using GenQueriesExt = void (*)(GLsizei, GLuint*);
+    using DeleteQueriesExt = void (*)(GLsizei, const GLuint*);
+    using BeginQueryExt = void (*)(GLenum, GLuint);
+    using EndQueryExt = void (*)(GLenum);
+    using GetQueryObjectuivExt = void (*)(GLuint, GLenum, GLuint*);
+    using GetQueryObjectui64vExt = void (*)(GLuint, GLenum, GLuint64*);
+    GenQueriesExt gen_queries_ext{};
+    DeleteQueriesExt delete_queries_ext{};
+    BeginQueryExt begin_query_ext{};
+    EndQueryExt end_query_ext{};
+    GetQueryObjectuivExt get_query_object_uiv_ext{};
+    GetQueryObjectui64vExt get_query_object_ui64v_ext{};
+    std::array<GLuint, 4> gpu_timer_queries{};
+    std::array<bool, 4> gpu_timer_pending{};
+    u32 gpu_timer_write_index{};
+    bool gpu_timer_active{};
+    bool gpu_timer_supported{};
+#endif
 };
 
 } // namespace OpenGL

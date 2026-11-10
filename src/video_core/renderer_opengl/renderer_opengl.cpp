@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/logging/log.h"
 #include "common/microprofile.h"
@@ -14,6 +14,7 @@
 #include "video_core/renderer_opengl/gl_texture_mailbox.h"
 #include "video_core/renderer_opengl/post_processing_opengl.h"
 #include "video_core/renderer_opengl/renderer_opengl.h"
+#include "video_core/screen_filters.h"
 #include "video_core/shader/generator/glsl_shader_gen.h"
 
 #include "video_core/host_shaders/opengl_present_anaglyph_frag.h"
@@ -86,7 +87,11 @@ RendererOpenGL::RendererOpenGL(Core::System& system, Pica::PicaCore& pica_,
     InitOpenGLObjects();
 }
 
-RendererOpenGL::~RendererOpenGL() = default;
+RendererOpenGL::~RendererOpenGL() {
+    if (previous_game_frame_fence) {
+        glDeleteSync(previous_game_frame_fence);
+    }
+}
 
 void RendererOpenGL::SwapBuffers() {
     system.perf_stats->StartSwap();
@@ -102,26 +107,42 @@ void RendererOpenGL::SwapBuffers() {
     DrawScreens(render_window.GetFramebufferLayout(), false);
     render_window.SwapBuffers();
 #else
-    const auto& main_layout = render_window.GetFramebufferLayout();
-    RenderToMailbox(main_layout, render_window.mailbox, false);
 
-#if defined(ANDROID) || defined(OHOS_PLATFORM)
-    // On Android/OHOS, if secondary_window is defined at all,
+    const bool present_to_screen = !Settings::values.use_skip_duplicate_frames.GetValue() ||
+                                   Core::PerfStats::game_frames_updated;
+
+    if (present_to_screen) {
+        const auto& main_layout = render_window.GetFramebufferLayout();
+        RenderToMailbox(main_layout, render_window.mailbox, false);
+    }
+
+#if defined(ANDROID) || defined(OHOS) || defined(MOBILE_DEVICE)
+    // On Android, if secondary_window is defined at all,
     // it means we have a second display
     if (secondary_window) {
-        const auto& secondary_layout = secondary_window->GetFramebufferLayout();
-        RenderToMailbox(secondary_layout, secondary_window->mailbox, false);
+        if (present_to_screen) {
+            const auto& secondary_layout = secondary_window->GetFramebufferLayout();
+            RenderToMailbox(secondary_layout, secondary_window->mailbox, false);
+        }
         secondary_window->PollEvents();
     }
 #else
     if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::SeparateWindows) {
         ASSERT(secondary_window);
-        const auto& secondary_layout = secondary_window->GetFramebufferLayout();
-        RenderToMailbox(secondary_layout, secondary_window->mailbox, false);
+        if (present_to_screen) {
+            const auto& secondary_layout = secondary_window->GetFramebufferLayout();
+            RenderToMailbox(secondary_layout, secondary_window->mailbox, false);
+        }
         secondary_window->PollEvents();
     }
 #endif
 
+    if (present_to_screen) {
+        Core::PerfStats::game_frames_updated = false;
+    }
+
+    // The video dumper must receive exactly one frame per swap regardless of the "Skip Presenting
+    // Duplicate Frames" setting.
     if (frame_dumper.IsDumping()) {
         try {
             RenderToMailbox(frame_dumper.GetLayout(), frame_dumper.mailbox, true);
@@ -135,6 +156,16 @@ void RendererOpenGL::SwapBuffers() {
     EndFrame();
     prev_state.Apply();
     rasterizer.TickFrame();
+}
+
+void RendererOpenGL::LimitFramesAheadOfGpu() {
+    const GLsync game_frame_fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    glFlush();
+    if (previous_game_frame_fence) {
+        glClientWaitSync(previous_game_frame_fence, 0, GL_TIMEOUT_IGNORED);
+        glDeleteSync(previous_game_frame_fence);
+    }
+    previous_game_frame_fence = game_frame_fence;
 }
 
 void RendererOpenGL::RenderScreenshot() {
@@ -196,12 +227,19 @@ void RendererOpenGL::PrepareRendertarget() {
 void RendererOpenGL::RenderToMailbox(const Layout::FramebufferLayout& layout,
                                      std::unique_ptr<Frontend::TextureMailbox>& mailbox,
                                      bool flipped) {
-
+    if (!mailbox) {
+        LOG_WARNING(Render_OpenGL, "RenderToMailbox called without a mailbox");
+        return;
+    }
     Frontend::Frame* frame;
     {
         MICROPROFILE_SCOPE(OpenGL_WaitPresent);
 
         frame = mailbox->GetRenderFrame();
+        if (!frame) {
+            LOG_WARNING(Render_OpenGL, "RenderToMailbox could not acquire a render frame");
+            return;
+        }
 
         // Clean up sync objects before drawing
 
@@ -381,6 +419,7 @@ void RendererOpenGL::InitOpenGLObjects() {
 void RendererOpenGL::ReloadShader(Settings::StereoRenderOption render_3d) {
     // Link shaders and get variable locations
     std::string shader_data = fragment_shader_precision_OES;
+    active_screen_filter = -1;
     if (render_3d == Settings::StereoRenderOption::Anaglyph) {
         if (Settings::values.anaglyph_shader_name.GetValue() == "Dubois (builtin)") {
             shader_data += HostShaders::OPENGL_PRESENT_ANAGLYPH_FRAG;
@@ -398,11 +437,16 @@ void RendererOpenGL::ReloadShader(Settings::StereoRenderOption render_3d) {
                render_3d == Settings::StereoRenderOption::ReverseInterlaced) {
         shader_data += HostShaders::OPENGL_PRESENT_INTERLACED_FRAG;
     } else {
-        if (Settings::values.pp_shader_name.GetValue() == "None (builtin)") {
+        const std::string& pp_shader_name = Settings::values.pp_shader_name.GetValue();
+        const int filter_index = VideoCore::ScreenFilterIndex(pp_shader_name);
+        if (filter_index >= 0) {
+            shader_data += VideoCore::SCREEN_FILTER_GL_PREAMBLE;
+            shader_data += VideoCore::SCREEN_FILTERS[filter_index].glsl;
+            active_screen_filter = filter_index;
+        } else if (pp_shader_name == "None (builtin)") {
             shader_data += HostShaders::OPENGL_PRESENT_FRAG;
         } else {
-            std::string shader_text = OpenGL::GetPostProcessingShaderCode(
-                false, Settings::values.pp_shader_name.GetValue());
+            std::string shader_text = OpenGL::GetPostProcessingShaderCode(false, pp_shader_name);
             if (shader_text.empty()) {
                 // Should probably provide some information that the shader couldn't load
                 shader_data += HostShaders::OPENGL_PRESENT_FRAG;
@@ -433,6 +477,7 @@ void RendererOpenGL::ReloadShader(Settings::StereoRenderOption render_3d) {
     uniform_i_resolution = glGetUniformLocation(shader.handle, "i_resolution");
     uniform_o_resolution = glGetUniformLocation(shader.handle, "o_resolution");
     uniform_layer = glGetUniformLocation(shader.handle, "layer");
+    uniform_time = glGetUniformLocation(shader.handle, "time");
     attrib_position = glGetAttribLocation(shader.handle, "vert_position");
     attrib_tex_coord = glGetAttribLocation(shader.handle, "vert_tex_coord");
 }
@@ -555,12 +600,18 @@ void RendererOpenGL::DrawSingleScreen(const ScreenInfo& screen_info, float x, fl
     }
 
     const u32 scale_factor = GetResolutionScaleFactor();
-    const GLuint sampler = samplers[Settings::values.filter_mode.GetValue()].handle;
+    // Built-in screen filters have a required sampling mode; the plain present
+    // shader follows the user's filter_mode setting.
+    const bool linear = active_screen_filter >= 0
+                            ? VideoCore::SCREEN_FILTERS[active_screen_filter].linear_sampling
+                            : Settings::values.filter_mode.GetValue();
+    const GLuint sampler = samplers[linear ? 1 : 0].handle;
     glUniform4f(uniform_i_resolution, static_cast<float>(screen_info.texture.width * scale_factor),
                 static_cast<float>(screen_info.texture.height * scale_factor),
                 1.0f / static_cast<float>(screen_info.texture.width * scale_factor),
                 1.0f / static_cast<float>(screen_info.texture.height * scale_factor));
     glUniform4f(uniform_o_resolution, h, w, 1.0f / h, 1.0f / w);
+    glUniform1f(uniform_time, VideoCore::ScreenFilterTime());
     state.texture_units[0].texture_2d = screen_info.display_texture;
     state.texture_units[0].sampler = sampler;
     state.Apply();
@@ -706,7 +757,7 @@ void RendererOpenGL::DrawScreens(const Layout::FramebufferLayout& layout, bool f
 
     if (layout.additional_screen_enabled) {
         const auto& additional_screen = layout.additional_screen;
-        if (!Settings::values.swap_screen.GetValue()) {
+        if (!layout.additional_screen_is_bottom) {
             DrawTopScreen(layout, additional_screen);
         } else {
             DrawBottomScreen(layout, additional_screen);
@@ -854,11 +905,25 @@ void RendererOpenGL::DrawBottomScreen(const Layout::FramebufferLayout& layout,
 }
 
 void RendererOpenGL::TryPresent(int timeout_ms, bool is_secondary) {
+    if (is_secondary && !secondary_window) {
+        LOG_WARNING(Render_OpenGL, "TryPresent requested a missing secondary window");
+        return;
+    }
+
     const auto& window = is_secondary ? *secondary_window : render_window;
+    if (!window.mailbox) {
+        LOG_WARNING(Render_OpenGL, "TryPresent called without a mailbox");
+        return;
+    }
+
     const auto& layout = window.GetFramebufferLayout();
     auto frame = window.mailbox->TryGetPresentFrame(timeout_ms);
     if (!frame) {
         LOG_DEBUG(Render_OpenGL, "TryGetPresentFrame returned no frame to present");
+        return;
+    }
+    if (!frame->render_fence) {
+        LOG_WARNING(Render_OpenGL, "TryPresent skipped frame without a render fence");
         return;
     }
 
@@ -870,6 +935,10 @@ void RendererOpenGL::TryPresent(int timeout_ms, bool is_secondary) {
     if (frame->color_reloaded) {
         LOG_DEBUG(Render_OpenGL, "Reloading present frame");
         window.mailbox->ReloadPresentFrame(frame, layout.width, layout.height);
+    }
+    if (!frame->present.handle) {
+        LOG_WARNING(Render_OpenGL, "TryPresent skipped frame without a present framebuffer");
+        return;
     }
     glWaitSync(frame->render_fence, 0, GL_TIMEOUT_IGNORED);
     // INTEL workaround.

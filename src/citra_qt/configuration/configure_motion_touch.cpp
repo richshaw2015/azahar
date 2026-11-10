@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2018-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <array>
 #include <QCloseEvent>
@@ -76,14 +76,15 @@ void CalibrationConfigurationDialog::UpdateButtonText(const QString& text) {
 }
 
 constexpr std::array<std::pair<const char*, const char*>, 3> MotionProviders = {{
-    {"motion_emu", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "Mouse (Right Click)")},
-    {"cemuhookudp", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "CemuhookUDP")},
-    {"sdl", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "SDL")},
+    {"motion_emu", QT_TRANSLATE_NOOP("ConfigureMotionTouch",
+                                     "Mouse (Right Click for Tilt, Middle Click for Look)")},
+    {"cemuhookudp", "CemuhookUDP"},
+    {"sdl", "SDL"},
 }};
 
 constexpr std::array<std::pair<const char*, const char*>, 2> TouchProviders = {{
     {"emu_window", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "Emulator Window")},
-    {"cemuhookudp", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "CemuhookUDP")},
+    {"cemuhookudp", "CemuhookUDP"},
 }};
 
 ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
@@ -100,8 +101,7 @@ ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
     ui->udp_learn_more->setOpenExternalLinks(true);
     ui->udp_learn_more->setText(
         tr("<a "
-           "href='https://web.archive.org/web/20240301211230/https://citra-emu.org/wiki/"
-           "using-a-controller-or-android-phone-for-motion-or-touch-input'><span "
+           "href='https://wiki.cemu.info/wiki/Cemuhook'><span "
            "style=\"text-decoration: underline; color:#039be5;\">Learn More</span></a>"));
 
     timeout_timer->setSingleShot(true);
@@ -372,7 +372,7 @@ void ConfigureMotionTouch::OnConfigureTouchFromButton() {
 
 bool ConfigureMotionTouch::CanCloseDialog() {
     if (udp_test_in_progress) {
-        QMessageBox::warning(this, tr("Azahar"),
+        QMessageBox::warning(this, QStringLiteral("Azahar"),
                              tr("UDP Test or calibration configuration is in progress.<br>Please "
                                 "wait for them to finish."));
         return false;

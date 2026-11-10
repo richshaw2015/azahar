@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -58,6 +58,7 @@ private:
     void InitOpenGLObjects();
     void ReloadShader(Settings::StereoRenderOption render_3d);
     void PrepareRendertarget();
+    void LimitFramesAheadOfGpu() override;
     void RenderScreenshot();
     void RenderToMailbox(const Layout::FramebufferLayout& layout,
                          std::unique_ptr<Frontend::TextureMailbox>& mailbox, bool flipped);
@@ -106,12 +107,18 @@ private:
     GLuint uniform_i_resolution;
     GLuint uniform_o_resolution;
     GLuint uniform_layer;
+    GLint uniform_time = -1;
+
+    // Index into VideoCore::SCREEN_FILTERS when a built-in screen filter shader
+    // is loaded, -1 otherwise. Drives the present sampler mode.
+    int active_screen_filter = -1;
 
     // Shader attribute input indices
     GLuint attrib_position;
     GLuint attrib_tex_coord;
 
     FrameDumperOpenGL frame_dumper;
+    GLsync previous_game_frame_fence{};
 };
 
 } // namespace OpenGL

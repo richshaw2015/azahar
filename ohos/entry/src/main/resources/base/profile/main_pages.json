@@ -1,0 +1,25 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/GameView",
+    "pages/Settings",
+    "pages/settings/AppearanceSettings",
+    "pages/settings/CoreSettings",
+    "pages/settings/GamepadSettings",
+    "pages/settings/GraphicsSettings",
+    "pages/settings/GraphicsAdvancedSettings",
+    "pages/settings/ScreenFilterSettings",
+    "pages/settings/DisplaySettings",
+    "pages/settings/AudioSettings",
+    "pages/settings/StorageSettings",
+    "pages/settings/NetworkSettings",
+    "pages/settings/GameConfigSettings",
+    "pages/settings/SystemFilesSettings",
+    "pages/settings/CameraSettings",
+    "pages/settings/AboutSettings",
+    "pages/settings/SystemInfoSettings",
+    "pages/settings/SystemProfileSettings",
+    "pages/settings/DebugSettings",
+    "pages/settings/LayoutsSettings"
+  ]
+}

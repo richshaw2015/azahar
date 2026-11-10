@@ -1,6 +1,6 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -56,11 +56,15 @@ public:
     void ClearExclusiveState() override;
     void SetPageTable(const std::shared_ptr<Memory::PageTable>& page_table) override;
 
+    bool HasSingleInstructionBreakAccuracy() override {
+        return false;
+    }
+
 protected:
     std::shared_ptr<Memory::PageTable> GetPageTable() const override;
 
 private:
-    void ServeBreak();
+    void ServeBreak(int signal);
 
     friend class DynarmicUserCallbacks;
     Core::System& system;

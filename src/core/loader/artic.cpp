@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2024-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <algorithm>
 #include <cstring>
@@ -80,7 +80,7 @@ Apploader_Artic::~Apploader_Artic() {
     client->Stop();
 }
 
-FileType Apploader_Artic::IdentifyType(FileUtil::IOFile* file) {
+FileType Apploader_Artic::IdentifyType(FileUtil::IOFileBase* file) {
     return FileType::ARTIC;
 }
 
@@ -136,7 +136,7 @@ Apploader_Artic::LoadNew3dsHwCapabilities() {
 
 bool Apploader_Artic::IsN3DSExclusive() {
     std::vector<u8> smdh_buffer;
-    if (ReadIcon(smdh_buffer) == ResultStatus::Success && IsValidSMDH(smdh_buffer)) {
+    if (ReadIcon(smdh_buffer, false) == ResultStatus::Success && IsValidSMDH(smdh_buffer)) {
         SMDH* smdh = reinterpret_cast<SMDH*>(smdh_buffer.data());
         return smdh->flags.n3ds_exclusive != 0;
     }
@@ -203,6 +203,14 @@ ResultStatus Apploader_Artic::LoadExecImpl(std::shared_ptr<Kernel::Process>& pro
         exheader.arm11_system_local_caps.resource_limit_category);
     process->resource_limit = system.Kernel().ResourceLimit().GetForCategory(category);
 
+    // Update application max cpu setting. PM module uses the launch flags to determine
+    // this, but using the resource limit category is close enough.
+    if (category == Kernel::ResourceLimitCategory::Application) {
+        process->resource_limit->ApplyAppMaxCPUSetting(
+            process, exheader.arm11_system_local_caps.schedule_mode,
+            exheader.arm11_system_local_caps.max_cpu);
+    }
+
     // When running N3DS-unaware titles pm will lie about the amount of memory available.
     // This means RESLIMIT_COMMIT = APPMEMALLOC doesn't correspond to the actual size of
     // APPLICATION. See:
@@ -210,7 +218,7 @@ ResultStatus Apploader_Artic::LoadExecImpl(std::shared_ptr<Kernel::Process>& pro
     auto& ncch_caps = exheader.arm11_system_local_caps;
     const auto o3ds_mode = *LoadKernelMemoryMode().first;
     const auto n3ds_mode = static_cast<Kernel::New3dsMemoryMode>(ncch_caps.n3ds_mode);
-    const bool is_new_3ds = Settings::values.is_new_3ds.GetValue();
+    const bool is_new_3ds = Settings::values.IsNew3DSEffective();
     if (is_new_3ds && n3ds_mode == Kernel::New3dsMemoryMode::Legacy &&
         category == Kernel::ResourceLimitCategory::Application) {
         u64 new_limit = 0;
@@ -265,7 +273,8 @@ void Apploader_Artic::ParseRegionLockoutInfo(u64 program_id) {
     preferred_regions.clear();
 
     std::vector<u8> smdh_buffer;
-    if (ReadIcon(smdh_buffer) == ResultStatus::Success && smdh_buffer.size() >= sizeof(SMDH)) {
+    if (ReadIcon(smdh_buffer, false) == ResultStatus::Success &&
+        smdh_buffer.size() >= sizeof(SMDH)) {
         SMDH smdh;
         std::memcpy(&smdh, smdh_buffer.data(), sizeof(SMDH));
         u32 region_lockout = smdh.region_lockout;
@@ -395,7 +404,7 @@ ResultStatus Apploader_Artic::Load(std::shared_ptr<Kernel::Process>& process) {
 
     if (auto room_member = Network::GetRoomMember().lock()) {
         Network::GameInfo game_info;
-        ReadTitle(game_info.name);
+        ReadTitle(game_info.name, true);
         game_info.id = ncch_program_id;
         room_member->SendGameInfo(game_info);
     }
@@ -654,7 +663,8 @@ ResultStatus Apploader_Artic::ReadCode(std::vector<u8>& buffer) {
     return ResultStatus::Success;
 }
 
-ResultStatus Apploader_Artic::ReadIcon(std::vector<u8>& buffer) {
+ResultStatus Apploader_Artic::ReadIcon(std::vector<u8>& buffer,
+                                       [[maybe_unused]] bool prefer_update_icon) {
     if (!cached_icon.empty()) {
         buffer = cached_icon;
         return ResultStatus::Success;
@@ -803,10 +813,10 @@ ResultStatus Apploader_Artic::DumpUpdateRomFS(const std::string& target_path) {
     return ResultStatus::ErrorNotImplemented;
 }
 
-ResultStatus Apploader_Artic::ReadTitle(std::string& title) {
+ResultStatus Apploader_Artic::ReadTitle(std::string& title, bool prefer_update_title) {
     std::vector<u8> data;
     Loader::SMDH smdh;
-    ResultStatus result = ReadIcon(data);
+    ResultStatus result = ReadIcon(data, prefer_update_title);
     if (result != ResultStatus::Success) {
         return result;
     }

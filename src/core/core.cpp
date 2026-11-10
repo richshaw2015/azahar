@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2014-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include <stdexcept>
 #include <utility>
@@ -9,10 +9,14 @@
 #include "audio_core/hle/hle.h"
 #include "audio_core/lle/lle.h"
 #include "common/arch.h"
+#include "common/hacks/hack_manager.h"
 #include "common/logging/log.h"
+#include "common/scope_exit.h"
 #include "common/settings.h"
+#include "common/tar_file.h"
 #include "core/arm/arm_interface.h"
 #include "core/arm/exclusive_monitor.h"
+#include "core/hle/service/am/am.h"
 #include "core/hle/service/cam/cam.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir_user.h"
@@ -20,13 +24,18 @@
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #endif
 #include "core/arm/dyncom/arm_dyncom.h"
+#ifdef HAVE_FASTINTERP
+#include "core/arm/fastinterp/fastinterp.h"
+#endif
 #include "core/cheats/cheats.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/dumping/backend.h"
 #include "core/file_sys/ncch_container.h"
 #include "core/frontend/image_interface.h"
+#ifdef ENABLE_GDBSTUB
 #include "core/gdbstub/gdbstub.h"
+#endif
 #include "core/global.h"
 #include "core/hle/kernel/ipc_debugger/recorder.h"
 #include "core/hle/kernel/kernel.h"
@@ -46,6 +55,7 @@
 #include "core/hw/aes/key.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
+#include "core/savestate.h"
 #ifdef ENABLE_SCRIPTING
 #include "core/rpc/server.h"
 #endif
@@ -73,33 +83,55 @@ Core::Timing& Global() {
     return System::GetInstance().CoreTiming();
 }
 
-System::System() : movie{*this}, cheat_engine{*this} {}
+System::System() : movie{*this}, cheat_engine{*this} {
+    // Process pending work instead of just sleeping while waiting for the next frame
+    frame_limiter.SetWaitCallback([this](std::chrono::steady_clock::time_point deadline) {
+        ProcessPendingWorkUntil(deadline);
+    });
+}
 
 System::~System() = default;
 
+/**
+ * Executes the thread currently scheduled on the given core. Runs a full slice when tight_loop is
+ * set, a single instruction otherwise, or a single instruction if a debugger asked to step it.
+ */
+static void ExecuteCore(ARM_Interface& core, Kernel::Thread* thread, bool tight_loop) {
+#ifdef ENABLE_GDBSTUB
+    if (thread->gdb_single_step) [[unlikely]] {
+        // Keep a reference to the thread in case it just exits.
+        const auto thread_ref = Kernel::SharedFrom(thread);
+        core.Step();
+        GDBStub::OnSingleStepComplete(thread);
+        return;
+    }
+#endif
+    if (tight_loop) {
+        core.Run();
+    } else {
+        core.Step();
+    }
+}
+
 System::ResultStatus System::RunLoop(bool tight_loop) {
     status = ResultStatus::Success;
+
     if (!IsPoweredOn()) {
         return ResultStatus::ErrorNotInitialized;
     }
 
+#ifdef ENABLE_GDBSTUB
     if (GDBStub::IsServerEnabled()) {
-        Kernel::Thread* thread = kernel->GetCurrentThreadManager().GetCurrentThread();
-        if (thread && running_core) {
-            running_core->SaveContext(thread->context);
-        }
-        GDBStub::HandlePacket(*this);
-
-        // If the loop is halted and we want to step, use a tiny (1) number of instructions to
-        // execute. Otherwise, get out of the loop function.
-        if (GDBStub::GetCpuHaltFlag()) {
-            if (GDBStub::GetCpuStepFlag()) {
-                tight_loop = false;
-            } else {
-                return ResultStatus::Success;
-            }
+        // The break flag is only set if GDB is connected,
+        // we can do clearing here safely. If it is ever
+        // used outside, move the clearing outside the if.
+        for (auto& cpu_core : cpu_cores) {
+            cpu_core->ClearBreakFlag();
         }
     }
+#endif
+
+    ProcessPendingWork();
 
     Signal signal{Signal::None};
     u32 param{};
@@ -128,6 +160,24 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
             status_details = "A pending save state operation has not finished yet";
             return ResultStatus::ErrorSavestate;
         }
+        u64 title_id{};
+        if (app_loader) {
+            app_loader->ReadProgramId(title_id);
+        }
+        auto info = GetSaveStateInfo(title_id, movie.GetCurrentMovieID(), param);
+        if (info.slot == std::numeric_limits<u32>::max()) {
+            // Should not happen
+            status_details = "Failed to load savestate";
+            return ResultStatus::ErrorSavestate;
+        }
+#if !defined(OHOS)
+        if (info.status == Core::SaveStateInfo::ValidationStatus::BuildMismatch) {
+            status_details = info.build_name;
+            return ResultStatus::ErrorSavestateBuildMismatch;
+        }
+#endif
+        // OHOS：格式版本差异不拦截 —— 进入 LOADING 由 LoadState 尽量反序列化
+        // （"旧存档默认可用"策略），真不兼容走 catch → ErrorSavestate → 前端 toast
         save_state_slot = param;
         save_state_request_time = std::chrono::steady_clock::now();
         save_state_request_status = SaveStateStatus::LOADING;
@@ -159,9 +209,14 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         } catch (const std::exception& e) {
             LOG_ERROR(Core, "Error loading: {}", e.what());
             status_details = e.what();
+            ResetPerfStatsFrameTimeBaseline();
             return ResultStatus::ErrorSavestate;
         }
         frame_limiter.WaitOnce();
+        // 反序列化是 RunLoop 内的同步 stall：不重置基线会让下一帧的墙钟间隔吞掉这段
+        // stall，GetStableFrameTimeScale 飙高使 realtime audio tick 按 ticks/scale 密集
+        // 发放，DSP 短时狂产音频帧灌满 sink 缓冲，造成之后恒定滞后（对齐 Resume 的处理）
+        ResetPerfStatsFrameTimeBaseline();
         return ResultStatus::Success;
     } else if (save_state_request_status == SaveStateStatus::SAVING && kernel.get() &&
                !kernel->AreAsyncOperationsPending()) {
@@ -174,9 +229,12 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         } catch (const std::exception& e) {
             LOG_ERROR(Core, "Error saving: {}", e.what());
             status_details = e.what();
+            ResetPerfStatsFrameTimeBaseline();
             return ResultStatus::ErrorSavestate;
         }
         frame_limiter.WaitOnce();
+        // 同 LoadState：序列化+落盘的 stall 不计入帧间隔统计（见上方注释）
+        ResetPerfStatsFrameTimeBaseline();
         return ResultStatus::Success;
     } else if (save_state_request_status != SaveStateStatus::NONE &&
                (std::chrono::steady_clock::now() - save_state_request_time) >
@@ -221,17 +279,15 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
             running_core = current_core_to_execute;
             kernel->SetRunningCPU(running_core);
         }
-        if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
+        Kernel::Thread* thread = kernel->GetCurrentThreadManager().GetCurrentThread();
+        if (thread == nullptr) {
             LOG_TRACE(Core_ARM11, "Core {} idling", current_core_to_execute->GetID());
             current_core_to_execute->GetTimer().Idle();
             PrepareReschedule();
         } else {
-            if (tight_loop) {
-                current_core_to_execute->Run();
-            } else {
-                current_core_to_execute->Step();
-            }
+            ExecuteCore(*current_core_to_execute, thread, tight_loop);
         }
+        Reschedule();
     } else {
         // Now all cores are at the same global time. So we will run them one after the other
         // with a max slice that is the minimum of all max slices of all cores
@@ -254,28 +310,51 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
             kernel->SetRunningCPU(running_core);
             // If we don't have a currently active thread then don't execute instructions,
             // instead advance to the next event and try to yield to the next thread
-            if (kernel->GetCurrentThreadManager().GetCurrentThread() == nullptr) {
+            Kernel::Thread* thread = kernel->GetCurrentThreadManager().GetCurrentThread();
+            if (thread == nullptr) {
                 LOG_TRACE(Core_ARM11, "Core {} idling", cpu_core->GetID());
                 cpu_core->GetTimer().Idle();
                 PrepareReschedule();
             } else {
-                if (tight_loop) {
-                    cpu_core->Run();
-                } else {
-                    cpu_core->Step();
-                }
+                // In the rare case the break flag is set (due to exception thrown)
+                // there is probably no need to adjust the timer accordingly.
+                ExecuteCore(*cpu_core, thread, tight_loop);
             }
             max_slice = cpu_core->GetTimer().GetTicks() - start_ticks;
+            Reschedule();
         }
     }
 
-    if (GDBStub::IsServerEnabled()) {
-        GDBStub::SetCpuStepFlag(false);
-    }
-
-    Reschedule();
-
     return status;
+}
+
+void System::ProcessPendingWork() {
+    // Processes work that needs to run on the emulation thread. This function is called from
+    // two places, the RunLoop slice and during the frame limiter wait period.
+    // To wake up the frame limiter so that it processes more work, other threads must call
+    // NotifyPendingWork.
+
+#ifdef ENABLE_GDBSTUB
+    if (GDBStub::IsServerEnabled()) {
+        GDBStub::HandlePackets(*this);
+    }
+#endif
+
+#ifdef ENABLE_SCRIPTING
+    if (rpc_server) {
+        rpc_server->ProcessCoreRequests();
+    }
+#endif
+}
+
+void System::ProcessPendingWorkUntil(std::chrono::steady_clock::time_point deadline) {
+    do {
+        ProcessPendingWork();
+    } while (pending_work_event.WaitUntil(deadline));
+}
+
+void System::NotifyPendingWork() {
+    pending_work_event.Set();
 }
 
 bool System::SendSignal(System::Signal signal, u32 param) {
@@ -291,6 +370,71 @@ bool System::SendSignal(System::Signal signal, u32 param) {
 
 System::ResultStatus System::SingleStep() {
     return RunLoop(false);
+}
+
+/**
+ * Applies the built-in per-title compatibility quirks (ported from the Citra-MMJ
+ * game database) to the runtime quirk fields in Settings::values. Quirks that need
+ * initialized timers are handled separately after Init(). Called with the title ID
+ * of the ROM being loaded; all quirk fields are reset first so stale state can not
+ * leak into the next game.
+ */
+static void ApplyPerProgramHacks(u64 title_id) {
+    using namespace Common::Hacks;
+
+    Settings::values.core_ticks_hack = 0;
+    Settings::values.cpu_limit_shifts = {};
+    Settings::values.skip_slow_draw = false;
+    Settings::values.skip_cpu_write = false;
+    Settings::values.skip_texture_copy = false;
+    Settings::values.y2r_perform_hack = false;
+    Settings::values.disable_clip_coef = false;
+    Settings::values.use_linear_filter = false;
+    Settings::values.display_transfer_hack = false;
+    Settings::values.force_new_3ds = false;
+
+    // Speed-vs-accuracy quirks require opt-in via the game_perf_hacks setting;
+    // compatibility quirks apply unconditionally.
+    const bool perf_hacks = Settings::values.game_perf_hacks.GetValue();
+    const auto forced = [title_id, perf_hacks](HackType type) {
+        if (!perf_hacks && IsPerfQuirk(type)) {
+            return false;
+        }
+        return hack_manager.GetHackAllowMode(type, title_id) == HackAllowMode::FORCE;
+    };
+
+    Settings::values.skip_slow_draw = forced(HackType::SKIP_SLOW_DRAW);
+    Settings::values.skip_cpu_write = forced(HackType::SKIP_CPU_WRITE);
+    Settings::values.skip_texture_copy = forced(HackType::SKIP_TEXTURE_COPY);
+    Settings::values.y2r_perform_hack = forced(HackType::Y2R_SKIP_CONVERSION);
+    Settings::values.disable_clip_coef = forced(HackType::DISABLE_CLIP_PLANES);
+    Settings::values.use_linear_filter = forced(HackType::FORCE_LINEAR_FILTER);
+    Settings::values.display_transfer_hack = forced(HackType::DISPLAY_TRANSFER_FIXUP);
+    // Citra-MMJ compat (FORCE_NEW_3DS): kept separate from the user's is_new_3ds
+    // setting so the quirk does not permanently overwrite it; consumers query
+    // Settings::Values::IsNew3DSEffective().
+    Settings::values.force_new_3ds = forced(HackType::FORCE_NEW_3DS);
+
+    if (forced(HackType::FMV_HACK)) {
+        // Same values Citra-MMJ used: JIT backends charge at least 16000 ticks
+        // per block, interpreters 0xFFFF. Mirror the backend selection done in
+        // Init(): Dynarmic only exists on x86_64/arm64 hosts.
+#if CITRA_ARCH(x86_64) || CITRA_ARCH(arm64)
+        const bool jit_backend = Settings::values.use_cpu_jit.GetValue();
+#else
+        const bool jit_backend = false;
+#endif
+        Settings::values.core_ticks_hack = jit_backend ? 16000 : 0xFFFF;
+    }
+
+    // Resolve the per-core cpu_usage_limit shifts now; they are applied to the
+    // timers after Init() (and again after savestate loads rebuild them).
+    if (const auto* hack = hack_manager.GetHack(HackType::CPU_USAGE_LIMIT, title_id);
+        hack && hack->mode == HackAllowMode::FORCE) {
+        if (const auto* data = static_cast<const CpuLimitData*>(hack->hack_data)) {
+            Settings::values.cpu_limit_shifts = data->shifts;
+        }
+    }
 }
 
 System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::string& filepath,
@@ -309,6 +453,7 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
 
     u64_le program_id = 0;
     app_loader->ReadProgramId(program_id);
+    ApplyPerProgramHacks(program_id);
     if (restore_plugin_context.has_value() && restore_plugin_context->is_enabled &&
         restore_plugin_context->use_user_load_parameters) {
         if (restore_plugin_context->user_load_parameters.low_title_Id ==
@@ -330,8 +475,8 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
         m_mem_mode = {};
     } else {
         // Use default memory mode based on the n3ds setting
-        system_mem_mode = Settings::values.is_new_3ds.GetValue() ? Kernel::MemoryMode::NewProd
-                                                                 : Kernel::MemoryMode::Prod;
+        system_mem_mode = Settings::values.IsNew3DSEffective() ? Kernel::MemoryMode::NewProd
+                                                             : Kernel::MemoryMode::Prod;
         used_default_mem_mode = true;
     }
 
@@ -363,7 +508,7 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     ASSERT(n3ds_hw_caps.first);
     app_n3ds_hw_capabilities = n3ds_hw_caps.first.value();
 
-    if (!Settings::values.is_new_3ds.GetValue() && app_loader->IsN3DSExclusive()) {
+    if (!Settings::values.IsNew3DSEffective() && app_loader->IsN3DSExclusive()) {
         return ResultStatus::ErrorN3DSApplication;
     }
 
@@ -390,7 +535,7 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     }
 
     u32 num_cores = 2;
-    if (Settings::values.is_new_3ds) {
+    if (Settings::values.IsNew3DSEffective()) {
         num_cores = 4;
     }
     ResultStatus init_result{Init(emu_window, secondary_window, system_mem_mode, num_cores)};
@@ -402,6 +547,12 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     }
 
     kernel->UpdateCPUAndMemoryState(program_id, app_mem_mode, app_n3ds_hw_capabilities);
+
+    // Citra-MMJ compat (CPU_USAGE_LIMIT): apply the per-core downcount shifts now
+    // that the timers exist.
+    for (u32 i = 0; i < num_cores; ++i) {
+        timing->GetTimer(i)->SetDowncountHack(Settings::values.cpu_limit_shifts[i]);
+    }
 
     // Restore any parameters that should be carried through a reset.
     if (auto apt = Service::APT::GetModule(*this)) {
@@ -427,6 +578,8 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
         kernel->RestoreIPCRecorder(std::move(restore_ipc_recorder));
     }
 
+    LoadAMTitles();
+
     std::shared_ptr<Kernel::Process> process;
     const Loader::ResultStatus load_result{app_loader->Load(process)};
     if (Loader::ResultStatus::Success != load_result) {
@@ -440,6 +593,10 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
             return ResultStatus::ErrorLoader_ErrorInvalidFormat;
         case Loader::ResultStatus::ErrorGbaTitle:
             return ResultStatus::ErrorLoader_ErrorGbaTitle;
+        case Loader::ResultStatus::ErrorPatches:
+            return ResultStatus::ErrorLoader_ErrorPatches;
+        case Loader::ResultStatus::ErrorPatchesInvalidTitle:
+            return ResultStatus::ErrorLoader_ErrorPatchesInvalidTitle;
         case Loader::ResultStatus::ErrorArtic:
             return ResultStatus::ErrorArticDisconnected;
         default:
@@ -478,7 +635,7 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
 
 void System::PrepareReschedule() {
     running_core->PrepareReschedule();
-    reschedule_pending = true;
+    curr_core_reschedule_pending = true;
 }
 
 PerfStats::Results System::GetAndResetPerfStats() {
@@ -494,21 +651,54 @@ double System::GetStableFrameTimeScale() {
     return perf_stats->GetStableFrameTimeScale();
 }
 
+void System::ResetPerfStatsFrameTimeBaseline() {
+    if (perf_stats) {
+        perf_stats->ResetFrameTimeBaseline();
+    }
+}
+
 void System::Reschedule() {
-    if (!reschedule_pending) {
+    if (!curr_core_reschedule_pending) {
         return;
     }
 
-    reschedule_pending = false;
-    for (const auto& core : cpu_cores) {
-        LOG_TRACE(Core_ARM11, "Reschedule core {}", core->GetID());
-        kernel->GetThreadManager(core->GetID()).Reschedule();
+    curr_core_reschedule_pending = false;
+    kernel->GetThreadManager(running_core->GetID()).Reschedule();
+}
+
+void System::LoadAMTitles() {
+    auto am = Service::AM::GetModule(*this);
+    if (!am) {
+        return;
     }
+    bool bundle_registered = false;
+    if (!GetCartridge().empty()) {
+        auto tar = FileUtil::TarArchive::OpenTarArchive(GetCartridge());
+        if (tar) {
+            tar.reset();
+            am->GetBundleCIAHandler()->RegisterBundle(GetCartridge());
+            bundle_registered = true;
+        }
+    }
+    if (!bundle_registered) {
+        app_loader->LoadBundle();
+    }
+    am->ScanForAllTitles();
 }
 
 System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
                                   Frontend::EmuWindow* secondary_window,
                                   Kernel::MemoryMode memory_mode, u32 num_cores) {
+    // Notification for system initialization (either boot or savestate).
+    if (on_init_callback) {
+        on_init_callback(true);
+    }
+    SCOPE_EXIT({
+        if (on_init_callback) {
+            on_init_callback(false);
+        }
+    });
+
     LOG_DEBUG(HW_Memory, "initialized OK");
 
     memory = std::make_unique<Memory::MemorySystem>(*this);
@@ -520,9 +710,10 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
         *memory, *timing, [this] { PrepareReschedule(); }, memory_mode, num_cores,
         movie.GetOverrideInitTime());
 
-    exclusive_monitor = MakeExclusiveMonitor(*memory, num_cores);
+    const bool use_jit_backend = Settings::values.use_cpu_jit.GetValue();
+    exclusive_monitor = MakeExclusiveMonitor(*memory, num_cores, use_jit_backend);
     cpu_cores.reserve(num_cores);
-    if (Settings::values.use_cpu_jit) {
+    if (use_jit_backend) {
 #if CITRA_ARCH(x86_64) || CITRA_ARCH(arm64)
         for (u32 i = 0; i < num_cores; ++i) {
             cpu_cores.push_back(std::make_shared<ARM_Dynarmic>(
@@ -534,6 +725,13 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
                 std::make_shared<ARM_DynCom>(*this, *memory, USER32MODE, i, timing->GetTimer(i)));
         }
         LOG_WARNING(Core, "CPU JIT requested, but Dynarmic not available");
+#endif
+#ifdef HAVE_FASTINTERP
+    } else if (Settings::values.use_fastinterp) {
+        for (u32 i = 0; i < num_cores; ++i) {
+            cpu_cores.push_back(std::make_shared<FastInterp::ARM_FastInterp>(*this, *memory, i,
+                                                                             timing->GetTimer(i)));
+        }
 #endif
     } else {
         for (u32 i = 0; i < num_cores; ++i) {
@@ -558,12 +756,6 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
                       Settings::values.output_device.GetValue());
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching.GetValue());
 
-#ifdef ENABLE_SCRIPTING
-    if (Settings::values.enable_rpc_server.GetValue()) {
-        rpc_server = std::make_unique<RPC::Server>(*this);
-    }
-#endif
-
     service_manager = std::make_unique<Service::SM::ServiceManager>(*this);
     archive_manager = std::make_unique<Service::FS::ArchiveManager>(*this);
 
@@ -571,7 +763,9 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
     app_loader->ReadProgramId(loading_title_id);
     HW::AES::InitKeys();
     Service::Init(*this, loading_title_id, lle_modules, !app_loader->DoingInitialSetup());
+#ifdef ENABLE_GDBSTUB
     GDBStub::DeferStart();
+#endif
 
     if (!registered_image_interface) {
         registered_image_interface = std::make_shared<Frontend::ImageInterface>();
@@ -581,8 +775,9 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
 
     auto gsp = service_manager->GetService<Service::GSP::GSP_GPU>("gsp::Gpu");
     gpu = std::make_unique<VideoCore::GPU>(*this, emu_window, secondary_window);
-    gpu->SetInterruptHandler(
-        [gsp](Service::GSP::InterruptId interrupt_id) { gsp->SignalInterrupt(interrupt_id); });
+    gpu->SetInterruptHandler([gsp](Service::GSP::InterruptId interrupt_id, u64 wait_delay_ns) {
+        gsp->SignalInterrupt(interrupt_id, wait_delay_ns);
+    });
 
     auto plg_ldr = Service::PLGLDR::GetService(*this);
     if (plg_ldr) {
@@ -590,9 +785,18 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window,
         plg_ldr->SetAllowGameChangeState(Settings::values.allow_plugin_loader.GetValue());
     }
 
+    SetInfoLEDColor({});
+
     LOG_DEBUG(Core, "Initialized OK");
 
     is_powered_on = true;
+
+#ifdef ENABLE_SCRIPTING
+    // Started last and stopped first in Shutdown, so requests never see a partially built system
+    if (Settings::values.enable_rpc_server.GetValue()) {
+        rpc_server = std::make_unique<RPC::Server>(*this);
+    }
+#endif
 
     return ResultStatus::Success;
 }
@@ -687,20 +891,24 @@ void System::RegisterImageInterface(std::shared_ptr<Frontend::ImageInterface> im
 
 void System::Shutdown(bool is_deserializing) {
 
+#ifdef ENABLE_SCRIPTING
+    // Stop the RPC server before anything its requests may touch is torn down
+    rpc_server.reset();
+#endif
+
     // Shutdown emulation session
     is_powered_on = false;
 
     gpu.reset();
     if (!is_deserializing) {
         lle_modules.clear();
+#ifdef ENABLE_GDBSTUB
         GDBStub::Shutdown();
+#endif
         perf_stats.reset();
         app_loader.reset();
     }
     custom_tex_manager.reset();
-#ifdef ENABLE_SCRIPTING
-    rpc_server.reset();
-#endif
     archive_manager.reset();
     service_manager.reset();
     dsp_core.reset();
@@ -719,6 +927,8 @@ void System::Shutdown(bool is_deserializing) {
     }
 
     memory.reset();
+
+    SetInfoLEDColor({});
 
     LOG_DEBUG(Core, "Shutdown OK");
 }
@@ -754,11 +964,18 @@ void System::Reset() {
 }
 
 void System::ApplySettings() {
-    GDBStub::SetServerPort(Settings::values.gdbstub_port.GetValue());
-    GDBStub::ToggleServer(Settings::values.use_gdbstub.GetValue());
+#ifdef ENABLE_GDBSTUB
+    if (override_gdb_port != -1) {
+        GDBStub::SetServerPort(override_gdb_port);
+        GDBStub::ToggleServer(true);
+    } else {
+        GDBStub::SetServerPort(Settings::values.gdbstub_port.GetValue());
+        GDBStub::ToggleServer(Settings::values.use_gdbstub.GetValue());
+    }
+#endif
 
     if (gpu) {
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(OHOS) && !defined(MOBILE_DEVICE)
         gpu->Renderer().UpdateCurrentFramebufferLayout();
 #endif
         auto& settings = gpu->Renderer().Settings();
@@ -824,6 +1041,19 @@ bool System::IsInitialSetup() {
     return app_loader && app_loader->DoingInitialSetup();
 }
 
+void System::DebugUnscheduleAllThreadsFromFrontend(bool unschedule) {
+    if (!is_powered_on)
+        return;
+
+    for (auto proc : kernel->GetProcessList()) {
+        if (unschedule) {
+            proc->SetUnscheduleMode(Kernel::UnscheduleMode::FRONTEND);
+        } else {
+            proc->ClearUnscheduleMode(Kernel::UnscheduleMode::FRONTEND);
+        }
+    }
+}
+
 template <class Archive>
 void System::serialize(Archive& ar, const unsigned int file_version) {
 
@@ -839,11 +1069,6 @@ void System::serialize(Archive& ar, const unsigned int file_version) {
     }
     ar & num_cores;
 
-    // TODO(PabloMK7): Figure out why this is the case
-    if (!lle_modules.empty()) {
-        throw std::runtime_error("Savestates are not supported with LLE modules enabled");
-    }
-
     ar & lle_modules;
     Kernel::MemoryMode mem_mode{};
     if (!Archive::is_loading::value) {
@@ -858,6 +1083,12 @@ void System::serialize(Archive& ar, const unsigned int file_version) {
 
         [[maybe_unused]] const System::ResultStatus result =
             Init(*m_emu_window, m_secondary_window, mem_mode, num_cores);
+
+        // Citra-MMJ compat (CPU_USAGE_LIMIT): the rebuilt timers start with the
+        // default slice budget; re-apply the per-title shifts resolved at game load.
+        for (u32 i = 0; i < num_cores; ++i) {
+            timing->GetTimer(i)->SetDowncountHack(Settings::values.cpu_limit_shifts[i]);
+        }
     }
 
     // Flush on save, don't flush on load
@@ -895,11 +1126,15 @@ void System::serialize(Archive& ar, const unsigned int file_version) {
             custom_tex_manager->FindCustomTextures();
         }
 
+        // The title lists and bundles of AM are not saved, they come from the host files.
+        LoadAMTitles();
+
         // Re-register gpu callback, because gsp service changed after service_manager got
         // serialized
         auto gsp = service_manager->GetService<Service::GSP::GSP_GPU>("gsp::Gpu");
-        gpu->SetInterruptHandler(
-            [gsp](Service::GSP::InterruptId interrupt_id) { gsp->SignalInterrupt(interrupt_id); });
+        gpu->SetInterruptHandler([gsp](Service::GSP::InterruptId interrupt_id, u64 wait_delay_ns) {
+            gsp->SignalInterrupt(interrupt_id, wait_delay_ns);
+        });
 
         // Apply per program settings and switch the shader cache to the title running when the
         // savestate was created.

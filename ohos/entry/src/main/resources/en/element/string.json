@@ -1,0 +1,5592 @@
+{
+  "string": [
+    {
+      "name": "about_desc",
+      "value": "Version / Info / Links"
+    },
+    {
+      "name": "appearance_mode_auto",
+      "value": "Auto"
+    },
+    {
+      "name": "appearance_mode_dark",
+      "value": "Dark"
+    },
+    {
+      "name": "appearance_mode_light",
+      "value": "Light"
+    },
+    {
+      "name": "application",
+      "value": "Application"
+    },
+    {
+      "name": "app_icon",
+      "value": "App Icon"
+    },
+    {
+      "name": "app_icon_style_default",
+      "value": "Default"
+    },
+    {
+      "name": "app_icon_style_alt1",
+      "value": "Flat"
+    },
+    {
+      "name": "app_icon_style_alt2",
+      "value": "Low Poly"
+    },
+    {
+      "name": "app_icon_style_alt3",
+      "value": "CRT"
+    },
+    {
+      "name": "app_icon_change_failed",
+      "value": "Failed to change app icon"
+    },
+    {
+      "name": "view_options",
+      "value": "View Options"
+    },
+    {
+      "name": "performance_overlay_hidden",
+      "value": "Hidden"
+    },
+    {
+      "name": "performance_overlay_position_bottom_left",
+      "value": "Bottom Left"
+    },
+    {
+      "name": "performance_overlay_position_bottom_right",
+      "value": "Bottom Right"
+    },
+    {
+      "name": "performance_overlay_position_center_bottom",
+      "value": "Center Bottom"
+    },
+    {
+      "name": "performance_overlay_position_center_top",
+      "value": "Center Top"
+    },
+    {
+      "name": "performance_overlay_position_top_left",
+      "value": "Top Left"
+    },
+    {
+      "name": "performance_overlay_position_top_right",
+      "value": "Top Right"
+    },
+    {
+      "name": "performance_overlay_show_fps",
+      "value": "Show FPS"
+    },
+    {
+      "name": "system",
+      "value": "System"
+    },
+    {
+      "name": "module_desc",
+      "value": "3DS emulator entry module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "3DS Emulator"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "3DS Emulator"
+    },
+    {
+      "name": "recent_games_card_name",
+      "value": "Recent Games"
+    },
+    {
+      "name": "recent_games_card_desc",
+      "value": "Quickly launch recently played 3DS games"
+    },
+    {
+      "name": "no_recent_games",
+      "value": "No recent games yet"
+    },
+    {
+      "name": "widget_tap_to_open",
+      "value": "Tap to open 3DS Emulator"
+    },
+    {
+      "name": "add",
+      "value": "Add"
+    },
+    {
+      "name": "amiibo",
+      "value": "Amiibo"
+    },
+    {
+      "name": "amiibo_load_failed",
+      "value": "Failed to load Amiibo. Check the file."
+    },
+    {
+      "name": "amiibo_load_file",
+      "value": "Load Amiibo File"
+    },
+    {
+      "name": "amiibo_load_when_requested",
+      "value": "Load a file when the game requests Amiibo"
+    },
+    {
+      "name": "amiibo_loaded",
+      "value": "Amiibo loaded"
+    },
+    {
+      "name": "amiibo_none_to_remove",
+      "value": "No Amiibo can be removed"
+    },
+    {
+      "name": "amiibo_not_requested",
+      "value": "The current game has not requested Amiibo"
+    },
+    {
+      "name": "amiibo_panel_desc",
+      "value": "Amiibo .bin files are selected from Download/amiibo. If the game has not started NFC search, the core will reject the load."
+    },
+    {
+      "name": "amiibo_remove",
+      "value": "Remove Amiibo"
+    },
+    {
+      "name": "amiibo_remove_message",
+      "value": "Remove the loaded Amiibo from the current game session?"
+    },
+    {
+      "name": "amiibo_remove_title",
+      "value": "Remove Amiibo"
+    },
+    {
+      "name": "amiibo_removed",
+      "value": "Amiibo removed"
+    },
+    {
+      "name": "amiibo_select_failed_fmt",
+      "value": "Failed to select Amiibo: ${error}"
+    },
+    {
+      "name": "amiibo_waiting",
+      "value": "The current game is waiting for Amiibo"
+    },
+    {
+      "name": "azahar_ohos_author",
+      "value": "Azahar OHOS"
+    },
+    {
+      "name": "azahar_user_dirs",
+      "value": "Azahar User Directories"
+    },
+    {
+      "name": "azahar_user_dirs_desc",
+      "value": "All visible files stay under the app Download directory, and the native user path points there too."
+    },
+    {
+      "name": "back",
+      "value": "Back"
+    },
+    {
+      "name": "camera",
+      "value": "Camera"
+    },
+    {
+      "name": "camera_any_back",
+      "value": "Any Back Camera"
+    },
+    {
+      "name": "camera_any_front",
+      "value": "Any Front Camera"
+    },
+    {
+      "name": "camera_device",
+      "value": "Camera"
+    },
+    {
+      "name": "camera_device_desc",
+      "value": "If the \"Image Source\" setting is set to \"Device Camera\", this sets the physical camera to use."
+    },
+    {
+      "name": "camera_facing_back",
+      "value": "Back"
+    },
+    {
+      "name": "camera_facing_external",
+      "value": "External"
+    },
+    {
+      "name": "camera_facing_front",
+      "value": "Front"
+    },
+    {
+      "name": "camera_flip_button_fmt",
+      "value": "Flip: ${flip}"
+    },
+    {
+      "name": "camera_flip_horizontal",
+      "value": "Horizontal"
+    },
+    {
+      "name": "camera_flip_none",
+      "value": "None"
+    },
+    {
+      "name": "camera_flip_reverse",
+      "value": "Reverse"
+    },
+    {
+      "name": "camera_flip_vertical",
+      "value": "Vertical"
+    },
+    {
+      "name": "camera_frontend_desc",
+      "value": "Configures Azahar upstream outer right, inner, and outer left camera slots."
+    },
+    {
+      "name": "camera_inner",
+      "value": "Inner Camera"
+    },
+    {
+      "name": "camera_outer_left",
+      "value": "Outer Left Camera"
+    },
+    {
+      "name": "camera_outer_right",
+      "value": "Outer Right Camera"
+    },
+    {
+      "name": "camera_source_blank",
+      "value": "Blank"
+    },
+    {
+      "name": "camera_source_button_fmt",
+      "value": "Source: ${source}"
+    },
+    {
+      "name": "camera_source_image",
+      "value": "Still Image"
+    },
+    {
+      "name": "camera_source_system",
+      "value": "Device Camera"
+    },
+    {
+      "name": "camera_type_telephoto",
+      "value": "Telephoto"
+    },
+    {
+      "name": "camera_type_true_depth",
+      "value": "TrueDepth"
+    },
+    {
+      "name": "camera_type_ultra_wide",
+      "value": "Ultra-Wide"
+    },
+    {
+      "name": "camera_type_wide",
+      "value": "Wide"
+    },
+    {
+      "name": "cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "cheat_code_copied",
+      "value": "Code copied to clipboard"
+    },
+    {
+      "name": "cheat_code_copy_failed",
+      "value": "Failed to copy code"
+    },
+    {
+      "name": "cheat_code_required",
+      "value": "Code is required"
+    },
+    {
+      "name": "cheat_delete_failed",
+      "value": "Failed to delete cheat"
+    },
+    {
+      "name": "cheat_deleted",
+      "value": "Cheat deleted"
+    },
+    {
+      "name": "cheat_detail",
+      "value": "Cheat Detail"
+    },
+    {
+      "name": "cheat_empty_desc",
+      "value": "New cheats are saved to the cheats directory."
+    },
+    {
+      "name": "cheat_invalid_line_fmt",
+      "value": "Line ${line} has an invalid format"
+    },
+    {
+      "name": "cheat_name_required",
+      "value": "Name is required"
+    },
+    {
+      "name": "cheat_no_available_title_id",
+      "value": "No Title ID is available for this game"
+    },
+    {
+      "name": "cheat_no_title_id_cannot_save",
+      "value": "This game has no Title ID, so cheats cannot be saved"
+    },
+    {
+      "name": "cheat_no_title_id_desc",
+      "value": "No 3DS Title ID was parsed for this file, so the Azahar cheat file cannot be located."
+    },
+    {
+      "name": "cheat_saved",
+      "value": "Cheat saved"
+    },
+    {
+      "name": "import_cheat_file",
+      "value": "Import TXT"
+    },
+    {
+      "name": "cheat_imported",
+      "value": "Cheats imported; all are disabled by default"
+    },
+    {
+      "name": "cheat_import_invalid_file",
+      "value": "The file is empty, invalid, or contains no valid cheats"
+    },
+    {
+      "name": "cheat_import_failed_fmt",
+      "value": "Failed to import cheats: ${error}"
+    },
+    {
+      "name": "cheat_toggle_failed",
+      "value": "Failed to toggle cheat"
+    },
+    {
+      "name": "cheat_warning",
+      "value": "⚠ Most cheats require a game restart to fully deactivate. If you experience issues, disable all cheats and restart the game."
+    },
+    {
+      "name": "cheats_enabled_count_fmt",
+      "value": "${enabled}/${total} enabled"
+    },
+    {
+      "name": "disable_all_cheats",
+      "value": "Disable All"
+    },
+    {
+      "name": "confirm_disable_all_cheats",
+      "value": "Disable all cheats?"
+    },
+    {
+      "name": "cheats",
+      "value": "Cheats"
+    },
+    {
+      "name": "check_dirs",
+      "value": "Check Dirs"
+    },
+    {
+      "name": "close",
+      "value": "Close"
+    },
+    {
+      "name": "complete",
+      "value": "Complete"
+    },
+    {
+      "name": "config",
+      "value": "Config"
+    },
+    {
+      "name": "confirm",
+      "value": "OK"
+    },
+    {
+      "name": "console_id",
+      "value": "Console ID"
+    },
+    {
+      "name": "console_linked_desc",
+      "value": "SecureInfo, LFCS, and OTP form a complete console link"
+    },
+    {
+      "name": "console_not_linked",
+      "value": "Complete console-unique data is not linked"
+    },
+    {
+      "name": "console_not_linked_desc",
+      "value": "No complete console-unique data link is present"
+    },
+    {
+      "name": "console_unique_data",
+      "value": "Console-Unique Data"
+    },
+    {
+      "name": "console_unlink_failed",
+      "value": "Failed to unlink console-unique data"
+    },
+    {
+      "name": "console_unlink_not_done",
+      "value": "Console-unique data was not unlinked"
+    },
+    {
+      "name": "continue",
+      "value": "Continue"
+    },
+    {
+      "name": "covers",
+      "value": "Covers"
+    },
+    {
+      "name": "cover_size",
+      "value": "Cover Size"
+    },
+    {
+      "name": "cover_corner_radius",
+      "value": "Cover Corner Radius"
+    },
+    {
+      "name": "delete",
+      "value": "Delete"
+    },
+    {
+      "name": "delete_cheat_message_fmt",
+      "value": "Delete “${name}”? This removes the code from the current Title ID."
+    },
+    {
+      "name": "delete_cheat_title",
+      "value": "Delete Cheat"
+    },
+    {
+      "name": "dir_amiibo_desc",
+      "value": "NFC Amiibo .bin file directory"
+    },
+    {
+      "name": "dir_camera_images",
+      "value": "Camera Images"
+    },
+    {
+      "name": "dir_camera_images_desc",
+      "value": "Static image source for the 3DS cameras"
+    },
+    {
+      "name": "dir_cheats_desc",
+      "value": "Gateway cheat file directory"
+    },
+    {
+      "name": "dir_config_desc",
+      "value": "Azahar config file directory"
+    },
+    {
+      "name": "dir_covers_desc",
+      "value": "Home card cover directory, named by Title ID or ROM file name"
+    },
+    {
+      "name": "dir_custom_textures",
+      "value": "Custom Textures"
+    },
+    {
+      "name": "dir_custom_textures_desc",
+      "value": "Texture packs under load/textures by Title ID"
+    },
+    {
+      "name": "dir_download_root",
+      "value": "App Download Root"
+    },
+    {
+      "name": "dir_download_root_desc",
+      "value": "ROM library, user directories, and uploads start here."
+    },
+    {
+      "name": "dir_mods_desc",
+      "value": "Mods under load/mods by Title ID"
+    },
+    {
+      "name": "dir_movie_desc",
+      "value": "Azahar TAS Movie .ctm recording and playback directory"
+    },
+    {
+      "name": "dir_nand_desc",
+      "value": "3DS NAND user data"
+    },
+    {
+      "name": "dir_rom_library",
+      "value": "ROM Library"
+    },
+    {
+      "name": "dir_rom_library_desc",
+      "value": "Home scans the root directory and roms subdirectory"
+    },
+    {
+      "name": "dir_romfs_dump_desc",
+      "value": "Dumped game RomFS under dump/romfs"
+    },
+    {
+      "name": "dir_save_files",
+      "value": "Save Files"
+    },
+    {
+      "name": "dir_save_files_desc",
+      "value": "Import, export, and save-file management directory"
+    },
+    {
+      "name": "dir_save_states",
+      "value": "Save States"
+    },
+    {
+      "name": "dir_save_states_desc",
+      "value": "Emulator save states"
+    },
+    {
+      "name": "dir_screenshots_desc",
+      "value": "Screenshot and share export directory"
+    },
+    {
+      "name": "dir_sdmc_desc",
+      "value": "3DS virtual SD card directory"
+    },
+    {
+      "name": "dir_shader_cache",
+      "value": "Shader Cache"
+    },
+    {
+      "name": "dir_shader_cache_desc",
+      "value": "Graphics backend shader cache"
+    },
+    {
+      "name": "dir_status_cache",
+      "value": "Cache"
+    },
+    {
+      "name": "dir_status_cheat",
+      "value": "Cheat"
+    },
+    {
+      "name": "dir_status_export",
+      "value": "Export"
+    },
+    {
+      "name": "dir_status_media",
+      "value": "Media"
+    },
+    {
+      "name": "dir_status_root",
+      "value": "Root"
+    },
+    {
+      "name": "dir_status_save",
+      "value": "Save"
+    },
+    {
+      "name": "dir_status_scan",
+      "value": "Scan"
+    },
+    {
+      "name": "dir_status_state",
+      "value": "State"
+    },
+    {
+      "name": "dir_status_system",
+      "value": "System"
+    },
+    {
+      "name": "dir_sysdata_desc",
+      "value": "Shared system data directory"
+    },
+    {
+      "name": "dir_texture_dump",
+      "value": "Texture Dump"
+    },
+    {
+      "name": "dir_texture_dump_desc",
+      "value": "Dumped game textures under dump/textures"
+    },
+    {
+      "name": "dir_wallpapers_desc",
+      "value": "Processed global custom wallpapers"
+    },
+    {
+      "name": "directory",
+      "value": "Directory"
+    },
+    {
+      "name": "dirs_checked",
+      "value": "Directories checked"
+    },
+    {
+      "name": "download_dir_initialized",
+      "value": "Download directory initialized"
+    },
+    {
+      "name": "download_dir_not_set",
+      "value": "Download directory is not set"
+    },
+    {
+      "name": "download_dir_not_set_short",
+      "value": "Download directory not set"
+    },
+    {
+      "name": "edit",
+      "value": "Edit"
+    },
+    {
+      "name": "edit_cheat",
+      "value": "Edit Cheat"
+    },
+    {
+      "name": "add_cheat",
+      "value": "Add Cheat"
+    },
+    {
+      "name": "name",
+      "value": "Name"
+    },
+    {
+      "name": "notes",
+      "value": "Notes"
+    },
+    {
+      "name": "code",
+      "value": "Code"
+    },
+    {
+      "name": "enabled",
+      "value": "Enabled"
+    },
+    {
+      "name": "save",
+      "value": "Save"
+    },
+    {
+      "name": "exit",
+      "value": "Exit"
+    },
+    {
+      "name": "exit_game",
+      "value": "Exit Game"
+    },
+    {
+      "name": "fast_forward_enable_failed",
+      "value": "Failed to enable fast-forward"
+    },
+    {
+      "name": "fast_forward_enabled_fmt",
+      "value": "Fast Forward ${limit}"
+    },
+    {
+      "name": "game_no_program_selected",
+      "value": "No program selected"
+    },
+    {
+      "name": "game_start_failed_fmt",
+      "value": "Start failed: ${status}"
+    },
+    {
+      "name": "game_status_paused",
+      "value": "Paused"
+    },
+    {
+      "name": "game_status_prepare_start",
+      "value": "Preparing to start"
+    },
+    {
+      "name": "game_status_reset",
+      "value": "Reset"
+    },
+    {
+      "name": "game_status_running",
+      "value": "Running"
+    },
+    {
+      "name": "game_waiting_surface",
+      "value": "Waiting for render surface"
+    },
+    {
+      "name": "incomplete",
+      "value": "Incomplete"
+    },
+    {
+      "name": "linked",
+      "value": "Linked"
+    },
+    {
+      "name": "load_current_slot",
+      "value": "Load Current Slot"
+    },
+    {
+      "name": "load_error_empty_path",
+      "value": "ROM path is empty"
+    },
+    {
+      "name": "load_error_failed",
+      "value": "Load failed"
+    },
+    {
+      "name": "load_error_file_not_found",
+      "value": "File does not exist or cannot be accessed"
+    },
+    {
+      "name": "load_error_unsupported_format",
+      "value": "Unsupported 3DS program format"
+    },
+    {
+      "name": "load_state_requested_fmt",
+      "value": "Requested load from ${slot}"
+    },
+    {
+      "name": "load_state_unavailable",
+      "value": "Cannot load state now"
+    },
+    {
+      "name": "load_this_slot",
+      "value": "Load This Slot"
+    },
+    {
+      "name": "menu",
+      "value": "Menu"
+    },
+    {
+      "name": "features",
+      "value": "Features"
+    },
+    {
+      "name": "more",
+      "value": "More"
+    },
+    {
+      "name": "movie",
+      "value": "Movie"
+    },
+    {
+      "name": "movie_close",
+      "value": "Close Movie"
+    },
+    {
+      "name": "movie_close_message",
+      "value": "Close the current Movie? Recording content will be saved to the .ctm file first."
+    },
+    {
+      "name": "movie_close_title",
+      "value": "Close Movie"
+    },
+    {
+      "name": "movie_closed",
+      "value": "Movie closed"
+    },
+    {
+      "name": "movie_finished",
+      "value": "Movie finished"
+    },
+    {
+      "name": "movie_no_active",
+      "value": "No active Movie"
+    },
+    {
+      "name": "movie_no_recording",
+      "value": "No Movie is currently recording"
+    },
+    {
+      "name": "movie_playing",
+      "value": "Movie playback"
+    },
+    {
+      "name": "movie_prepare_playback",
+      "value": "Preparing Movie playback"
+    },
+    {
+      "name": "movie_prepare_record",
+      "value": "Preparing Movie recording"
+    },
+    {
+      "name": "movie_recording",
+      "value": "Movie recording"
+    },
+    {
+      "name": "movie_save",
+      "value": "Save Movie"
+    },
+    {
+      "name": "movie_saved",
+      "value": "Movie saved"
+    },
+    {
+      "name": "native_init_failed",
+      "value": "Native initialization failed"
+    },
+    {
+      "name": "new3ds_system_files",
+      "value": "New 3DS System Files"
+    },
+    {
+      "name": "new3ds_system_files_desc",
+      "value": "New 3DS-specific system modules and firmware title integrity"
+    },
+    {
+      "name": "nfc_searching",
+      "value": "NFC searching"
+    },
+    {
+      "name": "no_cheats",
+      "value": "No cheats"
+    },
+    {
+      "name": "no_save_states",
+      "value": "No save states"
+    },
+    {
+      "name": "not_linked",
+      "value": "Not linked"
+    },
+    {
+      "name": "old3ds_system_files",
+      "value": "Old 3DS System Files"
+    },
+    {
+      "name": "old3ds_system_files_desc",
+      "value": "Home Menu, system applets, and Old 3DS firmware title integrity"
+    },
+    {
+      "name": "open",
+      "value": "Open"
+    },
+    {
+      "name": "open_settings",
+      "value": "Open Settings"
+    },
+    {
+      "name": "pause",
+      "value": "Pause"
+    },
+    {
+      "name": "pause_action_amiibo_desc",
+      "value": "Load or remove an Amiibo .bin file"
+    },
+    {
+      "name": "pause_action_cheats_desc",
+      "value": "View, enable, and edit Gateway codes"
+    },
+    {
+      "name": "pause_action_close_playback_movie_desc",
+      "value": "Exit current Movie playback"
+    },
+    {
+      "name": "pause_action_close_recording_movie_desc",
+      "value": "End current Movie recording"
+    },
+    {
+      "name": "pause_action_exit_desc",
+      "value": "Stop emulation and return to the game library"
+    },
+    {
+      "name": "pause_action_reset_desc",
+      "value": "Restart the current game"
+    },
+    {
+      "name": "pause_action_resume",
+      "value": "Resume Game"
+    },
+    {
+      "name": "pause_action_resume_desc",
+      "value": "Resume emulation and close the menu"
+    },
+    {
+      "name": "pause_action_save_movie_desc",
+      "value": "Write the current .ctm recording file now"
+    },
+    {
+      "name": "pause_action_screenshot_desc",
+      "value": "Save the current screen to Download/screenshots"
+    },
+    {
+      "name": "pause_action_settings_desc",
+      "value": "Open graphics, audio, and system settings"
+    },
+    {
+      "name": "pause_menu_title",
+      "value": "Pause Menu"
+    },
+    {
+      "name": "rebuild_dirs",
+      "value": "Rebuild Dirs"
+    },
+    {
+      "name": "refresh",
+      "value": "Refresh"
+    },
+    {
+      "name": "refreshing",
+      "value": "Refreshing"
+    },
+    {
+      "name": "remove",
+      "value": "Remove"
+    },
+    {
+      "name": "quick_load",
+      "value": "Quickload"
+    },
+    {
+      "name": "quick_save",
+      "value": "Quicksave"
+    },
+    {
+      "name": "fast_forward",
+      "value": "Turbo Speed"
+    },
+    {
+      "name": "reset",
+      "value": "Reset"
+    },
+    {
+      "name": "reset_game_message",
+      "value": "Restart the current game? Unsaved in-game progress will be lost."
+    },
+    {
+      "name": "reset_game_title",
+      "value": "Reset Game"
+    },
+    {
+      "name": "reset_failed",
+      "value": "Reset failed"
+    },
+    {
+      "name": "save_failed",
+      "value": "Save failed"
+    },
+    {
+      "name": "save_state_empty_desc",
+      "value": "This slot is empty. You can save the current state here."
+    },
+    {
+      "name": "save_state_empty_slot",
+      "value": "Empty slot"
+    },
+    {
+      "name": "save_state_exists_desc",
+      "value": "You can overwrite it or load this slot to return to the recorded state."
+    },
+    {
+      "name": "save_state_quick_slot",
+      "value": "Quick Slot"
+    },
+    {
+      "name": "save_state_readable",
+      "value": "Readable"
+    },
+    {
+      "name": "save_state_delete_failed_fmt",
+      "value": "Failed to delete ${slot} save"
+    },
+    {
+      "name": "save_state_deleted_fmt",
+      "value": "${slot} save deleted"
+    },
+    {
+      "name": "undo_overwrite",
+      "value": "Undo overwrite"
+    },
+    {
+      "name": "undo_overwrite_done_fmt",
+      "value": "${slot} restored to previous save"
+    },
+    {
+      "name": "undo_overwrite_failed_fmt",
+      "value": "${slot} undo failed"
+    },
+    {
+      "name": "undo_overwrite_slot_fmt",
+      "value": "Undo ${slot} overwrite"
+    },
+    {
+      "name": "save_state_completed_fmt",
+      "value": "Saved to ${slot}"
+    },
+    {
+      "name": "save_state_requested_fmt",
+      "value": "Requested save to ${slot}"
+    },
+    {
+      "name": "save_state_revision_mismatch",
+      "value": "Version mismatch"
+    },
+    {
+      "name": "save_state_load_version_mismatch",
+      "value": "Savestate was created by a different version and cannot be loaded"
+    },
+    {
+      "name": "save_state_op_failed",
+      "value": "Savestate save/load failed"
+    },
+    {
+      "name": "core_runtime_error_fmt",
+      "value": "Runtime error (${status})"
+    },
+    {
+      "name": "save_state_slot_empty_fmt",
+      "value": "${slot} has no state"
+    },
+    {
+      "name": "save_state_slot_fmt",
+      "value": "Slot ${slot}"
+    },
+    {
+      "name": "save_state_no_preview",
+      "value": "No Preview"
+    },
+    {
+      "name": "delete_state",
+      "value": "Delete State"
+    },
+    {
+      "name": "save_state_unavailable",
+      "value": "Cannot save state now"
+    },
+    {
+      "name": "save_states",
+      "value": "Save States"
+    },
+    {
+      "name": "save_to_current_slot",
+      "value": "Save to Current Slot"
+    },
+    {
+      "name": "save_to_this_slot",
+      "value": "Save to This Slot"
+    },
+    {
+      "name": "restore_screens",
+      "value": "Restore Screens"
+    },
+    {
+      "name": "swap_screens",
+      "value": "Swap Screens"
+    },
+    {
+      "name": "disable_upright_screen",
+      "value": "Disable Upright Screen"
+    },
+    {
+      "name": "upright_screen",
+      "value": "Upright Screen"
+    },
+    {
+      "name": "switch_to_slot_fmt",
+      "value": "Switch to slot ${slot}"
+    },
+    {
+      "name": "screenshot",
+      "value": "Screenshot"
+    },
+    {
+      "name": "screenshot_requested",
+      "value": "Screenshot requested"
+    },
+    {
+      "name": "screenshot_save_to_fmt",
+      "value": "Screenshot will be saved to ${path}"
+    },
+    {
+      "name": "screenshot_unavailable",
+      "value": "Cannot capture screenshot now"
+    },
+    {
+      "name": "screenshots",
+      "value": "Screenshots"
+    },
+    {
+      "name": "set_dir",
+      "value": "Set Dir"
+    },
+    {
+      "name": "settings",
+      "value": "Settings"
+    },
+    {
+      "name": "about",
+      "value": "About"
+    },
+    {
+      "name": "all_games",
+      "value": "All Games"
+    },
+    {
+      "name": "all_screens",
+      "value": "On (All Displays)"
+    },
+    {
+      "name": "audio_lle_multithreaded",
+      "value": "LLE Multithreaded"
+    },
+    {
+      "name": "audio_mono",
+      "value": "Mono"
+    },
+    {
+      "name": "audio_stereo",
+      "value": "Stereo"
+    },
+    {
+      "name": "audio_surround",
+      "value": "Surround"
+    },
+    {
+      "name": "auto",
+      "value": "Auto"
+    },
+    {
+      "name": "background_music",
+      "value": "Background Music"
+    },
+    {
+      "name": "birthday",
+      "value": "Birthday"
+    },
+    {
+      "name": "clear",
+      "value": "Clear"
+    },
+    {
+      "name": "custom",
+      "value": "Custom"
+    },
+    {
+      "name": "date_month_day_fmt",
+      "value": "${month}/${day}"
+    },
+    {
+      "name": "default",
+      "value": "Default"
+    },
+    {
+      "name": "device_time",
+      "value": "Device Time"
+    },
+    {
+      "name": "display_bottom_only",
+      "value": "Bottom Only"
+    },
+    {
+      "name": "display_hybrid",
+      "value": "Hybrid"
+    },
+    {
+      "name": "display_large",
+      "value": "Large"
+    },
+    {
+      "name": "display_opposite",
+      "value": "Opposite Screen"
+    },
+    {
+      "name": "display_original",
+      "value": "Original"
+    },
+    {
+      "name": "display_side_by_side",
+      "value": "Side by Side"
+    },
+    {
+      "name": "display_top_only",
+      "value": "Top Only"
+    },
+    {
+      "name": "feedback",
+      "value": "Feedback"
+    },
+    {
+      "name": "fixed_time",
+      "value": "Fixed Time"
+    },
+    {
+      "name": "home",
+      "value": "Home"
+    },
+    {
+      "name": "language",
+      "value": "Language"
+    },
+    {
+      "name": "settings_app_language",
+      "value": "App Language"
+    },
+    {
+      "name": "language_follow_system",
+      "value": "Follow System"
+    },
+    {
+      "name": "language_option_zh",
+      "value": "简体中文"
+    },
+    {
+      "name": "language_option_en",
+      "value": "English"
+    },
+    {
+      "name": "settings_language_changed",
+      "value": "Language Changed"
+    },
+    {
+      "name": "language_dutch",
+      "value": "Dutch"
+    },
+    {
+      "name": "language_english",
+      "value": "English"
+    },
+    {
+      "name": "language_french",
+      "value": "French"
+    },
+    {
+      "name": "language_german",
+      "value": "German"
+    },
+    {
+      "name": "language_italian",
+      "value": "Italian"
+    },
+    {
+      "name": "language_japanese",
+      "value": "Japanese"
+    },
+    {
+      "name": "language_korean",
+      "value": "Korean"
+    },
+    {
+      "name": "language_portuguese",
+      "value": "Portuguese"
+    },
+    {
+      "name": "language_russian",
+      "value": "Russian"
+    },
+    {
+      "name": "language_simplified_chinese",
+      "value": "Simplified Chinese"
+    },
+    {
+      "name": "language_spanish",
+      "value": "Spanish"
+    },
+    {
+      "name": "language_traditional_chinese",
+      "value": "Traditional Chinese"
+    },
+    {
+      "name": "layout",
+      "value": "Layout"
+    },
+    {
+      "name": "layout_large_screen",
+      "value": "Large Screen First"
+    },
+    {
+      "name": "layout_original_top_bottom",
+      "value": "Original Top/Bottom"
+    },
+    {
+      "name": "layout_side_by_side",
+      "value": "Side by Side"
+    },
+    {
+      "name": "layout_single_screen",
+      "value": "Single Screen"
+    },
+    {
+      "name": "layout_top_bottom",
+      "value": "Top/Bottom"
+    },
+    {
+      "name": "layout_top_full_width",
+      "value": "Top Full Width"
+    },
+    {
+      "name": "left_eye",
+      "value": "Left Eye"
+    },
+    {
+      "name": "mac_address",
+      "value": "MAC Address"
+    },
+    {
+      "name": "main_screen_only",
+      "value": "On (Primary Display Only)"
+    },
+    {
+      "name": "none",
+      "value": "None"
+    },
+    {
+      "name": "not_ready",
+      "value": "Not ready"
+    },
+    {
+      "name": "off",
+      "value": "Off"
+    },
+    {
+      "name": "open_about_failed_fmt",
+      "value": "Failed to open About page: ${error}"
+    },
+    {
+      "name": "open_system_files_failed_fmt",
+      "value": "Failed to open system files: ${error}"
+    },
+    {
+      "name": "open_system_info_failed_fmt",
+      "value": "Failed to open system information: ${error}"
+    },
+    {
+      "name": "overlay_theme_clear",
+      "value": "Clear"
+    },
+    {
+      "name": "overlay_theme_default",
+      "value": "Classic"
+    },
+    {
+      "name": "position_above",
+      "value": "Above"
+    },
+    {
+      "name": "position_below",
+      "value": "Below"
+    },
+    {
+      "name": "position_bottom_left",
+      "value": "Bottom Left"
+    },
+    {
+      "name": "position_bottom_right",
+      "value": "Bottom Right"
+    },
+    {
+      "name": "position_center_left",
+      "value": "Middle Left"
+    },
+    {
+      "name": "position_center_right",
+      "value": "Middle Right"
+    },
+    {
+      "name": "position_top_left",
+      "value": "Top Left"
+    },
+    {
+      "name": "position_top_right",
+      "value": "Top Right"
+    },
+    {
+      "name": "random_generate",
+      "value": "Random"
+    },
+    {
+      "name": "readonly",
+      "value": "Read-only"
+    },
+    {
+      "name": "recent_games",
+      "value": "Recent Games"
+    },
+    {
+      "name": "region_australia",
+      "value": "Australia"
+    },
+    {
+      "name": "region_china",
+      "value": "China"
+    },
+    {
+      "name": "region_europe",
+      "value": "Europe"
+    },
+    {
+      "name": "region_japan",
+      "value": "Japan"
+    },
+    {
+      "name": "region_korea",
+      "value": "Korea"
+    },
+    {
+      "name": "region_taiwan",
+      "value": "Taiwan"
+    },
+    {
+      "name": "region_usa",
+      "value": "USA"
+    },
+    {
+      "name": "render3d_anaglyph",
+      "value": "Anaglyph"
+    },
+    {
+      "name": "render3d_interlaced",
+      "value": "Interlaced"
+    },
+    {
+      "name": "render3d_reverse_interlaced",
+      "value": "Reverse Interlaced"
+    },
+    {
+      "name": "render3d_side_by_side_full",
+      "value": "Side by Side Full Width"
+    },
+    {
+      "name": "render3d_side_by_side_half",
+      "value": "Side by Side"
+    },
+    {
+      "name": "renderer_software",
+      "value": "Software"
+    },
+    {
+      "name": "right_eye",
+      "value": "Right Eye"
+    },
+    {
+      "name": "secondary_screen_only",
+      "value": "On (Secondary Display Only)"
+    },
+    {
+      "name": "settings_3d_depth",
+      "value": "Depth"
+    },
+    {
+      "name": "settings_3d_depth_desc",
+      "value": "Specifies the value of the 3D slider. This should be set to higher than 0% when Stereoscopic 3D is enabled.\nNote: Depth values over 100% are not possible on real hardware and may cause graphical issues"
+    },
+    {
+      "name": "settings_3d_display_target",
+      "value": "Render Stereoscopic 3D"
+    },
+    {
+      "name": "settings_3d_display_target_desc",
+      "value": "Whether to enable stereoscopic 3D, and on which displays. The single display options are only relevant when multiple displays are connected."
+    },
+    {
+      "name": "settings_3ds_clock",
+      "value": "3DS Clock"
+    },
+    {
+      "name": "settings_3ds_clock_desc",
+      "value": "Sets the emulated 3DS clock to follow the device time or a fixed date and time"
+    },
+    {
+      "name": "settings_3gx_plugin_loader",
+      "value": "3GX Plugin Loader"
+    },
+    {
+      "name": "settings_3gx_plugin_loader_desc",
+      "value": "Load available 3GX plugins from the emulated SD card"
+    },
+    {
+      "name": "settings_accurate_mul",
+      "value": "Accurate Multiplication"
+    },
+    {
+      "name": "settings_accurate_mul_desc",
+      "value": "Uses more accurate multiplication in hardware shaders, which may fix some graphical bugs; reduces performance"
+    },
+    {
+      "name": "settings_allow_plugin_loader",
+      "value": "Allow Applications to Change Plugin Loader State"
+    },
+    {
+      "name": "settings_allow_plugin_loader_desc",
+      "value": "Allows homebrew apps to enable the plugin loader even when it is disabled"
+    },
+    {
+      "name": "settings_appearance",
+      "value": "Appearance"
+    },
+    {
+      "name": "settings_appearance_desc",
+      "value": "Theme / Wallpaper"
+    },
+    {
+      "name": "settings_appearance_mode",
+      "value": "Appearance Mode"
+    },
+    {
+      "name": "settings_aspect_ratio",
+      "value": "Aspect Ratio"
+    },
+    {
+      "name": "settings_async_custom_loading",
+      "value": "Async Custom Texture Loading"
+    },
+    {
+      "name": "settings_async_custom_loading_desc",
+      "value": "Load custom textures asynchronously with background threads to reduce loading stutter."
+    },
+    {
+      "name": "settings_async_fs_operations",
+      "value": "Async File Operations"
+    },
+    {
+      "name": "settings_async_fs_operations_desc",
+      "value": "Makes emulated filesystem accesses asynchronous, greatly reducing filesystem-related stutter but slightly increasing load times"
+    },
+    {
+      "name": "settings_async_presentation",
+      "value": "Async Presentation"
+    },
+    {
+      "name": "settings_async_presentation_desc",
+      "value": "Use async present under Vulkan, which may add one frame of input latency"
+    },
+    {
+      "name": "settings_async_shader_compilation",
+      "value": "Enable Asynchronous Shader Compilation"
+    },
+    {
+      "name": "settings_async_shader_compilation_desc",
+      "value": "Compiles shaders in the background to reduce stuttering during gameplay. When enabled expect temporary graphical glitches"
+    },
+    {
+      "name": "settings_audio",
+      "value": "Audio"
+    },
+    {
+      "name": "settings_audio_desc",
+      "value": "Emulation / Volume / Feedback"
+    },
+    {
+      "name": "settings_audio_emulation",
+      "value": "Audio Emulation"
+    },
+    {
+      "name": "settings_audio_stretching",
+      "value": "Audio Stretching"
+    },
+    {
+      "name": "settings_audio_stretching_desc",
+      "value": "Stretches audio to reduce stutter, at the cost of added latency and slightly lower performance"
+    },
+    {
+      "name": "settings_azahar_modules",
+      "value": "Azahar Modules"
+    },
+    {
+      "name": "settings_azahar_modules_desc",
+      "value": "Native Capabilities"
+    },
+    {
+      "name": "settings_bgm_desc",
+      "value": "Auto-pauses when entering game"
+    },
+    {
+      "name": "settings_bgm_volume",
+      "value": "BGM Volume"
+    },
+    {
+      "name": "settings_bottom_screen_horizontal_padding",
+      "value": "Bottom Screen Horizontal Padding"
+    },
+    {
+      "name": "settings_bottom_screen_stretch",
+      "value": "Stretch Bottom Screen"
+    },
+    {
+      "name": "settings_bottom_screen_vertical_padding",
+      "value": "Bottom Screen Vertical Padding"
+    },
+    {
+      "name": "settings_button_theme",
+      "value": "Button Theme"
+    },
+    {
+      "name": "settings_button_theme_desc",
+      "value": "Switch virtual button image styles: Classic, Clear, Drastic, PS, or SNES"
+    },
+    {
+      "name": "settings_cfg_ptm_desc",
+      "value": "After core initialization, edit username, birthday, language, sound output, region, play coins, and MAC"
+    },
+    {
+      "name": "settings_compress_cia_installs",
+      "value": "Compress Installed CIA Content"
+    },
+    {
+      "name": "settings_compress_cia_installs_desc",
+      "value": "Compresses CIA file contents when installed to the emulated SD card. Only affects content installed while enabled"
+    },
+    {
+      "name": "settings_core",
+      "value": "Core"
+    },
+    {
+      "name": "settings_core_desc",
+      "value": "CPU / LLE / Patches"
+    },
+    {
+      "name": "settings_country_code",
+      "value": "Country"
+    },
+    {
+      "name": "settings_cpu_clock",
+      "value": "CPU Clock Speed"
+    },
+    {
+      "name": "settings_cpu_clock_desc",
+      "value": "Overclocks or underclocks the emulated CPU; 100% is native. Higher values can reduce in-game slowdowns but may break some games."
+    },
+    {
+      "name": "settings_cpu_core_mode",
+      "value": "CPU Core Mode"
+    },
+    {
+      "name": "cpu_mode_jit",
+      "value": "Dynamic Recompiler"
+    },
+    {
+      "name": "cpu_mode_fastinterp",
+      "value": "Fast Interpreter"
+    },
+    {
+      "name": "cpu_mode_interpreter",
+      "value": "Interpreter"
+    },
+    {
+      "name": "cpu_mode_ir",
+      "value": "IR Interpreter"
+    },
+    {
+      "name": "cpu_core_mode_desc",
+      "value": "Interpreter modes are slower; use only for troubleshooting"
+    },
+    {
+      "name": "cpu_core_mode_no_jit",
+      "value": "Dynamic recompiler is not supported on this device"
+    },
+    {
+      "name": "settings_custom_textures",
+      "value": "Custom Textures"
+    },
+    {
+      "name": "settings_custom_textures_desc",
+      "value": "Textures are loaded from load/textures/[Title ID]/."
+    },
+    {
+      "name": "settings_custom_wallpaper_set",
+      "value": "Custom wallpaper is set"
+    },
+    {
+      "name": "settings_clear_wallpaper",
+      "value": "Clear wallpaper"
+    },
+    {
+      "name": "settings_default_tab",
+      "value": "Default Tab"
+    },
+    {
+      "name": "settings_disable_right_eye_render",
+      "value": "Disable Right Eye Render"
+    },
+    {
+      "name": "settings_disable_right_eye_render_desc",
+      "value": "Greatly improves performance in some applications, but can cause flickering in others."
+    },
+    {
+      "name": "settings_disk_shader_cache",
+      "value": "Disk Shader Cache"
+    },
+    {
+      "name": "settings_disk_shader_cache_desc",
+      "value": "Reduce stuttering by storing and loading generated shaders to disk. It cannot be used without Enabling Hardware Shader."
+    },
+    {
+      "name": "settings_display",
+      "value": "Touchscreen Buttons"
+    },
+    {
+      "name": "settings_display_desc",
+      "value": "Layout / Touch Input"
+    },
+    {
+      "name": "settings_dpad_uses_joystick",
+      "value": "Use Joystick for D-pad"
+    },
+    {
+      "name": "settings_dpad_uses_joystick_desc",
+      "value": "Replace the D-pad with a virtual joystick for games needing smooth directional input"
+    },
+    {
+      "name": "settings_dump_textures",
+      "value": "Dump Textures"
+    },
+    {
+      "name": "settings_dump_textures_desc",
+      "value": "Textures are dumped to dump/textures/[Title ID]/."
+    },
+    {
+      "name": "settings_feedback_desc",
+      "value": "Home, Settings, Pause Menu, and virtual buttons share the same sound and haptic preferences"
+    },
+    {
+      "name": "settings_files_dirs_desc",
+      "value": "View and open ROM, save, texture, wallpaper, NAND, SDMC, and other directories under Download"
+    },
+    {
+      "name": "settings_fixed_timestamp",
+      "value": "Fixed Timestamp"
+    },
+    {
+      "name": "settings_fixed_timestamp_desc",
+      "value": "Takes effect when 3DS Clock is Fixed Time, in Unix seconds"
+    },
+    {
+      "name": "settings_game_list_layout",
+      "value": "Game List Layout"
+    },
+    {
+      "name": "graphics_section_renderer",
+      "value": "Renderer"
+    },
+    {
+      "name": "graphics_section_stereoscopy",
+      "value": "Stereoscopy"
+    },
+    {
+      "name": "graphics_section_cardboard_vr",
+      "value": "Cardboard VR"
+    },
+    {
+      "name": "graphics_section_utility",
+      "value": "Utility"
+    },
+    {
+      "name": "graphics_section_advanced",
+      "value": "Advanced"
+    },
+    {
+      "name": "internal_resolution_native_fmt",
+      "value": "1x (Native)"
+    },
+    {
+      "name": "internal_resolution_multiple_fmt",
+      "value": "${factor}x"
+    },
+    {
+      "name": "grid_scale",
+      "value": "Grid Scale"
+    },
+    {
+      "name": "grid_scale_desc",
+      "value": "Adjust the display size of game covers in grid mode"
+    },
+    {
+      "name": "game_name_source",
+      "value": "Game Name Source"
+    },
+    {
+      "name": "game_name_source_metadata",
+      "value": "Metadata"
+    },
+    {
+      "name": "game_name_source_filename",
+      "value": "Filename"
+    },
+    {
+      "name": "settings_game_sort_order",
+      "value": "Game Sort Order"
+    },
+    {
+      "name": "sort_ascending",
+      "value": "A to Z"
+    },
+    {
+      "name": "sort_descending",
+      "value": "Z to A"
+    },
+    {
+      "name": "settings_graphics",
+      "value": "Graphics"
+    },
+    {
+      "name": "settings_graphics_desc",
+      "value": "Renderer / Shader"
+    },
+    {
+      "name": "settings_haptic_feedback",
+      "value": "Haptic Feedback"
+    },
+    {
+      "name": "settings_haptic_strength",
+      "value": "Haptic Strength"
+    },
+    {
+      "name": "settings_home_desc",
+      "value": "Choose the default game page and display mode after launch"
+    },
+    {
+      "name": "settings_home_wallpaper",
+      "value": "Home Wallpaper"
+    },
+    {
+      "name": "settings_hw_shader",
+      "value": "Hardware Shader"
+    },
+    {
+      "name": "settings_gamepad",
+      "value": "Gamepad"
+    },
+    {
+      "name": "settings_gamepad_desc",
+      "value": "Controllers / Key Mapping"
+    },
+    {
+      "name": "settings_cardboard_screen_size",
+      "value": "Cardboard Screen Size"
+    },
+    {
+      "name": "settings_cardboard_screen_size_desc",
+      "value": "Scales the screen to a percentage of its original size."
+    },
+    {
+      "name": "settings_cardboard_x_shift",
+      "value": "Horizontal Shift"
+    },
+    {
+      "name": "settings_cardboard_x_shift_desc",
+      "value": "Specifies the percentage of empty space to shift the screens horizontally. Positive values move the two eyes closer to the middle, while negative values move them away."
+    },
+    {
+      "name": "settings_cardboard_y_shift",
+      "value": "Vertical Shift"
+    },
+    {
+      "name": "settings_cardboard_y_shift_desc",
+      "value": "Specifies the percentage of empty space to shift the screens vertically. Positive values move the two eyes towards the bottom, while negative values move them towards the top."
+    },
+    {
+      "name": "settings_camera",
+      "value": "Camera"
+    },
+    {
+      "name": "settings_camera_desc",
+      "value": "Image Sources / Flip"
+    },
+    {
+      "name": "physical_controller",
+      "value": "Physical Controller"
+    },
+    {
+      "name": "use_artic_base_controller",
+      "value": "Use Artic Controller when connected to Artic Base Server"
+    },
+    {
+      "name": "use_artic_base_controller_desc",
+      "value": "Use the controls provided by Artic Base Server when connected to it instead of the configured input device."
+    },
+    {
+      "name": "settings_integer_scaling",
+      "value": "Integer Scaling"
+    },
+    {
+      "name": "settings_integer_scaling_desc",
+      "value": "Scales the screens with an integer multiplier of the original 3DS screen. For layouts with two different screen sizes, the largest screen is integer-scaled."
+    },
+    {
+      "name": "settings_internal_resolution",
+      "value": "Internal Resolution"
+    },
+    {
+      "name": "settings_internal_resolution_desc",
+      "value": "Rendering resolution; higher values look sharper but cost performance"
+    },
+    {
+      "name": "settings_joystick_dead_zone",
+      "value": "Joystick Dead Zone"
+    },
+    {
+      "name": "settings_large_screen_ratio",
+      "value": "Large Screen Ratio"
+    },
+    {
+      "name": "settings_lle_applets_desc",
+      "value": "Uses real system applets (software keyboard, Mii picker, etc.) instead of the built-in emulation"
+    },
+    {
+      "name": "settings_lle_module_delay_start",
+      "value": "Delay Start for LLE Modules"
+    },
+    {
+      "name": "settings_lle_module_delay_start_desc",
+      "value": "Delay app startup when LLE modules are enabled, preserving Azahar behavior"
+    },
+    {
+      "name": "settings_module_about_desc",
+      "value": "View frontend version, native status, and Download directory status"
+    },
+    {
+      "name": "settings_module_amiibo_desc",
+      "value": "NFC Amiibo load/remove is connected; files stay in Download/amiibo"
+    },
+    {
+      "name": "settings_module_camera_desc",
+      "value": "3DS three-camera configuration is connected, with blank, static image, or system camera sources"
+    },
+    {
+      "name": "settings_module_cheats_desc",
+      "value": "Core cheat engine is connected; manage Gateway codes from the in-game pause menu"
+    },
+    {
+      "name": "settings_module_cia_installs",
+      "value": "CIA / Installed Content"
+    },
+    {
+      "name": "settings_module_cia_installs_desc",
+      "value": "Azahar Android and Qt both include CIA install entries"
+    },
+    {
+      "name": "settings_module_cover_icon",
+      "value": "Covers / Icons"
+    },
+    {
+      "name": "settings_module_cover_icon_desc",
+      "value": "SMDH program icon and metadata extraction is connected"
+    },
+    {
+      "name": "settings_module_movie_desc",
+      "value": "Azahar TAS Movie .ctm record, playback, save, and close entries are connected"
+    },
+    {
+      "name": "settings_module_multiplayer_desc",
+      "value": "citra_room, lobby, and chat room are upstream 3DS capabilities"
+    },
+    {
+      "name": "settings_module_system_files_desc",
+      "value": "Manage Azahar NAND, Sysdata, SDMC, and console-unique data links"
+    },
+    {
+      "name": "settings_module_system_info_desc",
+      "value": "View device, display, app version, and Azahar runtime status"
+    },
+    {
+      "name": "settings_module_textures_saves_wallpaper_sysdata",
+      "value": "Textures / Saves / Wallpaper / System Data"
+    },
+    {
+      "name": "settings_module_textures_saves_wallpaper_sysdata_desc",
+      "value": "Download directory management is connected and can open user data subdirectories"
+    },
+    {
+      "name": "settings_module_widgets_desc",
+      "value": "Recent-game FormAbility is connected; cover and icon bridges can keep improving it"
+    },
+    {
+      "name": "settings_mono_render",
+      "value": "Mono Rendering"
+    },
+    {
+      "name": "settings_new_3ds_mode",
+      "value": "New 3DS Mode"
+    },
+    {
+      "name": "settings_new_3ds_mode_desc",
+      "value": "Emulates a New 3DS; required by some games and faster in supported titles."
+    },
+    {
+      "name": "settings_game_perf_hacks",
+      "value": "Game Performance Patches"
+    },
+    {
+      "name": "settings_game_perf_hacks_desc",
+      "value": "Applies speed patches to supported games; may reduce emulation accuracy."
+    },
+    {
+      "name": "settings_online_lle_modules",
+      "value": "Enable required LLE modules for online features (if installed)"
+    },
+    {
+      "name": "settings_online_lle_modules_desc",
+      "value": "Loads real service modules instead of the built-in emulation for online multiplayer, eShop, and other network features"
+    },
+    {
+      "name": "settings_play_coins",
+      "value": "Play Coins"
+    },
+    {
+      "name": "settings_save_state_slot_count",
+      "value": "Save State Slot Count"
+    },
+    {
+      "name": "settings_save_state_slot_count_desc",
+      "value": "Number of save state slots per game"
+    },
+    {
+      "name": "settings_portrait_layout",
+      "value": "Portrait Layout"
+    },
+    {
+      "name": "settings_preload_textures",
+      "value": "Preload Custom Textures"
+    },
+    {
+      "name": "settings_preload_textures_desc",
+      "value": "Loads all custom textures into memory before starting a game. May use a lot of memory"
+    },
+    {
+      "name": "settings_realtime_audio",
+      "value": "Realtime Audio"
+    },
+    {
+      "name": "settings_realtime_audio_desc",
+      "value": "Audio keeps full speed when frame rate drops, which may cause audio desync"
+    },
+    {
+      "name": "settings_region_free_patch",
+      "value": "Region Free Patch"
+    },
+    {
+      "name": "settings_region_free_patch_desc",
+      "value": "Show installed applications as region-free in Home Menu"
+    },
+    {
+      "name": "settings_render_api",
+      "value": "Renderer"
+    },
+    {
+      "name": "settings_render_thread_delay",
+      "value": "Delay Game Render Thread"
+    },
+    {
+      "name": "settings_render_thread_delay_desc",
+      "value": "Delay the game render thread when it submits data to the GPU. Helps with performance issues in the (very few) applications with dynamic framerates."
+    },
+    {
+      "name": "settings_renderer_debug",
+      "value": "Debug Renderer"
+    },
+    {
+      "name": "settings_renderer_debug_desc",
+      "value": "Logs additional graphics-related debug information; significantly reduces performance"
+    },
+    {
+      "name": "settings_screen_gap",
+      "value": "Screen Gap"
+    },
+    {
+      "name": "settings_screen_layout",
+      "value": "Screen Layout"
+    },
+    {
+      "name": "settings_secondary_display_layout",
+      "value": "Secondary Display Layout"
+    },
+    {
+      "name": "settings_shader_jit_desc",
+      "value": "Use the JIT engine instead of the interpreter for software shader emulation"
+    },
+    {
+      "name": "settings_simulate_3ds_gpu_timings",
+      "value": "Simulate 3DS GPU Timings"
+    },
+    {
+      "name": "settings_simulate_3ds_gpu_timings_desc",
+      "value": "Delays GPU completion events based on real-hardware measurements to stabilize dynamic-FPS games; disabling may rarely improve performance at the cost of stability"
+    },
+    {
+      "name": "settings_small_screen_position",
+      "value": "Small Screen Position"
+    },
+    {
+      "name": "settings_smooth_filtering",
+      "value": "Linear Filtering"
+    },
+    {
+      "name": "settings_smooth_filtering_desc",
+      "value": "Smooths the image when scaling to the screen. Disable for sharp, pixel-perfect output"
+    },
+    {
+      "name": "settings_sound_output",
+      "value": "Sound Output Mode"
+    },
+    {
+      "name": "settings_speed_limit",
+      "value": "Emulation Speed"
+    },
+    {
+      "name": "settings_spirv_shader_gen",
+      "value": "Enable SPIR-V shader generation"
+    },
+    {
+      "name": "settings_spirv_shader_gen_desc",
+      "value": "Emits the fragment shader used to emulate PICA using SPIR-V instead of GLSL"
+    },
+    {
+      "name": "settings_status_basic_available",
+      "value": "Basic available"
+    },
+    {
+      "name": "settings_status_kept",
+      "value": "Kept"
+    },
+    {
+      "name": "settings_steps_per_hour",
+      "value": "Pedometer Steps per Hour"
+    },
+    {
+      "name": "settings_steps_per_hour_desc",
+      "value": "Steps per hour reported by the pedometer, 0–65,535"
+    },
+    {
+      "name": "settings_stereo_3d_mode",
+      "value": "Stereoscopic 3D Mode"
+    },
+    {
+      "name": "settings_stereo_3d_mode_desc",
+      "value": "Choose the stereoscopic 3D mode for 3D rendering. Side by Side modes are most common in modern use. Anaglyph and Interlaced modes will always apply to all connected displays."
+    },
+    {
+      "name": "settings_storage",
+      "value": "Storage"
+    },
+    {
+      "name": "settings_storage_desc",
+      "value": "SD / Files"
+    },
+    {
+      "name": "settings_swap_eyes",
+      "value": "Swap Eyes"
+    },
+    {
+      "name": "settings_swap_eyes_desc",
+      "value": "Swaps which eye is shown in which side. Combined with Side by Side mode makes it possible to see 3D by crossing your eyes!"
+    },
+    {
+      "name": "settings_swap_screens",
+      "value": "Swap Screens"
+    },
+    {
+      "name": "settings_system_profile",
+      "value": "System Profile"
+    },
+    {
+      "name": "settings_system_profile_desc",
+      "value": "Region, clock, username, birthday, and other console data"
+    },
+    {
+      "name": "settings_system_region",
+      "value": "Region"
+    },
+    {
+      "name": "settings_texture_filter",
+      "value": "Texture Filter"
+    },
+    {
+      "name": "settings_texture_sampling",
+      "value": "Texture Sampling"
+    },
+    {
+      "name": "settings_texture_sampling_desc",
+      "value": "Overrides the sampling filter used by games. This can be useful in certain cases with poorly behaved games when upscaling. If unsure, set this to Game Controlled."
+    },
+    {
+      "name": "settings_theme_desc",
+      "value": "3DS console colors for selection and control accents"
+    },
+    {
+      "name": "settings_top_screen_horizontal_padding",
+      "value": "Top Screen Horizontal Padding"
+    },
+    {
+      "name": "settings_top_screen_stretch",
+      "value": "Stretch Top Screen"
+    },
+    {
+      "name": "settings_top_screen_vertical_padding",
+      "value": "Top Screen Vertical Padding"
+    },
+    {
+      "name": "settings_ui_sfx",
+      "value": "Button Sound Effects"
+    },
+    {
+      "name": "settings_ui_sfx_volume",
+      "value": "SFX Volume"
+    },
+    {
+      "name": "settings_username_desc",
+      "value": "Up to 20 characters"
+    },
+    {
+      "name": "settings_virtual_button_scale",
+      "value": "Virtual Button Scale"
+    },
+    {
+      "name": "settings_virtual_buttons_desc",
+      "value": "Use image-based button resources for the GameView touch overlay"
+    },
+    {
+      "name": "settings_virtual_sd",
+      "value": "Virtual SD Card"
+    },
+    {
+      "name": "settings_virtual_sd_desc",
+      "value": "Simulates SD card insertion; when off, games detect no SD card. Testing only, requires restart."
+    },
+    {
+      "name": "settings_vsync_desc",
+      "value": "Synchronizes the game frame rate with the device refresh rate; may increase input latency but can reduce tearing"
+    },
+    {
+      "name": "settings_wallpaper_failed",
+      "value": "Failed to set wallpaper"
+    },
+    {
+      "name": "settings_wallpaper_failed_fmt",
+      "value": "Failed to set wallpaper: ${error}"
+    },
+    {
+      "name": "settings_wallpaper_uses_theme",
+      "value": "Use the theme's floating tiles background when unset"
+    },
+    {
+      "name": "stretch",
+      "value": "Stretch"
+    },
+    {
+      "name": "system_info",
+      "value": "System Information"
+    },
+    {
+      "name": "system_profile_save_failed",
+      "value": "Failed to save system profile"
+    },
+    {
+      "name": "system_profile_saved",
+      "value": "System profile saved"
+    },
+    {
+      "name": "system_profile_unavailable",
+      "value": "System profile unavailable"
+    },
+    {
+      "name": "texture_sampling_game_controlled",
+      "value": "Game Controlled"
+    },
+    {
+      "name": "texture_sampling_linear",
+      "value": "Linear"
+    },
+    {
+      "name": "texture_sampling_nearest",
+      "value": "Nearest Neighbor"
+    },
+    {
+      "name": "theme",
+      "value": "Accent Color"
+    },
+    {
+      "name": "theme_aqua_blue",
+      "value": "Aqua Blue"
+    },
+    {
+      "name": "theme_violet",
+      "value": "Violet"
+    },
+    {
+      "name": "theme_flame_red",
+      "value": "Flame Red"
+    },
+    {
+      "name": "theme_cobalt_blue",
+      "value": "Cobalt Blue"
+    },
+    {
+      "name": "theme_lime_green",
+      "value": "Lime Green"
+    },
+    {
+      "name": "theme_orange",
+      "value": "Tangerine"
+    },
+    {
+      "name": "theme_sky_blue",
+      "value": "Sky Blue"
+    },
+    {
+      "name": "theme_graphite_black",
+      "value": "Graphite Black"
+    },
+    {
+      "name": "theme_platinum_silver",
+      "value": "Platinum Silver"
+    },
+    {
+      "name": "username",
+      "value": "Username"
+    },
+    {
+      "name": "username_invalid",
+      "value": "Username is not valid. Must be 4 to 20 alphanumeric characters"
+    },
+    {
+      "name": "username_uses_system",
+      "value": "This property is linked to the 3DS system username. Change it in System Profile settings"
+    },
+    {
+      "name": "view",
+      "value": "View"
+    },
+    {
+      "name": "virtual_buttons",
+      "value": "Virtual Buttons"
+    },
+    {
+      "name": "volume",
+      "value": "Volume"
+    },
+    {
+      "name": "surface_ready_suffix",
+      "value": " · surface ready"
+    },
+    {
+      "name": "sys_dir_camera_desc",
+      "value": "Static image source directory for the 3DS cameras"
+    },
+    {
+      "name": "sys_dir_config_desc",
+      "value": "Azahar config files and frontend-synced native config"
+    },
+    {
+      "name": "sys_dir_nand_desc",
+      "value": "3DS NAND user data, system save data, and installed system content"
+    },
+    {
+      "name": "sys_dir_sdmc_desc",
+      "value": "3DS virtual SD card root directory for CIA content and game data"
+    },
+    {
+      "name": "sys_dir_sysdata_desc",
+      "value": "Shared system data directory required by the Azahar runtime"
+    },
+    {
+      "name": "system_dirs",
+      "value": "System Directories"
+    },
+    {
+      "name": "system_dirs_checked",
+      "value": "System directories checked"
+    },
+    {
+      "name": "system_dirs_desc",
+      "value": "These directories map to Azahar native system data, virtual SD, Amiibo, Movie, and camera input under the app Download directory."
+    },
+    {
+      "name": "system_files",
+      "value": "System Files"
+    },
+    {
+      "name": "system_files_not_complete_fmt",
+      "value": "${label} system files are incomplete"
+    },
+    {
+      "name": "system_files_uninstall_failed_fmt",
+      "value": "Failed to uninstall ${label} system files"
+    },
+    {
+      "name": "system_files_uninstalled_fmt",
+      "value": "${label} system files uninstalled"
+    },
+    {
+      "name": "system_firmware_desc",
+      "value": "Status comes from system titles installed in Azahar NAND. Uninstall only removes firmware titles and does not delete normal save directories."
+    },
+    {
+      "name": "system_firmware_files",
+      "value": "System Firmware Files"
+    },
+    {
+      "name": "texture",
+      "value": "Texture"
+    },
+    {
+      "name": "uninstall",
+      "value": "Uninstall"
+    },
+    {
+      "name": "uninstall_system_files_message_fmt",
+      "value": "This removes installed ${label} system firmware titles from Azahar NAND. Related system features and Home Menu must be restored through the system file installation flow."
+    },
+    {
+      "name": "uninstall_system_files_title_fmt",
+      "value": "Uninstall ${label} System Files"
+    },
+    {
+      "name": "unknown_time",
+      "value": "Unknown time"
+    },
+    {
+      "name": "unlink",
+      "value": "Unlink"
+    },
+    {
+      "name": "unlink_console_message",
+      "value": "This removes linked console-unique data and deletes act, nim, and frd related system save data. Import the corresponding system files again to restore a complete console link."
+    },
+    {
+      "name": "unlink_console_title",
+      "value": "Unlink Console-Unique Data"
+    },
+    {
+      "name": "unnamed_cheat",
+      "value": "Unnamed cheat"
+    },
+    {
+      "name": "waiting_game_request",
+      "value": "Waiting for game request"
+    },
+    {
+      "name": "wallpapers",
+      "value": "Wallpapers"
+    },
+    {
+      "name": "dir_not_set",
+      "value": "Directory not set"
+    },
+    {
+      "name": "dir_opened",
+      "value": "Directory opened"
+    },
+    {
+      "name": "file_selected",
+      "value": "File selected"
+    },
+    {
+      "name": "not_set",
+      "value": "Not set"
+    },
+    {
+      "name": "open_dir_failed_fmt",
+      "value": "Failed to open directory: ${error}"
+    },
+    {
+      "name": "all",
+      "value": "All"
+    },
+    {
+      "name": "all_categories",
+      "value": "All Categories"
+    },
+    {
+      "name": "available",
+      "value": "Available"
+    },
+    {
+      "name": "basic_available",
+      "value": "Basic available"
+    },
+    {
+      "name": "can_open_dir",
+      "value": "Can open dir"
+    },
+    {
+      "name": "category",
+      "value": "Category"
+    },
+    {
+      "name": "cia_install_aborted",
+      "value": "CIA installation aborted"
+    },
+    {
+      "name": "cia_install_desc",
+      "value": "Install 3DS CIA content, updates, and DLC into the Azahar user directory."
+    },
+    {
+      "name": "cia_install_encrypted",
+      "value": "CIA is encrypted and cannot be installed"
+    },
+    {
+      "name": "cia_install_failed",
+      "value": "CIA installation failed"
+    },
+    {
+      "name": "cia_install_failed_fmt",
+      "value": "CIA installation failed: ${error}"
+    },
+    {
+      "name": "cia_install_file_not_found",
+      "value": "CIA file does not exist or cannot be accessed"
+    },
+    {
+      "name": "cia_install_invalid",
+      "value": "Not a valid CIA file"
+    },
+    {
+      "name": "cia_install_open_failed",
+      "value": "Failed to open CIA file"
+    },
+    {
+      "name": "cia_install_success",
+      "value": "CIA installation complete"
+    },
+    {
+      "name": "cia_install_title",
+      "value": "CIA Install"
+    },
+    {
+      "name": "cia_installing",
+      "value": "Installing CIA"
+    },
+    {
+      "name": "cia_installing_desc",
+      "value": "Installing CIA content."
+    },
+    {
+      "name": "configurable",
+      "value": "Configurable"
+    },
+    {
+      "name": "covers_icons",
+      "value": "Covers / Icons"
+    },
+    {
+      "name": "create_dir_failed_fmt",
+      "value": "Failed to create directory: ${error}"
+    },
+    {
+      "name": "dir_available",
+      "value": "Directory available"
+    },
+    {
+      "name": "dirs_created",
+      "value": "Dirs created"
+    },
+    {
+      "name": "download_dir_not_set_cannot_scan",
+      "value": "Download directory is not set, cannot scan game library"
+    },
+    {
+      "name": "download_dir_not_set_yet",
+      "value": "Download directory is not set yet"
+    },
+    {
+      "name": "empty_all_desc",
+      "value": "Put .3ds/.cci/.cxi games or .cia installers in Download or the roms subdirectory, then refresh."
+    },
+    {
+      "name": "empty_all_title",
+      "value": "No 3DS games in the Download directory yet"
+    },
+    {
+      "name": "empty_favorites_desc",
+      "value": "Tap Favorite in game details and it will appear here."
+    },
+    {
+      "name": "empty_favorites_title",
+      "value": "No favorite games yet"
+    },
+    {
+      "name": "empty_recent_desc",
+      "value": "Games launched from All Games or the Download directory will appear here."
+    },
+    {
+      "name": "empty_recent_title",
+      "value": "No recently launched games yet"
+    },
+    {
+      "name": "favorites",
+      "value": "Favorites"
+    },
+    {
+      "name": "feature_amiibo_desc",
+      "value": "Amiibo .bin files stay in Download/amiibo and can be loaded from the in-game pause menu."
+    },
+    {
+      "name": "feature_cheats_desc",
+      "value": "View, enable, and edit Gateway-format cheats from the in-game pause menu."
+    },
+    {
+      "name": "feature_covers_desc",
+      "value": "Home first reads covers from Download/covers by Title ID or ROM file name, then falls back to the SMDH icon."
+    },
+    {
+      "name": "feature_save_states_desc",
+      "value": "GameView supports slot save/load; state files are stored in Download/states."
+    },
+    {
+      "name": "feature_sysdata_desc",
+      "value": "nand/sdmc/sysdata are connected to the Azahar user directory."
+    },
+    {
+      "name": "feature_textures_desc",
+      "value": "Custom texture directories are managed under Download."
+    },
+    {
+      "name": "feature_widgets_desc",
+      "value": "Recent game data powers Harmony 2x2/2x4 quick-launch widgets."
+    },
+    {
+      "name": "game_count_fmt",
+      "value": "${count} games"
+    },
+    {
+      "name": "duration_hours_fmt",
+      "value": "${hours} hours"
+    },
+    {
+      "name": "duration_hours_minutes_fmt",
+      "value": "${hours} hours ${minutes} minutes"
+    },
+    {
+      "name": "duration_minutes_fmt",
+      "value": "${minutes} minutes"
+    },
+    {
+      "name": "game_config_cover_clear_failed_fmt",
+      "value": "Failed to clear cover: ${error}"
+    },
+    {
+      "name": "game_config_cover_cleared",
+      "value": "Custom cover cleared"
+    },
+    {
+      "name": "game_config_cover_import_failed_fmt",
+      "value": "Failed to import cover: ${error}"
+    },
+    {
+      "name": "game_config_cover_not_found",
+      "value": "Cannot locate cover file"
+    },
+    {
+      "name": "game_config_cover_read_failed",
+      "value": "Failed to read cover image"
+    },
+    {
+      "name": "game_config_cover_saved_fmt",
+      "value": "Cover saved to ${path}"
+    },
+    {
+      "name": "game_config_global_restored",
+      "value": "Global config restored"
+    },
+    {
+      "name": "game_config_reset_message_fmt",
+      "value": "Clear the per-game override config for “${name}”? It will use global settings again."
+    },
+    {
+      "name": "game_config_reset_title",
+      "value": "Restore Global Config"
+    },
+    {
+      "name": "cartridge_ejected_next_launch",
+      "value": "Cartridge ejected. Takes effect next launch."
+    },
+    {
+      "name": "cartridge_insertable",
+      "value": "Insertable"
+    },
+    {
+      "name": "cartridge_inserted",
+      "value": "Inserted"
+    },
+    {
+      "name": "cartridge_inserted_next_launch",
+      "value": "Set as inserted cartridge. Takes effect next launch."
+    },
+    {
+      "name": "cartridge_not_insertable",
+      "value": "This file cannot be inserted as a game cartridge"
+    },
+    {
+      "name": "cheat_name_code_required",
+      "value": "Name and code are required"
+    },
+    {
+      "name": "clear_play_record",
+      "value": "Clear Play Record"
+    },
+    {
+      "name": "clear_play_record_message_fmt",
+      "value": "Clear core play time, recent play time, and launch count for “${name}”? The game file will not be deleted."
+    },
+    {
+      "name": "added_to_favorites",
+      "value": "Added to favorites"
+    },
+    {
+      "name": "content_encrypted",
+      "value": "Content is encrypted"
+    },
+    {
+      "name": "delete_cheat_simple_message_fmt",
+      "value": "Delete “${name}”?"
+    },
+    {
+      "name": "delete_failed",
+      "value": "Delete failed"
+    },
+    {
+      "name": "delete_game",
+      "value": "Delete Game"
+    },
+    {
+      "name": "delete_game_confirm_fmt",
+      "value": "Delete “${name}”? This cannot be undone. Save data and config are kept."
+    },
+    {
+      "name": "dir_extdata",
+      "value": "ExtraData Directory"
+    },
+    {
+      "name": "error_code_fmt",
+      "value": "Error ${code}"
+    },
+    {
+      "name": "favorite_no_title_id",
+      "value": "This game has no Title ID, so it cannot be favorited"
+    },
+    {
+      "name": "favorite_update_failed",
+      "value": "Failed to update favorite state"
+    },
+    {
+      "name": "file_not_found",
+      "value": "File not found"
+    },
+    {
+      "name": "format_not_supported",
+      "value": "Current format is not supported"
+    },
+    {
+      "name": "game_config_delete_shader_cache_message_fmt",
+      "value": "Delete ${count} shader cache files for Title ID (${titleId})? The cache will be regenerated next launch."
+    },
+    {
+      "name": "game_config_delete_shader_cache_title_fmt",
+      "value": "Delete ${backend} Shader Cache"
+    },
+    {
+      "name": "game_config_game_file_not_found",
+      "value": "Cannot locate game file"
+    },
+    {
+      "name": "game_config_label_not_exists_fmt",
+      "value": "${label} does not exist"
+    },
+    {
+      "name": "game_config_label_not_installed_fmt",
+      "value": "${label} is not installed"
+    },
+    {
+      "name": "game_config_no_extdata_id",
+      "value": "This game has no ExtraData ID"
+    },
+    {
+      "name": "game_config_no_installed_content",
+      "value": "This game has no installed content"
+    },
+    {
+      "name": "game_config_no_valid_title_id",
+      "value": "This game has no valid Title ID"
+    },
+    {
+      "name": "game_config_rom_dir_not_found",
+      "value": "Cannot locate ROM directory"
+    },
+    {
+      "name": "game_config_shader_cache_deleted_fmt",
+      "value": "Deleted ${count} shader cache files"
+    },
+    {
+      "name": "game_config_shader_cache_none_deleted_fmt",
+      "value": "No shader cache was deleted"
+    },
+    {
+      "name": "game_config_shader_cache_not_found_fmt",
+      "value": "No shader cache found"
+    },
+    {
+      "name": "game_config_uninstall_all_message_fmt",
+      "value": "Uninstall application, update, and DLC for “${name}”? This only deletes installed content, not normal save directories."
+    },
+    {
+      "name": "game_config_uninstall_all_title",
+      "value": "Uninstall All Content"
+    },
+    {
+      "name": "game_config_uninstall_count_fmt",
+      "value": "Uninstalled ${count} content items"
+    },
+    {
+      "name": "game_config_uninstall_failed_fmt",
+      "value": "Failed to uninstall ${label}"
+    },
+    {
+      "name": "game_config_uninstall_message_fmt",
+      "value": "Uninstall ${label} for “${name}”? This only deletes installed content, not normal save directories."
+    },
+    {
+      "name": "game_config_uninstall_partial_fmt",
+      "value": "Uninstalled ${success} items, ${fail} failed"
+    },
+    {
+      "name": "game_config_uninstall_title_fmt",
+      "value": "Uninstall ${label}"
+    },
+    {
+      "name": "game_config_uninstalled_fmt",
+      "value": "${label} uninstalled"
+    },
+    {
+      "name": "game_deleted",
+      "value": "Game deleted"
+    },
+    {
+      "name": "game_cleanup_failed",
+      "value": "Failed to clean up some game files"
+    },
+    {
+      "name": "invalid_format",
+      "value": "Invalid format"
+    },
+    {
+      "name": "movie_invalid_or_unreadable",
+      "value": "Movie file is invalid or unreadable"
+    },
+    {
+      "name": "movie_playback_start_failed_fmt",
+      "value": "Failed to start playback: ${error}"
+    },
+    {
+      "name": "movie_record_start_failed_fmt",
+      "value": "Failed to start recording: ${error}"
+    },
+    {
+      "name": "movie_title_id_mismatch",
+      "value": "Movie Title ID does not match the current game"
+    },
+    {
+      "name": "no_cover_available",
+      "value": "No cover available"
+    },
+    {
+      "name": "no_play_record",
+      "value": "No play record"
+    },
+    {
+      "name": "not_loaded",
+      "value": "Not loaded"
+    },
+    {
+      "name": "play_record_cleared",
+      "value": "Play record cleared"
+    },
+    {
+      "name": "remove_external_game_toast",
+      "value": "Removed from recent (external file kept)"
+    },
+    {
+      "name": "remove_from_recent",
+      "value": "Remove From Recent"
+    },
+    {
+      "name": "remove_from_recent_message_fmt",
+      "value": "Remove “${name}” from recent games? The game file will not be deleted."
+    },
+    {
+      "name": "removed_from_favorites",
+      "value": "Removed from favorites"
+    },
+    {
+      "name": "removed_from_recent",
+      "value": "Removed from recent games"
+    },
+    {
+      "name": "romfs_dump_failed_fmt",
+      "value": "RomFS dump failed: ${status}"
+    },
+    {
+      "name": "romfs_dumped",
+      "value": "RomFS dumped"
+    },
+    {
+      "name": "romfs_dumped_with_update",
+      "value": "RomFS dumped, and update RomFS was dumped too"
+    },
+    {
+      "name": "romfs_none_to_dump",
+      "value": "No RomFS can be dumped"
+    },
+    {
+      "name": "set_as_wallpaper",
+      "value": "Set as Wallpaper"
+    },
+    {
+      "name": "success",
+      "value": "Success"
+    },
+    {
+      "name": "toggle_failed",
+      "value": "Toggle failed"
+    },
+    {
+      "name": "uninstall_all",
+      "value": "Uninstall All"
+    },
+    {
+      "name": "unsupported",
+      "value": "Unsupported"
+    },
+    {
+      "name": "update",
+      "value": "Update"
+    },
+    {
+      "name": "cartridge",
+      "value": "Cartridge"
+    },
+    {
+      "name": "clear_play_record_short",
+      "value": "Clear Play"
+    },
+    {
+      "name": "core_play_time",
+      "value": "Total Play Time"
+    },
+    {
+      "name": "display_name",
+      "value": "Display Name"
+    },
+    {
+      "name": "eject_cartridge",
+      "value": "Eject Cartridge"
+    },
+    {
+      "name": "encrypted",
+      "value": "Encrypted"
+    },
+    {
+      "name": "favorite",
+      "value": "Favorite"
+    },
+    {
+      "name": "file_location",
+      "value": "File Location"
+    },
+    {
+      "name": "game_config_3d_depth_desc",
+      "value": "Stereoscopic 3D slider percentage"
+    },
+    {
+      "name": "game_config_3d_display_target_desc",
+      "value": "Override the screen target for stereoscopic 3D per game"
+    },
+    {
+      "name": "game_config_accurate_mul_desc",
+      "value": "Improve hardware shader accuracy"
+    },
+    {
+      "name": "game_config_aspect_ratio_desc",
+      "value": "Image aspect ratio for single-screen layout"
+    },
+    {
+      "name": "game_config_async_custom_loading_desc",
+      "value": "Load custom textures on a background thread"
+    },
+    {
+      "name": "game_config_async_fs_desc",
+      "value": "Enable asynchronous filesystem operations"
+    },
+    {
+      "name": "game_config_async_presentation_desc",
+      "value": "Use async present under Vulkan"
+    },
+    {
+      "name": "game_config_async_shader_desc",
+      "value": "Compile shaders in the background to reduce stutter"
+    },
+    {
+      "name": "game_config_audio_emulation_desc",
+      "value": "HLE / LLE audio mode"
+    },
+    {
+      "name": "game_config_bottom_screen_stretch_desc",
+      "value": "Stretch the bottom screen per game"
+    },
+    {
+      "name": "game_config_cpu_clock_desc",
+      "value": "Override this game's 3DS CPU clock percentage"
+    },
+    {
+      "name": "game_config_custom_textures_desc",
+      "value": "Replace game textures from load/textures"
+    },
+    {
+      "name": "game_config_disable_right_eye_desc",
+      "value": "May improve performance in some games"
+    },
+    {
+      "name": "game_config_disk_shader_cache_desc",
+      "value": "Cache shaders to reduce later stutter"
+    },
+    {
+      "name": "game_config_display_name_desc",
+      "value": "Only changes the frontend library name. The ROM file is not modified."
+    },
+    {
+      "name": "game_config_dump_textures_desc",
+      "value": "Export game textures to dump/textures"
+    },
+    {
+      "name": "game_config_gpu_timings_desc",
+      "value": "Delay GPU completion events like console timing"
+    },
+    {
+      "name": "game_config_hw_shader_desc",
+      "value": "GPU shader acceleration"
+    },
+    {
+      "name": "game_config_integer_scaling_desc",
+      "value": "Scale by integer multiples of the original 3DS resolution"
+    },
+    {
+      "name": "game_config_internal_resolution_desc",
+      "value": "Resolution scale for hardware rendering"
+    },
+    {
+      "name": "game_config_landscape_layout",
+      "value": "Landscape Layout"
+    },
+    {
+      "name": "game_config_landscape_layout_desc",
+      "value": "3DS top/bottom screen layout"
+    },
+    {
+      "name": "game_config_large_screen_ratio_desc",
+      "value": "Top/bottom screen ratio in Large Screen layout"
+    },
+    {
+      "name": "game_config_lle_applets_desc",
+      "value": "Use installed system applets"
+    },
+    {
+      "name": "game_config_mono_render_desc",
+      "value": "Choose left-eye or right-eye image when 3D is disabled"
+    },
+    {
+      "name": "game_config_new_3ds_mode_desc",
+      "value": "Affects CPU, memory, and some game capabilities"
+    },
+    {
+      "name": "game_config_online_lle_modules_desc",
+      "value": "Enable LLE modules needed for multiplayer"
+    },
+    {
+      "name": "game_config_per_game_config",
+      "value": "Per-Game Config"
+    },
+    {
+      "name": "game_config_portrait_layout_desc",
+      "value": "Phone portrait layout"
+    },
+    {
+      "name": "game_config_preload_textures_desc",
+      "value": "Load custom textures before startup"
+    },
+    {
+      "name": "game_config_render_api_desc",
+      "value": "Follow global by default, or override OpenGL/Vulkan/software rendering per game"
+    },
+    {
+      "name": "game_config_render_thread_delay_desc",
+      "value": "Override GSP render thread delay per game"
+    },
+    {
+      "name": "game_config_screen_gap_desc",
+      "value": "Gap between top and bottom screens"
+    },
+    {
+      "name": "game_config_secondary_display_layout_desc",
+      "value": "Screen layout for multi-window or secondary display"
+    },
+    {
+      "name": "game_config_shader_jit_desc",
+      "value": "Shader JIT toggle"
+    },
+    {
+      "name": "game_config_small_screen_position_desc",
+      "value": "Small screen position in Large Screen layout"
+    },
+    {
+      "name": "game_config_smooth_filtering_desc",
+      "value": "Original Azahar linear filtering toggle"
+    },
+    {
+      "name": "game_config_speed_limit_desc",
+      "value": "Percentage frame-rate limit"
+    },
+    {
+      "name": "game_config_spirv_shader_desc",
+      "value": "Generate SPIR-V shaders under Vulkan"
+    },
+    {
+      "name": "game_config_stereo_3d_desc",
+      "value": "Override the 3DS stereoscopic display mode per game"
+    },
+    {
+      "name": "game_config_swap_eyes_desc",
+      "value": "Swap left and right eye output for stereoscopic 3D"
+    },
+    {
+      "name": "game_config_swap_screens_desc",
+      "value": "Swap top and bottom screens per game"
+    },
+    {
+      "name": "game_config_system_region_desc",
+      "value": "Override this game's startup region"
+    },
+    {
+      "name": "game_config_texture_filter_desc",
+      "value": "Anime4K, xBRZ, MMPX, and other filters"
+    },
+    {
+      "name": "game_config_texture_sampling_desc",
+      "value": "Game controlled, nearest, or linear"
+    },
+    {
+      "name": "game_config_top_screen_stretch_desc",
+      "value": "Stretch the top screen per game"
+    },
+    {
+      "name": "game_config_turbo_limit_desc",
+      "value": "Turbo mode percentage frame-rate limit"
+    },
+    {
+      "name": "game_config_upright_screen_desc",
+      "value": "Keep screens upright per game"
+    },
+    {
+      "name": "game_config_virtual_sd_desc",
+      "value": "Use the Azahar SDMC directory"
+    },
+    {
+      "name": "game_config_volume_desc",
+      "value": "Volume when this game starts"
+    },
+    {
+      "name": "game_config_vsync_desc",
+      "value": "Reduce tearing, with possible latency cost"
+    },
+    {
+      "name": "insert_cartridge",
+      "value": "Insert Cartridge"
+    },
+    {
+      "name": "last_played",
+      "value": "Last Played"
+    },
+    {
+      "name": "launch_count",
+      "value": "Launch Count"
+    },
+    {
+      "name": "movie_dir",
+      "value": "Movie Dir"
+    },
+    {
+      "name": "movie_playback",
+      "value": "Play Movie"
+    },
+    {
+      "name": "movie_record",
+      "value": "Record Movie"
+    },
+    {
+      "name": "not_provided",
+      "value": "Not provided"
+    },
+    {
+      "name": "open_folder",
+      "value": "Show in Folder"
+    },
+    {
+      "name": "publisher",
+      "value": "Publisher"
+    },
+    {
+      "name": "restore_global",
+      "value": "Restore Global"
+    },
+    {
+      "name": "rom_size",
+      "value": "ROM Size"
+    },
+    {
+      "name": "system_title",
+      "value": "System Title"
+    },
+    {
+      "name": "unfavorite",
+      "value": "Unfavorite"
+    },
+    {
+      "name": "unknown_region",
+      "value": "Unknown region"
+    },
+    {
+      "name": "application_dir",
+      "value": "Application Dir"
+    },
+    {
+      "name": "cheats_dir",
+      "value": "Cheats Directory"
+    },
+    {
+      "name": "clear_cover",
+      "value": "Clear Cover"
+    },
+    {
+      "name": "clear_opengl_shader",
+      "value": "Clear OpenGL Shader Cache"
+    },
+    {
+      "name": "clear_shader_cache",
+      "value": "Clear Shader Cache"
+    },
+    {
+      "name": "clear_shader_cache_pick_backend",
+      "value": "Select the graphics backend whose shader cache to clear"
+    },
+    {
+      "name": "clear_vulkan_shader",
+      "value": "Clear Vulkan Shader Cache"
+    },
+    {
+      "name": "cover_dir",
+      "value": "Cover Directory"
+    },
+    {
+      "name": "cover_saved_path_desc_fmt",
+      "value": "The cover is saved as Download/covers/${name}.jpg and is preferred by Home and widgets."
+    },
+    {
+      "name": "details",
+      "value": "Details"
+    },
+    {
+      "name": "dlc_dir",
+      "value": "DLC Dir"
+    },
+    {
+      "name": "exporting",
+      "value": "Exporting"
+    },
+    {
+      "name": "files",
+      "value": "Files"
+    },
+    {
+      "name": "import_cover",
+      "value": "Import Cover"
+    },
+    {
+      "name": "installed",
+      "value": "Installed"
+    },
+    {
+      "name": "installed_content",
+      "value": "Installed Content"
+    },
+    {
+      "name": "mods_dir",
+      "value": "Mods Directory"
+    },
+    {
+      "name": "nand_dir",
+      "value": "NAND Directory"
+    },
+    {
+      "name": "normal_save",
+      "value": "Normal Save"
+    },
+    {
+      "name": "normal_save_dir",
+      "value": "Normal Save Directory"
+    },
+    {
+      "name": "not_installed",
+      "value": "Not installed"
+    },
+    {
+      "name": "refresh_content",
+      "value": "Refresh Content"
+    },
+    {
+      "name": "romfs_dir",
+      "value": "RomFS Dir"
+    },
+    {
+      "name": "romfs_dump_dir",
+      "value": "RomFS Dump Directory"
+    },
+    {
+      "name": "save_states_dir",
+      "value": "Save States Directory"
+    },
+    {
+      "name": "sdmc_dir",
+      "value": "SDMC Directory"
+    },
+    {
+      "name": "shader_dir",
+      "value": "Shader Directory"
+    },
+    {
+      "name": "system_data_dir",
+      "value": "System Data Directory"
+    },
+    {
+      "name": "texture_dump",
+      "value": "Texture Dump"
+    },
+    {
+      "name": "texture_dump_dir",
+      "value": "Texture Dump Directory"
+    },
+    {
+      "name": "texture_pack_dir",
+      "value": "Texture Pack Directory"
+    },
+    {
+      "name": "uninstall_application",
+      "value": "Uninstall Application"
+    },
+    {
+      "name": "uninstall_dlc",
+      "value": "Uninstall DLC"
+    },
+    {
+      "name": "uninstall_game",
+      "value": "Uninstall Game"
+    },
+    {
+      "name": "uninstall_game_confirm_fmt",
+      "value": "Uninstall “${name}”? This cannot be undone. Save data and config are kept."
+    },
+    {
+      "name": "uninstall_update",
+      "value": "Uninstall Update"
+    },
+    {
+      "name": "unnamed",
+      "value": "Unnamed"
+    },
+    {
+      "name": "update_dir",
+      "value": "Update Dir"
+    },
+    {
+      "name": "not_recorded",
+      "value": "Not recorded"
+    },
+    {
+      "name": "on",
+      "value": "On"
+    },
+    {
+      "name": "restore",
+      "value": "Restore"
+    },
+    {
+      "name": "grid",
+      "value": "Grid"
+    },
+    {
+      "name": "help",
+      "value": "Help"
+    },
+    {
+      "name": "home_widgets",
+      "value": "Home Widgets"
+    },
+    {
+      "name": "how_to_import_3ds_games",
+      "value": "How to Import 3DS Games"
+    },
+    {
+      "name": "import_guide",
+      "value": "Import Guide"
+    },
+    {
+      "name": "init_download_dir_failed_fmt",
+      "value": "Failed to initialize Download directory: ${error}"
+    },
+    {
+      "name": "init_failed_fmt",
+      "value": "Initialization failed: ${error}"
+    },
+    {
+      "name": "initializing_game_library",
+      "value": "Initializing game library"
+    },
+    {
+      "name": "installing",
+      "value": "Installing"
+    },
+    {
+      "name": "jit_phone_unavailable",
+      "value": "CPU JIT: unavailable on phones"
+    },
+    {
+      "name": "jit_secure_shield_unavailable",
+      "value": "CPU JIT: blocked while Secure Shield mode is on"
+    },
+    {
+      "name": "jit_tablet_allowed",
+      "value": "CPU JIT: allowed on tablet, PC, or 2-in-1"
+    },
+    {
+      "name": "jit_tablet_needs_setting",
+      "value": "CPU JIT: enable manually on tablet, PC, or 2-in-1"
+    },
+    {
+      "name": "list",
+      "value": "List"
+    },
+    {
+      "name": "manage",
+      "value": "Manage"
+    },
+    {
+      "name": "module_entry_updated",
+      "value": "Module entry updated. Open the related configuration from Settings."
+    },
+    {
+      "name": "multiplayer_rooms",
+      "value": "Multiplayer Rooms"
+    },
+    {
+      "name": "address",
+      "value": "Address"
+    },
+    {
+      "name": "anonymous",
+      "value": "Anonymous"
+    },
+    {
+      "name": "filter_text",
+      "value": "Filter Text"
+    },
+    {
+      "name": "multiplayer_account_service",
+      "value": "Account & Service"
+    },
+    {
+      "name": "multiplayer_direct_connect",
+      "value": "Direct Connect"
+    },
+    {
+      "name": "multiplayer_direct_room_not_set",
+      "value": "No direct room set"
+    },
+    {
+      "name": "multiplayer_fill_address",
+      "value": "Fill Address"
+    },
+    {
+      "name": "multiplayer_fill_address_password",
+      "value": "Fill Address · Password"
+    },
+    {
+      "name": "multiplayer_filter_placeholder",
+      "value": "Room, game, owner"
+    },
+    {
+      "name": "multiplayer_hide_empty_rooms",
+      "value": "Hide Empty Rooms"
+    },
+    {
+      "name": "multiplayer_hide_full_rooms",
+      "value": "Hide Full Rooms"
+    },
+    {
+      "name": "multiplayer_lobby_filter",
+      "value": "Lobby Filter"
+    },
+    {
+      "name": "multiplayer_lobby_refresh_failed_fmt",
+      "value": "Failed to refresh lobby: ${error}"
+    },
+    {
+      "name": "multiplayer_lobby_refreshed_fmt",
+      "value": "Lobby refreshed: ${count} rooms"
+    },
+    {
+      "name": "multiplayer_no_filtered_rooms",
+      "value": "No rooms match the filters."
+    },
+    {
+      "name": "multiplayer_no_public_rooms",
+      "value": "No public rooms yet. Refresh the lobby to fetch the list."
+    },
+    {
+      "name": "multiplayer_open_room_optional",
+      "value": "Optional for open rooms"
+    },
+    {
+      "name": "multiplayer_preferred_game",
+      "value": "Preferred Game"
+    },
+    {
+      "name": "multiplayer_max_players",
+      "value": "Maximum Players"
+    },
+    {
+      "name": "no_preference",
+      "value": "No Preference"
+    },
+    {
+      "name": "multiplayer_page_desc",
+      "value": "Save Azahar WebService account data and direct connection settings, then read the public lobby room list."
+    },
+    {
+      "name": "multiplayer_unnamed_room",
+      "value": "Unnamed Room"
+    },
+    {
+      "name": "nickname",
+      "value": "Nickname"
+    },
+    {
+      "name": "optional_empty",
+      "value": "Optional"
+    },
+    {
+      "name": "password",
+      "value": "Password"
+    },
+    {
+      "name": "port",
+      "value": "Port"
+    },
+    {
+      "name": "multiplayer_port_invalid",
+      "value": "Port must be an integer from 1 to 65535"
+    },
+    {
+      "name": "refresh_lobby",
+      "value": "Refresh Lobby"
+    },
+    {
+      "name": "multiplayer_rooms_desc",
+      "value": "Configure Citra WebService, direct connection, and refresh the public lobby."
+    },
+    {
+      "name": "need_set_dir",
+      "value": "Set dir first"
+    },
+    {
+      "name": "open_details_failed_fmt",
+      "value": "Failed to open details: ${error}"
+    },
+    {
+      "name": "open_dir",
+      "value": "Open Dir"
+    },
+    {
+      "name": "open_failed_fmt",
+      "value": "Open failed: ${error}"
+    },
+    {
+      "name": "open_multiplayer_failed_fmt",
+      "value": "Failed to open multiplayer settings: ${error}"
+    },
+    {
+      "name": "play_hours_fmt",
+      "value": "Played ${hours} hours"
+    },
+    {
+      "name": "play_hours_minutes_fmt",
+      "value": "Played ${hours} hours ${minutes} minutes"
+    },
+    {
+      "name": "play_minutes_fmt",
+      "value": "Played ${minutes} minutes"
+    },
+    {
+      "name": "play_time_less_than_minute",
+      "value": "Less than 1 min"
+    },
+    {
+      "name": "never_played",
+      "value": "Never played"
+    },
+    {
+      "name": "recent",
+      "value": "Recent"
+    },
+    {
+      "name": "load_game",
+      "value": "Load Game"
+    },
+    {
+      "name": "clear_history",
+      "value": "Clear History"
+    },
+    {
+      "name": "clear_history_confirm",
+      "value": "Clear all recently played game records?"
+    },
+    {
+      "name": "clear_history_ok",
+      "value": "Clear"
+    },
+    {
+      "name": "running",
+      "value": "Running"
+    },
+    {
+      "name": "scan_failed_fmt",
+      "value": "Scan failed: ${error}"
+    },
+    {
+      "name": "scanning",
+      "value": "Scanning"
+    },
+    {
+      "name": "scanning_games_fmt",
+      "value": "Scanning games ${progress}"
+    },
+    {
+      "name": "scanning_progress_fmt",
+      "value": "Scanning ${progress}"
+    },
+    {
+      "name": "search_games_files_categories",
+      "value": "Search games, file names, or categories"
+    },
+    {
+      "name": "search",
+      "value": "Search"
+    },
+    {
+      "name": "select_3ds_app",
+      "value": "Select a 3DS program"
+    },
+    {
+      "name": "select_3ds_app_in_download",
+      "value": "Select a 3DS program inside the Download directory"
+    },
+    {
+      "name": "select_file_in_download",
+      "value": "Select a file inside the Download directory"
+    },
+    {
+      "name": "select_game",
+      "value": "Select Game"
+    },
+    {
+      "name": "start",
+      "value": "Start"
+    },
+    {
+      "name": "start_game",
+      "value": "Start Game"
+    },
+    {
+      "name": "startable",
+      "value": "Can start"
+    },
+    {
+      "name": "system_data",
+      "value": "System Data"
+    },
+    {
+      "name": "texture_packs",
+      "value": "Texture Packs"
+    },
+    {
+      "name": "uncategorized",
+      "value": "Uncategorized"
+    },
+    {
+      "name": "unsupported_format_fmt",
+      "value": "Unsupported format: ${format}"
+    },
+    {
+      "name": "upload",
+      "value": "Upload"
+    },
+    {
+      "name": "uploading",
+      "value": "Uploading"
+    },
+    {
+      "name": "web_upload",
+      "value": "Web Upload"
+    },
+    {
+      "name": "web_upload_choose_file",
+      "value": "Choose Files"
+    },
+    {
+      "name": "web_upload_choose_folder",
+      "value": "Choose Folder"
+    },
+    {
+      "name": "web_upload_complete",
+      "value": "Upload complete"
+    },
+    {
+      "name": "web_upload_connection_failed",
+      "value": "Connection failed"
+    },
+    {
+      "name": "web_upload_drop_hint",
+      "value": "Drop .3ds/.cia/.cci files here"
+    },
+    {
+      "name": "web_upload_failed_status_prefix",
+      "value": "Upload failed, status "
+    },
+    {
+      "name": "web_upload_page_heading_fmt",
+      "value": "Upload files to ${device}"
+    },
+    {
+      "name": "web_upload_page_title",
+      "value": "Azahar Web Upload"
+    },
+    {
+      "name": "web_upload_selected_files_fmt",
+      "value": "Selected ${count} files, ${size} total"
+    },
+    {
+      "name": "web_upload_start_upload",
+      "value": "Start Upload"
+    },
+    {
+      "name": "web_upload_target_dir",
+      "value": "Target directory: "
+    },
+    {
+      "name": "web_upload_uploading_prefix",
+      "value": "Uploading "
+    },
+    {
+      "name": "web_upload_browser_visit_fmt",
+      "value": "Open ${url} in a browser"
+    },
+    {
+      "name": "web_upload_desc",
+      "value": "Upload files from a browser to the roms subdirectory in Download."
+    },
+    {
+      "name": "widget_launch_failed_fmt",
+      "value": "Widget launch failed: ${error}"
+    },
+    {
+      "name": "widgets_ready_toast",
+      "value": "Home widgets are connected. Add the Recent Games widget from the system home screen."
+    },
+    {
+      "name": "got_it",
+      "value": "Got it"
+    },
+    {
+      "name": "help_download_dir_desc_fmt",
+      "value": "Place game files in this directory: ${path}"
+    },
+    {
+      "name": "help_download_dir_title",
+      "value": "Place Files in Download"
+    },
+    {
+      "name": "help_select_file_desc",
+      "value": "Tap Select Game, then choose a game file from your device storage."
+    },
+    {
+      "name": "help_select_file_title",
+      "value": "Select From Device"
+    },
+    {
+      "name": "help_supported_files_desc",
+      "value": ".3ds / .cci / .cxi / .3dsx / .elf / .axf / .app / .cia"
+    },
+    {
+      "name": "help_supported_files_title",
+      "value": "Supported 3DS Files"
+    },
+    {
+      "name": "help_web_upload_desc",
+      "value": "Start Web Upload, then use a browser on the same local network to upload game files."
+    },
+    {
+      "name": "help_web_upload_title",
+      "value": "Upload From Browser"
+    },
+    {
+      "name": "how_to_import_games",
+      "value": "How to Import Games"
+    },
+    {
+      "name": "how_to_import_games_desc",
+      "value": "3DS / CIA / Homebrew file placement and import methods"
+    },
+    {
+      "name": "legal_import_notice",
+      "value": "Only import game files that you own and have legally backed up."
+    },
+    {
+      "name": "notice",
+      "value": "Notice"
+    },
+    {
+      "name": "starting",
+      "value": "Starting"
+    },
+    {
+      "name": "stop",
+      "value": "Stop"
+    },
+    {
+      "name": "stopped",
+      "value": "Stopped"
+    },
+    {
+      "name": "stopping",
+      "value": "Stopping"
+    },
+    {
+      "name": "upload_dir_not_set",
+      "value": "Upload directory not set"
+    },
+    {
+      "name": "uploaded_file_fmt",
+      "value": "Uploaded ${name} (${size})"
+    },
+    {
+      "name": "web_upload_error_bad_request",
+      "value": "Bad request"
+    },
+    {
+      "name": "web_upload_error_invalid_upload",
+      "value": "Invalid upload"
+    },
+    {
+      "name": "web_upload_error_method_not_allowed",
+      "value": "Method not allowed"
+    },
+    {
+      "name": "web_upload_error_missing_file",
+      "value": "Missing file"
+    },
+    {
+      "name": "web_upload_error_not_found",
+      "value": "Page not found"
+    },
+    {
+      "name": "web_upload_error_open_file_failed",
+      "value": "Failed to open file"
+    },
+    {
+      "name": "web_upload_error_write_failed",
+      "value": "Write failed"
+    },
+    {
+      "name": "web_upload_html_lang",
+      "value": "en"
+    },
+    {
+      "name": "web_upload_idle_desc",
+      "value": "Tap Start to open a temporary upload service in the directory below."
+    },
+    {
+      "name": "web_upload_panel_desc",
+      "value": "Upload 3DS files to Download/roms from a browser on the same network"
+    },
+    {
+      "name": "web_upload_running_desc",
+      "value": "Open the address above in a browser, then choose files or folders to upload. Home refreshes the game library when upload completes."
+    },
+    {
+      "name": "web_upload_start_failed",
+      "value": "Web Upload failed to start. Check network permission or port usage."
+    },
+    {
+      "name": "audio_hle",
+      "value": "HLE"
+    },
+    {
+      "name": "audio_lle",
+      "value": "LLE"
+    },
+    {
+      "name": "aspect_ratio_16_10",
+      "value": "16:10"
+    },
+    {
+      "name": "aspect_ratio_16_9",
+      "value": "16:9"
+    },
+    {
+      "name": "aspect_ratio_21_9",
+      "value": "21:9"
+    },
+    {
+      "name": "aspect_ratio_4_3",
+      "value": "4:3"
+    },
+    {
+      "name": "version_build_fmt",
+      "value": "Version ${version} (${build})"
+    },
+    {
+      "name": "version_fmt",
+      "value": "Version ${version}"
+    },
+    {
+      "name": "based_on_azahar",
+      "value": "Nintendo 3DS emulator based on Azahar"
+    },
+    {
+      "name": "adapted_harmonyos",
+      "value": "Adapted for HarmonyOS"
+    },
+    {
+      "name": "sysinfo_section_title",
+      "value": "Info"
+    },
+    {
+      "name": "sysinfo_section_device",
+      "value": "Device"
+    },
+    {
+      "name": "sysinfo_section_software",
+      "value": "System & Software"
+    },
+    {
+      "name": "sysinfo_section_display",
+      "value": "Display"
+    },
+    {
+      "name": "sysinfo_brand",
+      "value": "Brand"
+    },
+    {
+      "name": "sysinfo_model",
+      "value": "Model"
+    },
+    {
+      "name": "sysinfo_device_type",
+      "value": "Device Type"
+    },
+    {
+      "name": "sysinfo_abi",
+      "value": "ABI"
+    },
+    {
+      "name": "sysinfo_os_name",
+      "value": "OS Version"
+    },
+    {
+      "name": "sysinfo_sdk_api",
+      "value": "SDK API Version"
+    },
+    {
+      "name": "sysinfo_resolution",
+      "value": "Resolution"
+    },
+    {
+      "name": "sysinfo_resolution_vp",
+      "value": "Render Resolution (vp)"
+    },
+    {
+      "name": "sysinfo_density",
+      "value": "Pixel Density"
+    },
+    {
+      "name": "sysinfo_refresh_rate",
+      "value": "Refresh Rate"
+    },
+    {
+      "name": "sysinfo_gpu_api",
+      "value": "Vulkan"
+    },
+    {
+      "name": "sysinfo_gles",
+      "value": "OpenGL ES"
+    },
+    {
+      "name": "sysinfo_gpu",
+      "value": "GPU"
+    },
+    {
+      "name": "sysinfo_app_clone",
+      "value": "App clone"
+    },
+    {
+      "name": "links_services",
+      "value": "Links & Services"
+    },
+    {
+      "name": "privacy_policy",
+      "value": "Privacy Policy"
+    },
+    {
+      "name": "user_agreement",
+      "value": "User Agreement"
+    },
+    {
+      "name": "view_source",
+      "value": "View Source Code"
+    },
+    {
+      "name": "contact_email",
+      "value": "Contact Email"
+    },
+    {
+      "name": "share_app",
+      "value": "Share with Friends"
+    },
+    {
+      "name": "share_text",
+      "value": "Check out this 3DS emulator!"
+    },
+    {
+      "name": "gpl_notice",
+      "value": "This software is open source under GPL-3.0"
+    },
+    {
+      "name": "about_link_coming_soon",
+      "value": "Coming soon"
+    },
+    {
+      "name": "contact_email_copied",
+      "value": "No email app found. Email address copied"
+    },
+    {
+      "name": "contact_email_copy_failed",
+      "value": "Failed to copy email address"
+    },
+    {
+      "name": "badge_nfc",
+      "value": "NFC"
+    },
+    {
+      "name": "badge_tas",
+      "value": "TAS"
+    },
+    {
+      "name": "brand_3ds",
+      "value": "3DS"
+    },
+    {
+      "name": "brand_azahar",
+      "value": "AZAHAR"
+    },
+    {
+      "name": "camera_frontend",
+      "value": "Camera Frontend"
+    },
+    {
+      "name": "cartridge_card_label",
+      "value": "3DS CARD"
+    },
+    {
+      "name": "cartridge_short",
+      "value": "CARD"
+    },
+    {
+      "name": "citra_room_lobby",
+      "value": "Citra Room / Lobby"
+    },
+    {
+      "name": "citra_token",
+      "value": "Citra Token"
+    },
+    {
+      "name": "cfg_ptm",
+      "value": "CFG / PTM"
+    },
+    {
+      "name": "dlc",
+      "value": "DLC"
+    },
+    {
+      "name": "default_roms_path",
+      "value": "Download/roms"
+    },
+    {
+      "name": "dump_romfs",
+      "value": "Dump RomFS"
+    },
+    {
+      "name": "extradata",
+      "value": "ExtraData"
+    },
+    {
+      "name": "extradata_id",
+      "value": "ExtraData ID"
+    },
+    {
+      "name": "favorite_short",
+      "value": "FAV"
+    },
+    {
+      "name": "input_button_l",
+      "value": "L"
+    },
+    {
+      "name": "input_button_r",
+      "value": "R"
+    },
+    {
+      "name": "input_button_select",
+      "value": "Select"
+    },
+    {
+      "name": "input_button_start",
+      "value": "Start"
+    },
+    {
+      "name": "input_button_zl",
+      "value": "ZL"
+    },
+    {
+      "name": "input_button_zr",
+      "value": "ZR"
+    },
+    {
+      "name": "input_c_stick",
+      "value": "C-Stick"
+    },
+    {
+      "name": "input_circle_pad",
+      "value": "Circle Pad"
+    },
+    {
+      "name": "mods",
+      "value": "Mods"
+    },
+    {
+      "name": "nand",
+      "value": "NAND (Internal Storage)"
+    },
+    {
+      "name": "net_version_fmt",
+      "value": "Net v${version}"
+    },
+    {
+      "name": "placeholder_cheat_code",
+      "value": "00123456 00000001\nD2000000 00000000"
+    },
+    {
+      "name": "placeholder_fixed_timestamp",
+      "value": "946681277"
+    },
+    {
+      "name": "placeholder_username",
+      "value": "CITRA"
+    },
+    {
+      "name": "public_lobby",
+      "value": "Public Lobby"
+    },
+    {
+      "name": "renderer_opengl",
+      "value": "OpenGL"
+    },
+    {
+      "name": "render3d_cardboard_vr",
+      "value": "Cardboard VR"
+    },
+    {
+      "name": "renderer_opengl_es",
+      "value": "OpenGL ES"
+    },
+    {
+      "name": "renderer_vulkan",
+      "value": "Vulkan"
+    },
+    {
+      "name": "romfs_dump",
+      "value": "RomFS Dump"
+    },
+    {
+      "name": "sd",
+      "value": "SD"
+    },
+    {
+      "name": "sdmc",
+      "value": "SD Card"
+    },
+    {
+      "name": "settings_lle_applets",
+      "value": "Use LLE Applets (if installed)"
+    },
+    {
+      "name": "settings_shader_jit",
+      "value": "Shader JIT"
+    },
+    {
+      "name": "settings_vsync",
+      "value": "V-Sync"
+    },
+    {
+      "name": "shader",
+      "value": "Shader"
+    },
+    {
+      "name": "overlay_theme_drastic",
+      "value": "Drastic"
+    },
+    {
+      "name": "overlay_theme_ps",
+      "value": "PS"
+    },
+    {
+      "name": "overlay_theme_snes",
+      "value": "SNES"
+    },
+    {
+      "name": "sysdata",
+      "value": "Sysdata"
+    },
+    {
+      "name": "title_id",
+      "value": "Title ID"
+    },
+    {
+      "name": "game_id_region",
+      "value": "Game ID / Region"
+    },
+    {
+      "name": "texture_filter_anime4k",
+      "value": "Anime4K"
+    },
+    {
+      "name": "texture_filter_bicubic",
+      "value": "Bicubic"
+    },
+    {
+      "name": "texture_filter_mmpx",
+      "value": "MMPX"
+    },
+    {
+      "name": "texture_filter_scaleforce",
+      "value": "ScaleForce"
+    },
+    {
+      "name": "texture_filter_xbrz",
+      "value": "xBRZ"
+    },
+    {
+      "name": "web_api",
+      "value": "Web API"
+    },
+    {
+      "name": "settings_network",
+      "value": "Network"
+    },
+    {
+      "name": "settings_network_desc",
+      "value": "Lobby / Credentials"
+    },
+    {
+      "name": "web_api_url",
+      "value": "Lobby Server URL"
+    },
+    {
+      "name": "web_api_url_desc",
+      "value": "Server address for public room listing and hosting"
+    },
+    {
+      "name": "network_token",
+      "value": "Network Token"
+    },
+    {
+      "name": "network_token_desc",
+      "value": "Identity token for public room features; leave empty for anonymous"
+    },
+    {
+      "name": "multiplayer",
+      "value": "Multiplayer"
+    },
+    {
+      "name": "multiplayer_description",
+      "value": "Room lobby, direct connect and hosting"
+    },
+    {
+      "name": "connect",
+      "value": "Connect"
+    },
+    {
+      "name": "artic_base_addr",
+      "value": "Artic Base Address"
+    },
+    {
+      "name": "artic_base_addr_desc",
+      "value": "LAN address of the real 3DS console, optional :port (default 5543)"
+    },
+    {
+      "name": "artic_base_connect",
+      "value": "Connect to Artic Base"
+    },
+    {
+      "name": "artic_base_connect_desc",
+      "value": "Start a session using the Artic Base server as game source"
+    },
+    {
+      "name": "artic_base_addr_required",
+      "value": "Enter an Artic Base address first"
+    },
+    {
+      "name": "multiplayer_join",
+      "value": "Join"
+    },
+    {
+      "name": "multiplayer_create_room",
+      "value": "Create Room"
+    },
+    {
+      "name": "multiplayer_leave_room",
+      "value": "Leave Room"
+    },
+    {
+      "name": "multiplayer_current_room",
+      "value": "Current Room"
+    },
+    {
+      "name": "multiplayer_moderator",
+      "value": "Host"
+    },
+    {
+      "name": "multiplayer_kick",
+      "value": "Kick"
+    },
+    {
+      "name": "multiplayer_ban",
+      "value": "Ban"
+    },
+    {
+      "name": "multiplayer_unban",
+      "value": "Unban"
+    },
+    {
+      "name": "multiplayer_banned_prefix",
+      "value": "Banned: "
+    },
+    {
+      "name": "multiplayer_chat_placeholder",
+      "value": "Type a chat message"
+    },
+    {
+      "name": "send",
+      "value": "Send"
+    },
+    {
+      "name": "multiplayer_join_success",
+      "value": "Joined room"
+    },
+    {
+      "name": "multiplayer_create_success",
+      "value": "Room created"
+    },
+    {
+      "name": "multiplayer_nickname_too_short",
+      "value": "Username must be at least 5 characters"
+    },
+    {
+      "name": "multiplayer_address_invalid",
+      "value": "Enter a valid room address"
+    },
+    {
+      "name": "multiplayer_room_name_invalid",
+      "value": "Room name must be 3-20 characters"
+    },
+    {
+      "name": "multiplayer_room_name",
+      "value": "Room Name"
+    },
+    {
+      "name": "multiplayer_room_name_placeholder",
+      "value": "Used when creating a room"
+    },
+    {
+      "name": "multiplayer_password_required",
+      "value": "Room requires a password; address filled, enter it and join"
+    },
+    {
+      "name": "multiplayer_host_kicked",
+      "value": "Kicked by the host"
+    },
+    {
+      "name": "multiplayer_lost_connection",
+      "value": "Lost connection to the room"
+    },
+    {
+      "name": "netplay_error_wrong_password",
+      "value": "Wrong room password"
+    },
+    {
+      "name": "netplay_error_could_not_connect",
+      "value": "Could not connect to the room"
+    },
+    {
+      "name": "netplay_error_room_full",
+      "value": "Room is full"
+    },
+    {
+      "name": "netplay_error_already",
+      "value": "Already in a room"
+    },
+    {
+      "name": "netplay_error_create",
+      "value": "Failed to create room"
+    },
+    {
+      "name": "netplay_error_name_collision",
+      "value": "Nickname already in use"
+    },
+    {
+      "name": "netplay_error_generic_fmt",
+      "value": "Netplay failed (code {code})"
+    },
+    {
+      "name": "artic_base_enter_address",
+      "value": "Enter Artic Base Address"
+    },
+    {
+      "name": "multiplayer_join_room",
+      "value": "Join Room"
+    },
+    {
+      "name": "multiplayer_browse_lobby",
+      "value": "Browse Public Rooms"
+    },
+    {
+      "name": "settings_frame_limit_enable",
+      "value": "Limit Speed"
+    },
+    {
+      "name": "settings_frame_limit_enable_desc",
+      "value": "Caps emulation speed at the set percentage; when off, runs uncapped and the turbo hotkey won’t work."
+    },
+    {
+      "name": "settings_skip_duplicate_frames",
+      "value": "Skip Presenting Duplicate Frames"
+    },
+    {
+      "name": "settings_skip_duplicate_frames_desc",
+      "value": "Skips the presentation of frames that are not unique. It also allows external frame generation tools to work correctly with 30fps games"
+    },
+    {
+      "name": "settings_disable_spirv_optimizer",
+      "value": "Disable SPIR-V Optimizer"
+    },
+    {
+      "name": "settings_disable_spirv_optimizer_desc",
+      "value": "Disables the SPIR-V optimization pass, reducing stuttering considerably while barely affecting performance."
+    },
+    {
+      "name": "settings_simulate_headphones",
+      "value": "Simulate Headphones Plugged In"
+    },
+    {
+      "name": "settings_simulate_headphones_desc",
+      "value": "Simulates headphones being plugged in to the emulated 3DS system"
+    },
+    {
+      "name": "settings_debug_log",
+      "value": "Debug Log"
+    },
+    {
+      "name": "settings_debug_log_desc",
+      "value": "Writes logs to the download directory entry by entry; may affect performance; takes effect on next game launch"
+    },
+    {
+      "name": "settings_deterministic_async",
+      "value": "Deterministic Async Operations"
+    },
+    {
+      "name": "settings_deterministic_async_desc",
+      "value": "Makes async operations deterministic for debugging. Enabling this may cause freezes"
+    },
+    {
+      "name": "settings_unique_data_console",
+      "value": "Toggle Unique Data Console Type"
+    },
+    {
+      "name": "settings_unique_data_console_desc",
+      "value": "Toggles the unique data console type (Old 3DS ↔ New 3DS) to be able to download the opposite system firmware type from system settings"
+    },
+    {
+      "name": "camera_source",
+      "value": "Camera Image Source"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "Used by the 3DS emulated camera to provide device camera input in games"
+    },
+    {
+      "name": "mic_permission_reason",
+      "value": "Used by the 3DS microphone to provide device microphone input in games"
+    },
+    {
+      "name": "camera_source_desc",
+      "value": "Sets the image source of the virtual camera. You can use an image file, or a device camera when supported."
+    },
+    {
+      "name": "camera_flip",
+      "value": "Flip"
+    },
+    {
+      "name": "settings_debug",
+      "value": "Debug"
+    },
+    {
+      "name": "settings_debug_desc",
+      "value": "Experimental / Renderer / Logging"
+    },
+    {
+      "name": "debug_warning",
+      "value": "Warning: modifying these settings may slow emulation or cause instability"
+    },
+    {
+      "name": "settings_hw_shader_desc",
+      "value": "Uses hardware to emulate 3DS shaders; significantly improves performance when enabled"
+    },
+    {
+      "name": "settings_rpc_server",
+      "value": "Enable RPC Server"
+    },
+    {
+      "name": "settings_rpc_server_desc",
+      "value": "Enables the RPC server on port 45987, allowing remote reads/writes of guest memory"
+    },
+    {
+      "name": "settings_texture_filter_desc",
+      "value": "Apply an upscaling filter to textures; takes effect only at internal resolution 2x or higher"
+    },
+    {
+      "name": "settings_screen_filter",
+      "value": "Screen Filter"
+    },
+    {
+      "name": "settings_screen_filter_desc",
+      "value": "Unavailable in Anaglyph/Interlaced/Reverse Interlaced 3D modes"
+    },
+    {
+      "name": "filter_natural",
+      "value": "Natural Colors"
+    },
+    {
+      "name": "filter_fsr_rcas",
+      "value": "FSR Sharpen"
+    },
+    {
+      "name": "filter_scanlines",
+      "value": "Scanlines"
+    },
+    {
+      "name": "filter_pl_2x",
+      "value": "PL2x Phosphor Line"
+    },
+    {
+      "name": "filter_pl_mask",
+      "value": "Phosphor Mask"
+    },
+    {
+      "name": "filter_pl_hard",
+      "value": "PLH Hard Scanline"
+    },
+    {
+      "name": "filter_filmgrain",
+      "value": "Film Grain"
+    },
+    {
+      "name": "settings_speed_limit_desc",
+      "value": "Overall emulation speed: 100% is normal, higher is faster, lower is slower."
+    },
+    {
+      "name": "settings_screen_gap_desc",
+      "value": "Gap between screens in two-screen layouts, measured in px relative to the 240px top-screen height"
+    },
+    {
+      "name": "emulation_settings",
+      "value": "Emulation Settings"
+    },
+    {
+      "name": "regenerate",
+      "value": "Regenerate"
+    },
+    {
+      "name": "regenerate_console_id",
+      "value": "Regenerate Console ID"
+    },
+    {
+      "name": "regenerate_console_id_desc",
+      "value": "This will replace your current virtual 3DS console ID with a new one. The current ID will not be recoverable and applications may behave unexpectedly; it may also fail with an outdated config save. Continue?"
+    },
+    {
+      "name": "regenerate_mac_address",
+      "value": "Regenerate MAC Address"
+    },
+    {
+      "name": "regenerate_mac_address_desc",
+      "value": "This will replace your current MAC address with a random one. It is not recommended if the current address was imported from your real console via the setup tool. Continue?"
+    },
+    {
+      "name": "simulated_clock",
+      "value": "Simulated Clock"
+    },
+    {
+      "name": "clock",
+      "value": "Clock"
+    },
+    {
+      "name": "run_system_setup",
+      "value": "Run system setup when the HOME Menu is launched"
+    },
+    {
+      "name": "region_mismatch",
+      "value": "Region Mismatch Warning"
+    },
+    {
+      "name": "region_mismatch_emulated",
+      "value": "The country setting is not valid for the selected emulated region"
+    },
+    {
+      "name": "region_mismatch_console",
+      "value": "The country setting is not valid for the current linked console"
+    },
+    {
+      "name": "reset_to_default",
+      "value": "Reset to Default"
+    },
+    {
+      "name": "reset_all_settings",
+      "value": "Reset All Settings?"
+    },
+    {
+      "name": "reset_all_settings_description",
+      "value": "All settings will be restored to their default values. This cannot be undone."
+    },
+    {
+      "name": "settings_reset_done",
+      "value": "Settings reset to defaults"
+    },
+    {
+      "name": "direction_up",
+      "value": "Up"
+    },
+    {
+      "name": "direction_down",
+      "value": "Down"
+    },
+    {
+      "name": "direction_left",
+      "value": "Left"
+    },
+    {
+      "name": "direction_right",
+      "value": "Right"
+    },
+    {
+      "name": "button_home",
+      "value": "HOME"
+    },
+    {
+      "name": "physkey_dpad_up",
+      "value": "D-Pad Up"
+    },
+    {
+      "name": "physkey_dpad_down",
+      "value": "D-Pad Down"
+    },
+    {
+      "name": "physkey_dpad_left",
+      "value": "D-Pad Left"
+    },
+    {
+      "name": "physkey_dpad_right",
+      "value": "D-Pad Right"
+    },
+    {
+      "name": "physkey_select",
+      "value": "View"
+    },
+    {
+      "name": "physkey_start",
+      "value": "Menu"
+    },
+    {
+      "name": "physkey_menu",
+      "value": "Menu"
+    },
+    {
+      "name": "physkey_home",
+      "value": "Home"
+    },
+    {
+      "name": "physkey_unknown_fmt",
+      "value": "Button ${code}"
+    },
+    {
+      "name": "gamepad_unbound",
+      "value": "Unbound"
+    },
+    {
+      "name": "gamepad_binding_listening",
+      "value": "Press a button to bind…"
+    },
+    {
+      "name": "gamepad_clear_binding",
+      "value": "Clear Binding"
+    },
+    {
+      "name": "gamepad_section_mapping",
+      "value": "Mapping"
+    },
+    {
+      "name": "gamepad_section_buttons",
+      "value": "Buttons"
+    },
+    {
+      "name": "gamepad_section_triggers",
+      "value": "Triggers"
+    },
+    {
+      "name": "gamepad_section_dpad_axis",
+      "value": "D-Pad (Axis)"
+    },
+    {
+      "name": "gamepad_section_dpad_axis_desc",
+      "value": "Some controllers may not be able to map their D-pad as an axis. If that's the case, use the D-Pad (Button) section."
+    },
+    {
+      "name": "gamepad_section_dpad_button",
+      "value": "D-Pad (Button)"
+    },
+    {
+      "name": "gamepad_section_dpad_button_desc",
+      "value": "Only map the D-pad to these if you're facing issues with the D-Pad (Axis) button mappings."
+    },
+    {
+      "name": "gamepad_section_sticks",
+      "value": "Analog Sticks"
+    },
+    {
+      "name": "gamepad_section_hotkeys",
+      "value": "Hotkeys"
+    },
+    {
+      "name": "gamepad_section_combo",
+      "value": "Combo Button"
+    },
+    {
+      "name": "gamepad_section_misc",
+      "value": "Miscellaneous"
+    },
+    {
+      "name": "gamepad_section_test",
+      "value": "Test"
+    },
+    {
+      "name": "gamepad_test_legend_tested",
+      "value": "Tested"
+    },
+    {
+      "name": "gamepad_test_device_generic",
+      "value": "Gamepad"
+    },
+    {
+      "name": "gamepad_test_progress_fmt",
+      "value": "Connected · ${done}/${total} buttons tested"
+    },
+    {
+      "name": "gamepad_test_connect_hint",
+      "value": "Connect a gamepad and press any button to start"
+    },
+    {
+      "name": "gamepad_test_reset",
+      "value": "Reset Test"
+    },
+    {
+      "name": "gamepad_test_reset_desc",
+      "value": "Clear tested buttons, stick trails, circularity data and the input log"
+    },
+    {
+      "name": "gamepad_test_section_sticks",
+      "value": "Sticks & Triggers"
+    },
+    {
+      "name": "gamepad_test_circularity_fmt",
+      "value": "Circularity error ${err}%"
+    },
+    {
+      "name": "gamepad_test_circularity_hint_fmt",
+      "value": "Rotate at full tilt to test circularity · ${pct}%"
+    },
+    {
+      "name": "gamepad_test_left_stick",
+      "value": "Left Stick"
+    },
+    {
+      "name": "gamepad_test_right_stick",
+      "value": "Right Stick"
+    },
+    {
+      "name": "gamepad_test_section_log",
+      "value": "Input Log"
+    },
+    {
+      "name": "gamepad_test_log_empty",
+      "value": "No input yet"
+    },
+    {
+      "name": "gamepad_test_down",
+      "value": "Pressed"
+    },
+    {
+      "name": "gamepad_test_up",
+      "value": "Released"
+    },
+    {
+      "name": "gamepad_test_just_now",
+      "value": "Just now"
+    },
+    {
+      "name": "gamepad_test_seconds_ago_fmt",
+      "value": "${sec}s ago"
+    },
+    {
+      "name": "gamepad_test_offline",
+      "value": "No gamepad connected"
+    },
+    {
+      "name": "gamepad_test_legend_pressed",
+      "value": "Pressed"
+    },
+    {
+      "name": "gamepad_test_legend_idle",
+      "value": "Untested"
+    },
+    {
+      "name": "gamepad_auto_map_desc",
+      "value": "Restore factory bindings for all buttons"
+    },
+    {
+      "name": "gamepad_stick_circlepad",
+      "value": "Circle Pad"
+    },
+    {
+      "name": "gamepad_stick_cstick",
+      "value": "C-Stick"
+    },
+    {
+      "name": "gamepad_stick_left",
+      "value": "Left Stick"
+    },
+    {
+      "name": "gamepad_stick_right",
+      "value": "Right Stick"
+    },
+    {
+      "name": "gamepad_stick_dpad",
+      "value": "D-Pad"
+    },
+    {
+      "name": "gamepad_deadzone_desc",
+      "value": "Stick input below this threshold is ignored"
+    },
+    {
+      "name": "gamepad_combo_button",
+      "value": "Trigger Key"
+    },
+    {
+      "name": "gamepad_combo_button_desc",
+      "value": "Bind a gamepad key; pressing it during gameplay triggers every button in the combo key set at once"
+    },
+    {
+      "name": "gamepad_combo_configure",
+      "value": "Combo Key Set"
+    },
+    {
+      "name": "gamepad_combo_configure_desc",
+      "value": "Choose the set of buttons the trigger key presses at once"
+    },
+    {
+      "name": "hotkey_toggle_pause",
+      "value": "Toggle Pause"
+    },
+    {
+      "name": "apply",
+      "value": "Apply"
+    },
+    {
+      "name": "input_button_a",
+      "value": "A"
+    },
+    {
+      "name": "input_button_b",
+      "value": "B"
+    },
+    {
+      "name": "input_button_x",
+      "value": "X"
+    },
+    {
+      "name": "input_button_y",
+      "value": "Y"
+    },
+    {
+      "name": "hotkey_cycle_layouts",
+      "value": "Cycle Layouts"
+    },
+    {
+      "name": "hotkey_close_game",
+      "value": "Close Game"
+    },
+    {
+      "name": "hotkey_enable",
+      "value": "Hotkey Enable"
+    },
+    {
+      "name": "hotkey_enable_desc",
+      "value": "If mapped, this key must be held to trigger the other hotkeys"
+    },
+    {
+      "name": "gamepad_bind_title_fmt",
+      "value": "Bind ${type} ${name}"
+    },
+    {
+      "name": "gamepad_type_button",
+      "value": "Button"
+    },
+    {
+      "name": "gamepad_type_trigger",
+      "value": "Trigger"
+    },
+    {
+      "name": "gamepad_type_dpad",
+      "value": "D-Pad"
+    },
+    {
+      "name": "gamepad_type_hotkey",
+      "value": "Hotkey"
+    },
+    {
+      "name": "gamepad_bind_combo_title",
+      "value": "Bind Trigger Key"
+    },
+    {
+      "name": "gamepad_capture_desc",
+      "value": "Press or move an input."
+    },
+    {
+      "name": "gamepad_restore_default",
+      "value": "Restore Default Mapping"
+    },
+    {
+      "name": "gamepad_restore_default_confirm",
+      "value": "Restore default mapping? All custom bindings will be reset."
+    },
+    {
+      "name": "gamepad_axis_vertical",
+      "value": "Vertical Axis"
+    },
+    {
+      "name": "gamepad_axis_horizontal",
+      "value": "Horizontal Axis"
+    },
+    {
+      "name": "gamepad_capture_axis_v",
+      "value": "Press UP on your joystick."
+    },
+    {
+      "name": "gamepad_capture_axis_h",
+      "value": "Press RIGHT on your joystick."
+    },
+    {
+      "name": "touch_button_layout",
+      "value": "Touch Button Layout"
+    },
+    {
+      "name": "touch_layout",
+      "value": "Button Layout"
+    },
+    {
+      "name": "layout_manager_desc",
+      "value": "Customize on-screen button position and size"
+    },
+    {
+      "name": "haptic_feedback",
+      "value": "Button Vibration"
+    },
+    {
+      "name": "haptic_feedback_desc",
+      "value": "Provide haptic feedback when touching on-screen buttons"
+    },
+    {
+      "name": "haptic_strength",
+      "value": "Vibration Strength"
+    },
+    {
+      "name": "disable_gesture_back_in_game",
+      "value": "Disable Back Gesture in Game"
+    },
+    {
+      "name": "disable_gesture_back_in_game_desc",
+      "value": "Disable the system edge back gesture while a game is running"
+    },
+    {
+      "name": "privacy_mode_in_game",
+      "value": "Disable Two-Finger Screen Recognition in Game"
+    },
+    {
+      "name": "privacy_mode_in_game_desc",
+      "value": "Disable two-finger screen recognition while a game is running, along with screenshots, screen recording, and casting"
+    },
+    {
+      "name": "add_component",
+      "value": "Add Component"
+    },
+    {
+      "name": "background",
+      "value": "Background"
+    },
+    {
+      "name": "bg_image",
+      "value": "Background Image"
+    },
+    {
+      "name": "bg_manager",
+      "value": "Background Manager"
+    },
+    {
+      "name": "bg_name",
+      "value": "Background Name"
+    },
+    {
+      "name": "bg_none",
+      "value": "None"
+    },
+    {
+      "name": "bg_theme_color",
+      "value": "System Theme Color"
+    },
+    {
+      "name": "button_opacity",
+      "value": "Button Opacity"
+    },
+    {
+      "name": "custom_layout",
+      "value": "Custom Layout"
+    },
+    {
+      "name": "default_layout",
+      "value": "Default"
+    },
+    {
+      "name": "delete_layout",
+      "value": "Delete Layout"
+    },
+    {
+      "name": "display_mode",
+      "value": "Display Mode"
+    },
+    {
+      "name": "exit_no_save",
+      "value": "Exit without Saving"
+    },
+    {
+      "name": "layout_bg_none",
+      "value": "None"
+    },
+    {
+      "name": "layout_bg_selected",
+      "value": "Selected"
+    },
+    {
+      "name": "layout_bg_theme_color",
+      "value": "System Theme Color"
+    },
+    {
+      "name": "layout_editor_grid_size",
+      "value": "Grid Size"
+    },
+    {
+      "name": "layout_editor_grid_size_desc",
+      "value": "Adjust grid snapping spacing"
+    },
+    {
+      "name": "layout_manager_title",
+      "value": "Layout Manager"
+    },
+    {
+      "name": "layout_name",
+      "value": "Layout Name"
+    },
+    {
+      "name": "layout_name_placeholder",
+      "value": "Enter layout name"
+    },
+    {
+      "name": "layout_preview",
+      "value": "Preview"
+    },
+    {
+      "name": "loading",
+      "value": "Loading..."
+    },
+    {
+      "name": "no_more_components",
+      "value": "No more components to add"
+    },
+    {
+      "name": "properties",
+      "value": "Properties"
+    },
+    {
+      "name": "reset_default",
+      "value": "Reset to Default"
+    },
+    {
+      "name": "save_and_exit",
+      "value": "Save & Exit"
+    },
+    {
+      "name": "secondary_screen_opacity",
+      "value": "Secondary Screen Opacity"
+    },
+    {
+      "name": "select_component",
+      "value": "Select Component"
+    },
+    {
+      "name": "size",
+      "value": "Size"
+    },
+    {
+      "name": "undo_changes",
+      "value": "Undo Changes"
+    },
+    {
+      "name": "unnamed_layout",
+      "value": "Unnamed Layout"
+    },
+    {
+      "name": "use_default_button_opacity",
+      "value": "Use Default Button Opacity"
+    },
+    {
+      "name": "use_global_layout",
+      "value": "Use Global Layout"
+    },
+    {
+      "name": "follow_global",
+      "value": "Follow Global"
+    },
+    {
+      "name": "layout_delete_confirm_fmt",
+      "value": "Delete layout \"${name}\"?"
+    },
+    {
+      "name": "comp_top_screen",
+      "value": "Top Screen"
+    },
+    {
+      "name": "comp_bottom_screen",
+      "value": "Bottom Screen"
+    },
+    {
+      "name": "comp_dpad",
+      "value": "D-Pad"
+    },
+    {
+      "name": "comp_fast_forward",
+      "value": "Fast Forward"
+    },
+    {
+      "name": "comp_more",
+      "value": "More"
+    },
+    {
+      "name": "touch_controls",
+      "value": "Touch Controls"
+    },
+    {
+      "name": "add_to_favorites",
+      "value": "Add to Favorites"
+    },
+    {
+      "name": "remove_from_favorites",
+      "value": "Remove from Favorites"
+    },
+    {
+      "name": "back_to_main_menu",
+      "value": "Back to Main Menu"
+    },
+    {
+      "name": "manage_cheats",
+      "value": "Manage Cheats"
+    },
+    {
+      "name": "comp_pause",
+      "value": "Pause"
+    },
+    {
+      "name": "comp_quick_load",
+      "value": "Quick Load"
+    },
+    {
+      "name": "comp_quick_save",
+      "value": "Quick Save"
+    },
+    {
+      "name": "comp_reset",
+      "value": "Reset"
+    },
+    {
+      "name": "comp_screen_rotation",
+      "value": "Toggle Orientation"
+    },
+    {
+      "name": "comp_slow_motion",
+      "value": "Slow Motion"
+    },
+    {
+      "name": "comp_swap_screens",
+      "value": "Swap Screens"
+    },
+    {
+      "name": "comp_toggle_soft_input",
+      "value": "Touch Toggle"
+    },
+    {
+      "name": "bg_mode_stretch",
+      "value": "Stretch Fill"
+    },
+    {
+      "name": "bg_mode_fit_center",
+      "value": "Fit Center"
+    },
+    {
+      "name": "bg_mode_fit_top",
+      "value": "Fit Top"
+    },
+    {
+      "name": "bg_mode_fit_left",
+      "value": "Fit Left"
+    },
+    {
+      "name": "bg_mode_fit_bottom",
+      "value": "Fit Bottom"
+    },
+    {
+      "name": "bg_mode_fit_right",
+      "value": "Fit Right"
+    },
+    {
+      "name": "screen_top",
+      "value": "T"
+    },
+    {
+      "name": "screen_bottom",
+      "value": "B"
+    },
+    {
+      "name": "preview_landscape",
+      "value": "Landscape"
+    },
+    {
+      "name": "preview_portrait",
+      "value": "Portrait"
+    },
+    {
+      "name": "input_opacity",
+      "value": "Touch Button Opacity"
+    },
+    {
+      "name": "soft_input_behaviour",
+      "value": "Touch Button Behavior"
+    },
+    {
+      "name": "opt_always_visible",
+      "value": "Always Visible"
+    },
+    {
+      "name": "opt_hide_sys_btn",
+      "value": "Hide when controller connected"
+    },
+    {
+      "name": "opt_always_hidden",
+      "value": "Always Hidden"
+    },
+    {
+      "name": "privacy_mode_in_game_confirm",
+      "value": "When enabled, screenshots, screen recording, and casting are unavailable during gameplay. They are restored after leaving the game. Enable anyway?"
+    },
+    {
+      "name": "touch_section_display",
+      "value": "Button Display"
+    },
+    {
+      "name": "touch_section_feedback",
+      "value": "Button Feedback"
+    },
+    {
+      "name": "touch_section_system_gestures",
+      "value": "System Gestures"
+    },
+    {
+      "name": "graphics_section_shader",
+      "value": "Shader"
+    },
+    {
+      "name": "settings_graphics_advanced_desc",
+      "value": "Shader, stereoscopy and texture options"
+    },
+    {
+      "name": "graphics_section_display",
+      "value": "Display"
+    },
+    {
+      "name": "settings_ignore_safe_area",
+      "value": "Ignore Safe Area"
+    },
+    {
+      "name": "settings_ignore_safe_area_desc",
+      "value": "Game view and layout editor will not avoid cutout/status bar areas, maximizing screen usage"
+    },
+    {
+      "name": "settings_screen_orientation",
+      "value": "Screen Orientation"
+    },
+    {
+      "name": "settings_screen_orientation_desc",
+      "value": "Set game screen orientation, auto-restores when exiting game"
+    },
+    {
+      "name": "screen_orientation_auto",
+      "value": "Auto"
+    },
+    {
+      "name": "screen_orientation_portrait",
+      "value": "Portrait"
+    },
+    {
+      "name": "screen_orientation_landscape",
+      "value": "Landscape"
+    },
+    {
+      "name": "quick_actions",
+      "value": "Quick Actions"
+    },
+    {
+      "name": "comp_hinge",
+      "value": "Lid"
+    },
+    {
+      "name": "comp_microphone",
+      "value": "Microphone"
+    },
+    {
+      "name": "slow_motion_enable_failed",
+      "value": "Unable to enable slow motion"
+    },
+    {
+      "name": "slow_motion_enabled_fmt",
+      "value": "Slow motion ${limit}"
+    },
+    {
+      "name": "lid_closed",
+      "value": "Lid closed"
+    },
+    {
+      "name": "lid_toggle_failed",
+      "value": "Unable to toggle lid state"
+    },
+    {
+      "name": "lid_closed_overlay_hint",
+      "value": "Lid closed · use lid button"
+    },
+    {
+      "name": "lid_sleep_rejected",
+      "value": "The game declined sleep and keeps running"
+    },
+    {
+      "name": "mic_enabled",
+      "value": "Microphone enabled"
+    },
+    {
+      "name": "mic_disabled",
+      "value": "Microphone muted"
+    },
+    {
+      "name": "mic_permission_denied",
+      "value": "Microphone permission denied; microphone stays off"
+    },
+    {
+      "name": "mic_no_source",
+      "value": "Microphone source is \"None\"; configure it in settings first"
+    },
+    {
+      "name": "settings_lock_brightness",
+      "value": "Lock Brightness"
+    },
+    {
+      "name": "settings_lock_brightness_desc",
+      "value": "Fixes the screen brightness to its current level while playing, restored on exit"
+    },
+    {
+      "name": "section_framerate_control",
+      "value": "Frame Rate Control"
+    },
+    {
+      "name": "audio_section_sound",
+      "value": "Sound"
+    },
+    {
+      "name": "section_mic",
+      "value": "Microphone"
+    },
+    {
+      "name": "mic_source",
+      "value": "Microphone Source"
+    },
+    {
+      "name": "opt_noise",
+      "value": "Static Noise"
+    },
+    {
+      "name": "opt_device_mic",
+      "value": "Device Microphone"
+    },
+    {
+      "name": "opt_blow",
+      "value": "Blow Simulation"
+    },
+    {
+      "name": "fast_forward_speed",
+      "value": "Fast Forward Speed"
+    },
+    {
+      "name": "fast_forward_speed_desc",
+      "value": "Actual speed depends on device performance"
+    },
+    {
+      "name": "fps_counter",
+      "value": "FPS Counter Position"
+    },
+    {
+      "name": "opt_unlimited",
+      "value": "Unlimited"
+    },
+    {
+      "name": "opt_hidden",
+      "value": "Hidden"
+    },
+    {
+      "name": "opt_top_left",
+      "value": "Top Left"
+    },
+    {
+      "name": "opt_top_center",
+      "value": "Top Center"
+    },
+    {
+      "name": "opt_top_right",
+      "value": "Top Right"
+    },
+    {
+      "name": "opt_bottom_left",
+      "value": "Bottom Left"
+    },
+    {
+      "name": "opt_bottom_center",
+      "value": "Bottom Center"
+    },
+    {
+      "name": "opt_bottom_right",
+      "value": "Bottom Right"
+    },
+    {
+      "name": "comp_stick",
+      "value": "Analog Stick"
+    },
+    {
+      "name": "comp_cstick",
+      "value": "C-Stick"
+    },
+    {
+      "name": "layout_exit_title",
+      "value": "Exit Layout Editor"
+    },
+    {
+      "name": "layout_exit_message",
+      "value": "You have unsaved changes. Save before exiting?"
+    },
+    {
+      "name": "web_upload_browser_hint",
+      "value": "Access from a browser on the same network:"
+    },
+    {
+      "name": "web_upload_url_copied",
+      "value": "Upload address copied"
+    },
+    {
+      "name": "web_upload_tap_to_copy",
+      "value": "Tap to copy"
+    },
+    {
+      "name": "retry",
+      "value": "Retry"
+    },
+    {
+      "name": "web_upload_dir_title",
+      "value": "Upload Directory"
+    },
+    {
+      "name": "screenshot_saved_gallery",
+      "value": "Screenshot saved to gallery"
+    },
+    {
+      "name": "dir_load",
+      "value": "Custom Content"
+    },
+    {
+      "name": "dir_load_desc",
+      "value": "Custom textures and mods"
+    },
+    {
+      "name": "dir_dump",
+      "value": "Exports"
+    },
+    {
+      "name": "dir_dump_desc",
+      "value": "RomFS dumps and texture exports"
+    },
+    {
+      "name": "kb_add_binding",
+      "value": "Add binding"
+    },
+    {
+      "name": "kb_capture_reserved",
+      "value": "This key is reserved by system functions, please choose another"
+    },
+    {
+      "name": "gamepad_kb_not_bindable",
+      "value": "This button can't be bound to a keyboard key"
+    },
+    {
+      "name": "gamepad_capture_kb_desc",
+      "value": "Press a gamepad button or a keyboard key to bind, Esc to cancel"
+    },
+    {
+      "name": "comp_macro",
+      "value": "Macro"
+    }
+  ]
+}

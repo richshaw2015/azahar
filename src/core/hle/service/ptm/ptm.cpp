@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #include "common/archives.h"
 #include "common/common_paths.h"
@@ -12,12 +12,15 @@
 #include "core/file_sys/errors.h"
 #include "core/file_sys/file_backend.h"
 #include "core/hle/kernel/shared_page.h"
+#include "core/hle/service/apt/apt.h"
+#include "core/hle/service/mcu/mcu_rtc.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/ptm/ptm_gets.h"
 #include "core/hle/service/ptm/ptm_play.h"
 #include "core/hle/service/ptm/ptm_sets.h"
 #include "core/hle/service/ptm/ptm_sysm.h"
 #include "core/hle/service/ptm/ptm_u.h"
+#include "input_common/main.h"
 
 SERIALIZE_EXPORT_IMPL(Service::PTM::Module)
 SERVICE_CONSTRUCT_IMPL(Service::PTM::Module)
@@ -50,9 +53,7 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(ResultSuccess);
-    rb.Push(static_cast<u32>(ChargeLevels::CompletelyFull)); // Set to a completely full battery
-
-    LOG_DEBUG(Service_PTM, "(STUBBED) called");
+    rb.Push(static_cast<u32>(ptm->charge_level));
 }
 
 void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
@@ -61,8 +62,6 @@ void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(ResultSuccess);
     rb.Push(ptm->battery_is_charging);
-
-    LOG_DEBUG(Service_PTM, "(STUBBED) called");
 }
 
 void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {
@@ -118,7 +117,7 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
 }
 
 void CheckNew3DS(IPC::RequestBuilder& rb) {
-    const bool is_new_3ds = Settings::values.is_new_3ds.GetValue();
+    const bool is_new_3ds = Settings::values.IsNew3DSEffective();
 
     rb.Push(ResultSuccess);
     rb.Push(is_new_3ds);
@@ -131,6 +130,66 @@ void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     Service::PTM::CheckNew3DS(rb);
+}
+
+void Module::Interface::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx);
+    auto pat = rp.PopRaw<MCU::InfoLedPattern>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+
+    auto mcu_rtc = MCU::RTC::GetService(ptm->system);
+    if (mcu_rtc) {
+        mcu_rtc->UpdateInfoLEDPattern(pat);
+        rb.Push(ResultSuccess);
+    } else {
+        rb.Push(ResultUnknown);
+    }
+}
+
+void Module::Interface::SetInfoLEDPatternHeader(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx);
+    auto head = rp.PopRaw<MCU::InfoLedPattern::Header>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+
+    auto mcu_rtc = MCU::RTC::GetService(ptm->system);
+    if (mcu_rtc) {
+        mcu_rtc->UpdateInfoLEDHeader(head);
+        rb.Push(ResultSuccess);
+    } else {
+        rb.Push(ResultUnknown);
+    }
+}
+
+void Module::Interface::GetInfoLEDStatus(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+
+    auto mcu_rtc = MCU::RTC::GetService(ptm->system);
+    if (mcu_rtc) {
+        rb.Push(ResultSuccess);
+        rb.Push(static_cast<u8>(mcu_rtc->GetInfoLEDStatusFinished()));
+    } else {
+        rb.Push(ResultUnknown);
+        rb.Push(u8{});
+    }
+}
+
+void Module::Interface::SetBatteryEmptyLEDPattern(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx);
+    u32 pattern = rp.Pop<u32>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+
+    auto mcu_rtc = MCU::RTC::GetService(ptm->system);
+    if (mcu_rtc) {
+        mcu_rtc->UpdateInfoLEDEmptyBatteryPattern(pattern);
+        rb.Push(ResultSuccess);
+    } else {
+        rb.Push(ResultUnknown);
+    }
 }
 
 void Module::Interface::GetSystemTime(Kernel::HLERequestContext& ctx) {
@@ -209,6 +268,16 @@ static GameCoin ReadGameCoinData() {
     return gamecoin_data;
 }
 
+void Module::SetShellOpen(bool open) {
+    shell_open = open;
+    // 真机语义：合盖由系统发起 APT 睡眠协商，开盖唤醒；单纯改标志位不等于睡眠
+    if (auto apt = Service::APT::GetModule(system)) {
+        if (auto manager = apt->GetAppletManager()) {
+            manager->RequestShellStateChange(open);
+        }
+    }
+}
+
 Module::Module(Core::System& system_) : system(system_) {
     // Open the SharedExtSaveData archive 0xF000000B and create the gamecoin.dat file if it doesn't
     // exist
@@ -221,13 +290,28 @@ Module::Module(Core::System& system_) : system(system_) {
     if (archive_result.Code() == FileSys::ResultNotFormatted) {
         WriteGameCoinData(default_game_coin);
     }
+
+    constexpr u64 update_nanoseconds =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(1)).count();
+
+    update_shared_page_event = system.CoreTiming().RegisterEvent(
+        "PTM::UpdateSharedPage",
+        [this, update_nanoseconds](std::uintptr_t user_data, s64 cycles_late) {
+            UpdateSharedPage();
+
+            system.CoreTiming().ScheduleEvent(nsToCycles(update_nanoseconds) - cycles_late,
+                                              update_shared_page_event);
+        });
+    system.CoreTiming().ScheduleEvent(0, update_shared_page_event);
 }
 
 template <class Archive>
 void Module::serialize(Archive& ar, const unsigned int) {
     DEBUG_SERIALIZATION_POINT;
     ar & shell_open;
+    ar & battery_charger_connected;
     ar & battery_is_charging;
+    ar & charge_level;
     ar & pedometer_is_counting;
 }
 SERIALIZE_IMPL(Module)
@@ -242,6 +326,41 @@ void Module::SetPlayCoins(u16 play_coins) {
     // TODO: This may introduce potential race condition if the game is reading the
     // game coin data at the same time
     WriteGameCoinData(game_coin);
+}
+
+void Module::UpdateSharedPage() {
+    switch (Settings::values.battery_state_source.GetValue()) {
+    case Settings::BatteryLevelSource::System:
+        // NOTE: The 3DS battery levels are not linear:
+        // 1: 5~1%, 2: 10~6%, 3: 30~11%, 4: 60~31%, 5: 100~61%
+        // However, this is not practical for modern devices,
+        // so we deliberately use a linear mapping here.
+        charge_level =
+            static_cast<ChargeLevels>(InputCommon::GetSystemBatteryState().percentage * 4 + 1);
+        break;
+    case Settings::BatteryLevelSource::Fixed:
+        charge_level = static_cast<ChargeLevels>(
+            std::min<u8>(Settings::values.battery_level.GetValue() + 1, 5));
+        break;
+    }
+
+    switch (Settings::values.battery_state_source.GetValue()) {
+    case Settings::BatteryLevelSource::System:
+        battery_is_charging = InputCommon::GetSystemBatteryState().charging;
+        break;
+    case Settings::BatteryLevelSource::Fixed:
+        battery_is_charging = Settings::values.battery_charging.GetValue();
+        break;
+    }
+    // Charging and charger connected is in sync for now.
+    // TODO(PabloMK7): Determine when they may differ.
+    battery_charger_connected = battery_is_charging;
+
+    SharedPage::BatteryState battery_state{};
+    battery_state.is_adapter_connected.Assign(battery_charger_connected);
+    battery_state.is_charging.Assign(battery_is_charging);
+    battery_state.charge_level.Assign(static_cast<u8>(charge_level));
+    system.Kernel().GetSharedPageHandler().SetBatteryState(battery_state);
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> ptm, const char* name, u32 max_session)

@@ -1,0 +1,92 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#000000"
+    },
+    {
+      "name": "bg_gradient_top",
+      "value": "#1B1D24"
+    },
+    {
+      "name": "bg_gradient_bottom",
+      "value": "#101116"
+    },
+    {
+      "name": "wallpaper_fade_clear",
+      "value": "#00141418"
+    },
+    {
+      "name": "wallpaper_fade_soft",
+      "value": "#D8141418"
+    },
+    {
+      "name": "wallpaper_fade_strong",
+      "value": "#E0141418"
+    },
+    {
+      "name": "tile_badge_bg",
+      "value": "#D92A2B30"
+    },
+    {
+      "name": "tile_badge_bg_active",
+      "value": "#EB34353B"
+    },
+    {
+      "name": "sheet_bg",
+      "value": "#BF1C1C21"
+    },
+    {
+      "name": "sheet_bg_grouped",
+      "value": "#BF17171C"
+    },
+    {
+      "name": "pause_menu_bg",
+      "value": "#EB17171C"
+    },
+    {
+      "name": "sheet_card_bg",
+      "value": "#A628282E"
+    },
+    {
+      "name": "overlay_mask",
+      "value": "#5C000000"
+    },
+    {
+      "name": "wallpaper_scrim",
+      "value": "#52000000"
+    },
+    {
+      "name": "cartridge_placeholder",
+      "value": "#802A2A31"
+    },
+    {
+      "name": "cartridge_art_bg",
+      "value": "#992C2C33"
+    },
+    {
+      "name": "slot_outer",
+      "value": "#232329"
+    },
+    {
+      "name": "slot_outer_border",
+      "value": "#34353C"
+    },
+    {
+      "name": "slot_inner",
+      "value": "#383940"
+    },
+    {
+      "name": "slot_inner_edge_top",
+      "value": "#1B1C21"
+    },
+    {
+      "name": "slot_inner_edge_bottom",
+      "value": "#4B4C55"
+    },
+    {
+      "name": "layout_preview_device",
+      "value": "#FF000000"
+    }
+  ]
+}

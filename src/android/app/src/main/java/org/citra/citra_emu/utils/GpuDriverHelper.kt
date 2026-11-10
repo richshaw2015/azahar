@@ -1,16 +1,12 @@
-// Copyright 2023 Citra Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 package org.citra.citra_emu.utils
 
 import android.net.Uri
 import android.os.Build
 import androidx.documentfile.provider.DocumentFile
-import org.citra.citra_emu.CitraApplication
-import org.citra.citra_emu.NativeLibrary
-import org.citra.citra_emu.utils.FileUtil.asDocumentFile
-import org.citra.citra_emu.utils.FileUtil.inputStream
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
@@ -19,6 +15,10 @@ import java.lang.IllegalStateException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
+import org.citra.citra_emu.CitraApplication
+import org.citra.citra_emu.NativeLibrary
+import org.citra.citra_emu.utils.FileUtil.asDocumentFile
+import org.citra.citra_emu.utils.FileUtil.inputStream
 
 object GpuDriverHelper {
     private const val META_JSON_FILENAME = "meta.json"
@@ -72,6 +72,7 @@ object GpuDriverHelper {
         val driverZips = driverStoragePath.listFiles()
         val drivers: MutableList<Pair<Uri, GpuDriverMetadata>> =
             driverZips
+                .filter { it.isFile }
                 .mapNotNull {
                     val metadata = getMetadataFromZip(it.inputStream())
                     metadata.name?.let { _ -> Pair(it.uri, metadata) }
@@ -213,6 +214,9 @@ object GpuDriverHelper {
     }
 
     external fun supportsCustomDriverLoading(): Boolean
+
+    // True when the device has Qualcomm's KGSL GPU driver.
+    external fun isAdrenoGpu(): Boolean
 
     // Parse the custom driver metadata to retrieve the name.
     val customDriverData: GpuDriverMetadata

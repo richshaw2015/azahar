@@ -1,6 +1,6 @@
-// Copyright 2024 Citra Emulator Project
-// Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Copyright 2024-2026 Citra Emulator Project / Azahar Emulator Project
+// Licensed under GPLv3 or any later version
+// Refer to the LICENSE.txt file included.
 
 #pragma once
 
@@ -10,12 +10,21 @@ namespace Service::MCU {
 
 class HWC final : public ServiceFramework<HWC> {
 public:
-    explicit HWC();
+    explicit HWC(Core::System& _system);
 
 private:
+    Core::System& system;
+
+    void GetBatteryVoltage(Kernel::HLERequestContext& ctx);
+
+    void GetBatteryLevel(Kernel::HLERequestContext& ctx);
+
+    void SetInfoLEDPattern(Kernel::HLERequestContext& ctx);
+
     SERVICE_SERIALIZATION_SIMPLE
 };
 
 } // namespace Service::MCU
 
+SERVICE_CONSTRUCT(Service::MCU::HWC)
 BOOST_CLASS_EXPORT_KEY(Service::MCU::HWC)

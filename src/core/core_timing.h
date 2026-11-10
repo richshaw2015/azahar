@@ -203,6 +203,14 @@ public:
 
         s64 GetDowncount() const;
 
+        /**
+         * Sets a right-shift applied to the slice budget in SetNextSlice
+         * (per-title cpu_usage_limit quirk; 0 = full slice).
+         */
+        void SetDowncountHack(u32 shift) {
+            downcount_hack = shift;
+        }
+
         void ForceExceptionCheck(s64 cycles);
 
         void MoveEvents();
@@ -231,6 +239,11 @@ public:
         s64 downcount = MAX_SLICE_LENGTH;
         s64 executed_ticks = 0;
         u64 idled_cycles = 0;
+
+        // Per-title quirk: the slice budget is shifted right by this amount in
+        // SetNextSlice, shrinking the window of time the CPU may run for. Used to
+        // unstick games that spin-wait on a full slice (Citra-MMJ downcount hack).
+        u32 downcount_hack = 0;
 
         // Stores a scaling for the internal clockspeed. Changing this number results in
         // under/overclocking the guest cpu

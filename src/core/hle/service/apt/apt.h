@@ -1,6 +1,6 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2015-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #pragma once
 
@@ -375,6 +375,8 @@ public:
          *          fields don't match the fields in NS state. 1 = success.
          */
         void CancelParameter(Kernel::HLERequestContext& ctx);
+
+        void MapProgramIdForDebug(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToStartApplication service function. When the input title-info programID is
@@ -1007,6 +1009,8 @@ public:
          */
         void Reboot(Kernel::HLERequestContext& ctx);
 
+        void GetAppletProgramInfo(Kernel::HLERequestContext& ctx);
+
         /**
          * APT::HardwareResetAsync service function.
          * Outputs:
@@ -1088,8 +1092,6 @@ private:
     std::shared_ptr<Kernel::SharedMemory> shared_font_mem;
     bool shared_font_loaded = false;
     bool shared_font_relocated = false;
-
-    u32 cpu_percent = 0; ///< CPU time available to the running application
 
     ScreencapPostPermission screen_capture_post_permission =
         ScreencapPostPermission::CleanThePermission; // TODO(JamePeng): verify the initial value

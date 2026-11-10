@@ -1,11 +1,12 @@
-// Copyright Citra Emulator Project / Azahar Emulator Project
+// Copyright 2023-2026 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include "common/arch.h"
 #if CITRA_ARCH(arm64)
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <memory>
@@ -328,16 +329,49 @@ void JitShader::Compile_DestEnable(Instruction instr, QReg src) {
         break;
     }
 
+    constexpr int OutputBankShift = std::countr_zero(ShaderUnit::OutputBankSize);
+
     // If all components are enabled, write the result to the destination register
     if (swiz.dest_mask == NO_DEST_REG_MASK) {
         // Store dest back to memory
-        STR(src, STATE, dest_offset_disp);
+        if (dest.GetRegisterType() == RegisterType::Output) {
+            ADD(XSCRATCH0, STATE, dest_offset_disp);
+
+            LDRB(XSCRATCH1.toW(), STATE, ShaderUnit::OutputBankOffset());
+            LSL(XSCRATCH1, XSCRATCH1, OutputBankShift);
+            ADD(XSCRATCH0, XSCRATCH0, XSCRATCH1);
+
+            STR(src, XSCRATCH0);
+        } else {
+            STR(src, STATE, dest_offset_disp);
+        }
 
     } else {
         // Not all components are enabled, so mask the result when storing to the destination
         // register...
-        LDR(VSCRATCH0, STATE, dest_offset_disp);
+        if (dest.GetRegisterType() == RegisterType::Output) {
+            ADD(XSCRATCH0, STATE, dest_offset_disp);
+            LDRB(XSCRATCH1.toW(), STATE, ShaderUnit::OutputBankOffset());
+            LSL(XSCRATCH1, XSCRATCH1, OutputBankShift);
+            ADD(XSCRATCH0, XSCRATCH0, XSCRATCH1);
+        } else {
+            ADD(XSCRATCH0, STATE, dest_offset_disp);
+        }
 
+        // Special case masked-write of contiguous elements
+        if (swiz.dest_mask == 0b1000) {
+            ST1(List{src.Selem()[0]}, XSCRATCH0);
+            return;
+        } else if (swiz.dest_mask == 0b1100) {
+            ST1(List{src.Delem()[0]}, XSCRATCH0);
+            return;
+        } else if (swiz.dest_mask == 0b1110) {
+            ST1(List{src.Delem()[0]}, XSCRATCH0, POST_INDEXED, 8);
+            ST1(List{src.Selem()[2]}, XSCRATCH0);
+            return;
+        }
+
+        LDR(VSCRATCH0, XSCRATCH0);
         // MOVI encodes a 64-bit value into an 8-bit immidiate by replicating bits
         // The 8-bit immediate "a:b:c:d:e:f:g:h" maps to the 64-bit value:
         // "aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffgggggggghhhhhhhh"
@@ -371,7 +405,7 @@ void JitShader::Compile_DestEnable(Instruction instr, QReg src) {
         BSL(VSCRATCH2.B16(), src.B16(), VSCRATCH0.B16());
 
         // Store dest back to memory
-        STR(VSCRATCH2, STATE, dest_offset_disp);
+        STR(VSCRATCH2, XSCRATCH0);
     }
 }
 
@@ -508,6 +542,7 @@ void JitShader::Compile_DPH(Instruction instr) {
 void JitShader::Compile_EX2(Instruction instr) {
     Compile_SwizzleSrc(instr, 1, instr.common.src1, SRC1);
     STR(X30, SP, POST_INDEXED, -16);
+    exp2_used = true;
     BL(exp2_subroutine);
     LDR(X30, SP, PRE_INDEXED, 16);
     Compile_DestEnable(instr, SRC1);
@@ -516,6 +551,7 @@ void JitShader::Compile_EX2(Instruction instr) {
 void JitShader::Compile_LG2(Instruction instr) {
     Compile_SwizzleSrc(instr, 1, instr.common.src1, SRC1);
     STR(X30, SP, POST_INDEXED, -16);
+    log2_used = true;
     BL(log2_subroutine);
     LDR(X30, SP, PRE_INDEXED, 16);
     Compile_DestEnable(instr, SRC1);
@@ -824,8 +860,9 @@ void JitShader::Compile_JMP(Instruction instr) {
     }
 }
 
-static void Emit(GeometryEmitter* emitter, Common::Vec4<f24> (*output)[16]) {
-    emitter->Emit(*output);
+static void Emit(GeometryEmitter* emitter, ShaderUnit* unit) {
+    emitter->Emit(unit->output[unit->output_bank]);
+    unit->output_bank = !unit->output_bank;
 }
 
 void JitShader::Compile_EMIT(Instruction instr) {
@@ -844,7 +881,6 @@ void JitShader::Compile_EMIT(Instruction instr) {
     ABI_PushRegisters(*this, PersistentCallerSavedRegs());
     MOV(ABI_PARAM1, XSCRATCH0);
     MOV(ABI_PARAM2, STATE);
-    ADD(ABI_PARAM2, ABI_PARAM2, u32(offsetof(ShaderUnit, output)));
     CallFarFunction(*this, Emit);
     ABI_PopRegisters(*this, PersistentCallerSavedRegs());
     l(end);
@@ -865,12 +901,13 @@ void JitShader::Compile_SETE(Instruction instr) {
 
     l(have_emitter);
 
-    MOV(XSCRATCH1.toW(), instr.setemit.vertex_id);
-    STRB(XSCRATCH1.toW(), XSCRATCH0, u32(offsetof(GeometryEmitter, vertex_id)));
-    MOV(XSCRATCH1.toW(), instr.setemit.prim_emit);
-    STRB(XSCRATCH1.toW(), XSCRATCH0, u32(offsetof(GeometryEmitter, prim_emit)));
-    MOV(XSCRATCH1.toW(), instr.setemit.winding);
-    STRB(XSCRATCH1.toW(), XSCRATCH0, u32(offsetof(GeometryEmitter, winding)));
+    const GeometryEmitter::EmitState new_state{
+        .winding = instr.setemit.winding != 0,
+        .prim_emit = instr.setemit.prim_emit != 0,
+        .vertex_id = static_cast<uint8_t>(instr.setemit.vertex_id),
+    };
+    MOV(XSCRATCH1.toW(), new_state.raw);
+    STRB(XSCRATCH1.toW(), XSCRATCH0, u32(offsetof(GeometryEmitter, emit_state)));
 
     l(end);
 }
@@ -993,6 +1030,14 @@ void JitShader::Compile(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_
     // Compile entire program
     Compile_Block(static_cast<u32>(program_code->size()));
 
+    // Compile utility functions
+    if (log2_used) {
+        Compile_Log2(log2_subroutine);
+    }
+    if (exp2_used) {
+        Compile_Exp2(exp2_subroutine);
+    }
+
     // Free memory that's no longer needed
     program_code = nullptr;
     swizzle_data = nullptr;
@@ -1020,18 +1065,9 @@ void JitShader::Compile(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_
     code_vec.shrink_to_fit();
 }
 
-JitShader::JitShader() : oaknut::VectorCodeGenerator(code_vec) {
-    CompilePrelude();
-}
+JitShader::JitShader() : oaknut::VectorCodeGenerator(code_vec) {}
 
-void JitShader::CompilePrelude() {
-    log2_subroutine = CompilePrelude_Log2();
-    exp2_subroutine = CompilePrelude_Exp2();
-}
-
-Label JitShader::CompilePrelude_Log2() {
-    Label subroutine;
-
+void JitShader::Compile_Log2(Label subroutine) {
     // We perform this approximation by first performing a range reduction into the range
     // [1.0, 2.0). A minimax polynomial which was fit for the function log2(x) / (x - 1) is then
     // evaluated. We multiply the result by (x - 1) then restore the result into the appropriate
@@ -1135,13 +1171,9 @@ Label JitShader::CompilePrelude_Log2() {
     DUP(SRC1.S4(), SRC1.Selem()[0]);
 
     RET();
-
-    return subroutine;
 }
 
-Label JitShader::CompilePrelude_Exp2() {
-    Label subroutine;
-
+void JitShader::Compile_Exp2(Label subroutine) {
     // This approximation first performs a range reduction into the range [-0.5, 0.5). A minmax
     // polynomial which was fit for the function exp2(x) is then evaluated. We then restore the
     // result into the appropriate range.
@@ -1240,8 +1272,6 @@ Label JitShader::CompilePrelude_Exp2() {
     DUP(SRC1.S4(), SRC1.Selem()[0]);
 
     RET();
-
-    return subroutine;
 }
 
 } // namespace Pica::Shader

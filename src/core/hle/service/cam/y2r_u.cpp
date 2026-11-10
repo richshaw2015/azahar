@@ -1,12 +1,13 @@
-// Copyright 2015 Citra Emulator Project
+// Copyright 2015-2024 Citra Emulator Project / Azahar Emulator Project
 // Licensed under GPLv2 or any later version
-// Refer to the license.txt file included.
+// Refer to the misc/licenses/gplv2.txt file included.
 
 #include <array>
 #include <cstring>
 #include "common/archives.h"
 #include "common/common_funcs.h"
 #include "common/logging/log.h"
+#include "common/settings.h"
 #include "common/scope_exit.h"
 #include "core/core.h"
 #include "core/hle/ipc_helpers.h"
@@ -521,7 +522,11 @@ void Y2R_U::StartConversion(Kernel::HLERequestContext& ctx) {
     system.Memory().RasterizerFlushVirtualRegion(conversion.dst.address, total_output_size,
                                                  Memory::FlushMode::FlushAndInvalidate);
 
-    HW::Y2R::PerformConversion(system.Memory(), conversion);
+    // Citra-MMJ compat (Y2R_SKIP_CONVERSION): skip the conversion when the
+    // previous completion event is still pending, i.e. the game is not consuming them.
+    if (!Settings::values.y2r_perform_hack || completion_event->ShouldWait(nullptr)) {
+        HW::Y2R::PerformConversion(system.Memory(), conversion);
+    }
 
     if (is_busy_conversion) {
         system.CoreTiming().RemoveEvent(completion_signal_event);
